@@ -17,7 +17,7 @@ The idea of a programmable space is an ongoing area of research by [Jacob Haip](
 
 Today people can do almost everything on a computer, but "using a computer" means everyone stares at apps on their own little rectangular screens. This is sad because it makes people tired of screens, antisocial, reduces people to button clicks, and convinces people that they "aren't good with computers".
 
-How can we change the affordances of using a computer so that they are more humane?
+How can we change the affordances of using a computer so that they are more humane and inviting?
 Computers demand all your foreground attention in a fixed position. How can we take advantage of periphery senses and the full body capability of people?
 Computer GUIs cram so much information in screens behind layers of menus and pages when there is so much space in the world! How can we take advantage of all the space in the room?
 People consume apps and don't feel empowered to do much besides download a better app. In some ways this makes sense when the barrier to making something new is so formal. How can we make editing the tools you use a normal and easy part of using a computer?
@@ -35,6 +35,8 @@ We explore these ideas in a long term research project under the name "programma
 Most research so far has used the idea that computer programs have a 1-1 mapping with physical objects.
 Physical objects have the source code written/printed on them so people in the room can understand what the code is/does.
 There is no use of traditional GUI computer interface: everything is remade in the room.
+
+[Click here to see an example of a minimal programmable space](https://haiperspace.com/writing/20-02-11-rfid-cards/) that uses RFID cards as the physical representation of programs.
 
 The programmable space is the combination of two parts:
 
@@ -174,7 +176,20 @@ The bidirectional communiation between programs and the broker is handled via Ze
 
 # Gallery
 
-TODO
+- [Musical Posters](https://twitter.com/jhaip/status/1299815186493300740). 2020-08-29
+- [Voice Assistant reimagined](https://vimeo.com/438758942). 2020-07-15
+- [Recreation of the "Dangling String"](https://twitter.com/jhaip/status/1246211983269126146). 2020-04-03
+- [Calendar on wall and input and output using laser pointer and projector desk lamp](https://vimeo.com/400827615). 2020-03-25
+- [Turtlebot simulation using cards as input parameters](https://vimeo.com/391765260). 2020-03-10
+- [Desk lamp with projector inside used as output](https://vimeo.com/391765260). 2020-02-16.
+- [Programs represented by RFID Cards and receipt paper](https://haiperspace.com/writing/20-02-11-rfid-cards/). 2020-02-11
+- [Animated drawing from papers on desk](https://twitter.com/jhaip/status/1177193544240508928). 2019-09-26
+- [Defining and interacting with regions on wall with a laser pointer](https://haiperspace.com/writing/19-09-08-physical-programming/#laser-regions). 2019-09-08
+- [Non-textual programming of robots](https://haiperspace.com/writing/19-09-08-physical-programming/#text-free-robot-programming). 2019-09-08
+- [Using spatial arrangement of dot papers](https://haiperspace.com/writing/19-09-08-physical-programming/#spatial-awareness). 2019-09-08
+- [Putting code onto microcontrollers](https://haiperspace.com/writing/19-03-17-programmable-space/). 2019-03-17
+- [Programs represented by RFID Clipboards](https://haiperspace.com/writing/19-03-17-programmable-space/). 2019-03-17
+- [Fixed 3x3 grid of programs + text editor](http://haiperspace.com/writing/19-01-20-research-update/). Projected on wall but no camera sensing. 2019-01-20
 
 # Setting up your own programmable space
 
