@@ -59,12 +59,43 @@ Therefore there are two main types of physical objects:
 
 Two types of physical representations of code have been tested:
 
-1. Source code printed on paper with colored dots in the corners that can be identified and tracked using computer vision.
-   - Pros: Takes advantage or how common 2D printers are. Programs can be sensed in any orientation
-   - Cons: Camera systems had occlusion and lighting issues
-2. Printed Source code attached to RFID cards that are placed on RFID sensors.
-   - Pros: No occlusion or lighting issues. RFID cards are durable
-   - Cons: Relies on fixed grids of RFID sensors that increase costs and can't detect orientation
+### 1. Papers with Colored Dots on corners
+
+Inspired by the papers of [Dynamicland](https://dynamicland.org/), programs are represented by pieces of paper with
+source code and colored dots printed on it. The printed source code is so people in the room can understand what the program does.
+The colored dots are so a camera and computer system can identify and understand what the program does.
+
+Each paper has four sets of colored dots in each corner. Four different colors are used along with seven dots per corner.
+Each corner can uniquely identify the papers, but 3 or 4 corners are needed to get the size and orientation of a paper.
+A program takes in webcam images, processes them with OpenCV, and then claims what and where papers are located in the room.
+
+The middle of the paper is also a nice canvas for projecting graphics onto the paper.
+The projector and camera can be calibrated together to enable projection mapping wherever papers are put in the room.
+Having a mini display for every program is fun and helpful.
+
+- **Pros**: Takes advantage of how common 2D printers are. Programs can be sensed in any orientation. Papers can be cut and made different sizes. Support dynamic projection mapping well.
+- **Cons**: Camera systems have occlusion and lighting issues.
+
+**TODO: Add a diagram sketch here**
+
+### 2. RFID cards with printed source code.
+
+Programs are represented by standard RFID cards with printed source code attached to it.
+Most commonly, I have [printed source code using a receipt thermal printer](https://haiperspace.com/writing/20-02-11-rfid-cards/)
+and used a plastic trading card case to hold both the RFID card and the receipt paper.
+Another variant I have tried is [taping RFID cards to the back of clipboards](https://haiperspace.com/writing/19-03-17-programmable-space/) that hold full size papers with printed source code.
+
+The RFID cards are sensed by RFID readers. RFID sensors can only sense one card at a time and cards must be placed
+directly on top of the sensor so a separate sensor is needed for every place a program can be placed.
+For example, two [RFID sensors](https://vetco.net/products/rfid-reader-writer-module-for-arduino-d40?gclid=EAIaIQobChMIysHuremK7AIVmoTICh0sgganEAQYAiABEgKCMPD_BwE) can be hidden behind an [angled photo frame](https://www.dollartree.com/special-moments-freestanding-borderless-horizontal-plastic-photo-frames-6x4-in/225398):
+
+![code stand](https://haiperspace.com/writing/20-02-11-rfid-cards/rfid-card-cover.png)
+
+- **Pros**: No occlusion or lighting issues. RFID cards are durable. Trading card size is nice to hold.
+- **Cons**: Can't detect orientation. Cards can only be placed on the fixed locations of RFID sensors.
+  More expensive to scale. Projection mapping requires more calibration.
+
+**TODO: Add a diagram sketch here**
 
 ## Software
 
