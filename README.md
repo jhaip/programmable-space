@@ -228,6 +228,39 @@ The software system could theoretically be run in a normal GUI computer interfac
 but that is contrary to the goal of breaking free the single-screen GUI computer interface.
 Because of this, setting up a programmable space means more than just setting it up on your computer.
 
+The easiest way of physically representing code is with papers with colored dots so I recommend starting there.
+This guide will assume you have a webcam and a projector to do projection mapping, but you could use a webcam
+and an alternative display like a computer monitor if you don't have a projector.
+A more immersive experience can be made by putting the cameras and projectors in the ceiling, but to
+begin with I'll assume you are pointing the projector and camera at a wall. A magnetic whiteboard is a nice way
+to attach papers to the wall, but I have also used rolled painter's tape.
+
+### Minimal materials needed:
+
+- Webcam. A particular model is not needed but the [Logitech C920](https://www.logitech.com/en-us/product/hd-pro-webcam-c920) is a nice 1080p webcam.
+  - Some way to mount the webcam
+- Projector. A particular model is not needed but the projectors throw distance will determine
+  how far away the projector needs to be to cover the programs you want to project on. At least a 1080p projector is nice so
+  projected text is more readable.
+  - Some way to mount the projector
+- Color printer.
+- Magnetic whiteboard or painters tape to attach papers to the wall
+- A computer to run the software system. Webcam and projector should also be connected to this computer.
+
+Arrange the webcam and projector so that the webcam can see all of the projection area and a little more.
+
+### Running the boot programs
+
+- Clone this repository
+- Install dependencies
+- Run `./jig start`
+  - This starts the broker and `0__boot.js`
+
+### Projection mapping calibration
+
+Open `1600`'s desktop application. Press `1` and then click on the top left corner of the projection region.
+Repeat for `2`, `3`, and `4` in a clock-wise order. Press `\`` to stop editing corners.
+
 # Getting Involved
 
 As this is an informal and long-term research project, we invite everyone to make their own programmable spaces and share their thoughts.
