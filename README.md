@@ -111,44 +111,44 @@ The processes themselves handle the sensing of physical objects and all other fu
 
 The core software idea is that the room has a shared list of "facts" that things within the room use to communicate.
 
-> Fact = Typed list of values that reads like a sentence
->
-> ```
-> Soil    moisture  is      50.3
-> [text]  [text]    [text]  [number]
-> ```
+**_Fact_** = Typed list of values that reads like a sentence
 
-> Fact Table = Shared list of all facts from objects in the room
->
-> ```
-> Fact 1. Soil moisture is 50.3
-> Fact 2. Light should be off
-> Fact 3. Time is 1600909276
-> ```
+```
+Soil    moisture  is      50.3
+[text]  [text]    [text]  [number]
+```
+
+**_Fact Table_** = Shared list of all facts from objects in the room
+
+```
+Fact 1. Soil moisture is 50.3
+Fact 2. Light should be off
+Fact 3. Time is 1600909276
+```
 
 Programs can update the Fact Table in two ways: Claim or Retract.
 
-> Claim = Add a Fact to the Fact Table
->
-> ```
-> Claim(Soil moisture is 50.3)
-> ```
+**_Claim_** = Add a Fact to the Fact Table
 
-> Retract = Remove facts matching a pattern from the Fact Table
->
-> ```
-> // fully specified fact
-> Retract(Soil moisture is 50.3)
-> // $ is a single wildcard value of any type
-> Retract(Soil moisture is $)
-> // % is a postfix wilcard that matches until the end of the fact
-> Retract(Soil moisture %)
-> ```
+```
+Claim(Soil moisture is 50.3)
+```
+
+**_Retract_** = Remove facts matching a pattern from the Fact Table
+
+```
+// fully specified fact
+Retract(Soil moisture is 50.3)
+// $ is a single wildcard value of any type
+Retract(Soil moisture is $)
+// % is a postfix wilcard that matches until the end of the fact
+Retract(Soil moisture %)
+```
 
 Programs can listen for changes to the fact table to influence their own actions via Subscriptions.
 
-> Subscription = A program's desire to get updates from the Fact Table about Facts that match a pattern. The pattern is specified as a list of typed lists. Patterns follow Datalog rules where reused variables must match in each result.
->
+**_Subscription_** = A program's desire to get updates from the Fact Table about Facts that match a pattern. The pattern is specified as a list of typed lists. Patterns follow Datalog rules where reused variables must match in each result.
+
 > Given the fact table
 >
 > ```
@@ -194,13 +194,23 @@ Programs can listen for changes to the fact table to influence their own actions
 
 The Fact Table is maintained by a broker.
 
-> Broker = Software system that objects and program talk to that manages updates to the Fact Table and informs subscribers about changes. All Claims, Retracts, Subscriptions, and Subscription Results flow through it.
+**_Broker_** = Software system that objects and program talk to that manages updates to the Fact Table and informs subscribers about changes. All Claims, Retracts, Subscriptions, and Subscription Results flow through it.
 
 The Broker also performs helpful things like
 
 1. Saving a prior history of facts for new subscribers
 2. Performance intensive code to handle pub/sub
 3. Consolidating Datalog query logic
+
+The shared fact table is used as a communication mechanism between programs for this project because it:
+
+- Allows the people writing programs to claims facts and subscriptions that read closer to a sentence.
+- Allows programs to communicate asyncronously without needing to know about other programs.
+- Maps well to the idea that programs in the same physical space share common knowledge.
+
+When a program is stopped, all the facts and subscriptions is made in the shared fact table are removed. This keeps the shared fact table relevant only the programs that are currently visible in the room and running. Additionally all facts in the shared fact table record what program claimed the fact so the same fact claimed by two different programs is considered two unique facts.
+
+The broker should be "local" to the programs in the room and only serve about as many programs that can fit in a single "space" or "room". For larger spaces or to connect multiple rooms together, facts can be explicitly shared to other brokers and computers. In this way data and programs are federated. Federation is useful both technically (because a single server cannot hold all the facts in the universe) and to aid in the understanding of the people working in a space. For example the position of a paper on a table is very important to someone reading the paper at the same table, but the position of a paper in a different room is irrelevant unless the person at the table as some special reason they care about something going on somewhere else.
 
 Programs have been implemented in multiple programming languages (Python, Node.js, Golang, Lua, an experiemental custom langauge).
 The bidirectional communiation between programs and the broker is handled via ZeroMQ TCP sockets (ROUTER/DEALER pattern).
@@ -224,9 +234,13 @@ The bidirectional communiation between programs and the broker is handled via Ze
 
 # Setting up your own programmable space
 
-The software system could theoretically be run in a normal GUI computer interface on a single computer,
-but that is contrary to the goal of breaking free the single-screen GUI computer interface.
-Because of this, setting up a programmable space means more than just setting it up on your computer.
+Every space is different and should be built to fit the needs, experience, and goals of the people that work within it. The room is not an app you download and run, but something that should be built by you. But spaces do have similar baseline needs:
+
+- A way for humans and computers to understand what programs are running and which are not.
+- Some sort of display that running programs can use for visual feedback
+- A way to edit programs and create new programs
+
+After deciding on a way people will know what programs and running and which are not, an appropriate sensor can be chosen to detect that. For example if a program is represented by a piece of paper with code on it, then a running program could be when it is face-up and visible to everyone in the room. A sensor that could be used to detect face-up papers is a camera.
 
 The easiest way of physically representing code is with papers with colored dots so I recommend starting there.
 This guide will assume you have a webcam and a projector to do projection mapping, but you could use a webcam
@@ -235,31 +249,132 @@ A more immersive experience can be made by putting the cameras and projectors in
 begin with I'll assume you are pointing the projector and camera at a wall. A magnetic whiteboard is a nice way
 to attach papers to the wall, but I have also used rolled painter's tape.
 
-### Minimal materials needed:
+Programs are represented physically as papers with code written on them. When a paper is face-up, showing the code, then it is running. A camera is used as a sensor. Papers are marked with patterns of colored dots in their corners for identification. A camera frame can be process to figure out where the dots are, what papers they correspond to, and therefore where papers are visible in the space.
+A projector displays graphics on the programs as the running programs instruct them to.
 
-- Webcam. A particular model is not needed but the [Logitech C920](https://www.logitech.com/en-us/product/hd-pro-webcam-c920) is a nice 1080p webcam.
-  - Some way to mount the webcam
-- Projector. A particular model is not needed but the projectors throw distance will determine
-  how far away the projector needs to be to cover the programs you want to project on. At least a 1080p projector is nice so
-  projected text is more readable.
-  - Some way to mount the projector
-- Color printer.
-- Magnetic whiteboard or painters tape to attach papers to the wall
-- A computer to run the software system. Webcam and projector should also be connected to this computer.
+## Bill of Materials
+
+1. A computer. Preferrably running Ubuntu but I have also done some work on MacOS. It could be a cloud server but for things that happen locally to a room it makes a little more sense to keep the networking local.
+
+   - Currently I'm using a Intel NUC mini PC with 16 GB RAM, a quad-core Intel i5 at 1.30GHz, and a SSD. 16 GB RAM seems to be excessive in my tests but having multiple cores are important when many programs are running.
+
+2. For camera sensing of papers: a webcam. I use the [Logitech C922](https://www.logitech.com/en-us/product/c922-pro-stream-webcam) to get HD video at 30fps.
+
+   - Some way to mount the webcam
+
+3. When using a projector as a display: Any projector should work but HD projectors are nice when projecting small text. Projectors with higher lumens will make the projected graphics more visible in daylight. I used the [Epson Home Cinema 1060](https://www.amazon.com/Epson-Cinema-brightness-speakers-projector/dp/B073S4TS4G/) when projecting across the room and the [Optima GT1080 short throw projector](https://www.amazon.com/Optoma-GT1080Darbee-Lumens-Gaming-Projector/dp/B06XHG92Y5/) when projecting down at a coffee table or the ground.
+
+   - Some way to mount the projector
+
+4. A generic color 2D printer
+
+5. Magnetic whiteboard or painters tape to attach papers to the wall
+
+6. A computer monitor or TV as a supplemental display.
+   - A monitor is useful when starting the computer and when debugging
+   - I use a TV as a supplemental display. Best used to display one thing as a time in full screen, such as a text editor. TVs and monitors are less immersive than projection, but they can be useful when used as a pure display and not as the screen for a computer's operating system.
 
 Arrange the webcam and projector so that the webcam can see all of the projection area and a little more.
 
-### Running the boot programs
+## Software Requirements
 
-- Clone this repository
-- Install dependencies
+Operating system:
+
+- Tested with Ubuntu 16.04
+- Partial tests with MacOS High Sierra
+
+Golang:
+
+- For the broker and a few core programs
+- [Golang 1.12](https://golang.org/)
+- Dependencies are tracked in the `go.mod` file and will be automatically downloaded and installed when running a Go program for the first time.
+- When building the Go files, you may need to copy the `new-backend/go-server/go.mod` and `new-backend/go-server/go.sum` files to the root folder of this repo in order for the `src/standalone_processes` Go files to be build properly.
+
+Node.js:
+
+- Used for boot programs and most regular programs
+- [Node.js v10.6.0](https://nodejs.org/en/download/package-manager/)
+- `npm install`
+
+Python:
+
+- Used for some boot programs and some special regular programs that have nicer Python libaries than Node.js libraries
+- [Python 3.5+](https://www.python.org/downloads/)
+- `pip3 install -r requirements.txt`
+- For camera sensing: [OpenCV 3.4](https://opencv.org/)
+- For UI of `1600` and `1700`: [wxPython4](https://wxpython.org/)
+- For playing MIDI sounds `777` and capturing keyboard input `648` [pyGame 1.9.5+](https://www.pygame.org)
+
+Lua/Love2D:
+
+- Used for graphical output `src/lua/graphics_test/main.lua`
+- `sudo apt install lua5.1`
+- `sudo apt install love` (for love 2d)
+- `sudo apt install luarocks`
+- `sudo apt install libzmq3-dev`
+- Install https://github.com/zeromq/lzmq
+  - `sudo luarocks install lua-llthreads2`
+  - `sudo luarocks install lzmq`
+- `sudo luarocks install uuid`
+
+Printing Papers:
+
+- [`lpr`](http://man7.org/linux/man-pages/man1/lpr.1.html) with a default printer configured.
+
+For moving windows around programmatically `sudo apt install xdotool` is needed.
+
+> When installing on a Raspberry Pi these addition things may need to be installed when running the computer vision:
+>
+> ```
+> sudo apt-get install libhdf5-dev
+> sudo apt-get install libhdf5-serial-dev
+>
+> sudo apt-get install libcblas-dev
+> sudo apt-get install libatlas-base-dev
+> sudo apt-get install libjasper-dev
+> sudo apt-get install libqtgui4
+> sudo apt-get install libqt4-test
+>
+> sudo apt-get install libczmq-dev
+> sudo apt-get install libqtgui4
+> ```
+
+## Starting the broker, boot programs, and sensing programs
+
+**Starting the broker**:
+
 - Run `./jig start`
   - This starts the broker and `0__boot.js`
 
-### Projection mapping calibration
+**Paper sensing**:
+
+1. Grab a frame from the webcam and find everything that looks like a dot (#1600)
+2. Get the list of dots and figure out what papers they map to using the knowledge that papers have only certains patterns of dots in the four corners of a paper (#1800)
+3. Get the list of visual papers and wish that the corresponding program stored on a computer was running. (#826)
+4. Get all wishes for programs that should be running and run them on a computer. (#1900)
+
+**Projection**:
+
+1. A process listens for the locations of all papers and each papers wishes for graphics to be drawn on them. Additionally it listens for a projector-camera calibration so the display is able to perform the projection mapping. (`src/lua/graphics_test/main.lua`)
+
+**Program editing**:
+
+To edit and create programs, there is a special piece of paper that edits the code of whatever paper it is pointing at. The code being edited is projected on to the text editor paper. A wireless keyboard associated with the text editor edits the text. When a new version of code is saved, a new version of the paper is printed out of a new sheet of paper to replace the old piece of paper.
+
+1. The input from a wireless keyboard is captured and claimed to the room (#648)
+2. When the system starts, a program reads the contents of all code files and claims them to the room (#390)
+3. The text editor paper (#1013):
+   a. Gets the source of the program it is editing
+   b. Listens for the latest key presses to control the text editor cursor
+   c. Wishes the text editor graphics would be projected on it
+   d. When saving a program, the text editor wishes some other process would persist the new source code
+4. A program listens for wishes of edited programs, transforms the code from the room's domain specific language into, and then wishes that the files on disk would be edited and run (#40). Another program persists the changes to the source code to the computer's disk (#577) and then causes the process to be restarted (#1900).
+5. Simultaneously when saving a program, another program generates a PDF of a new piece of paper (#1382) and then another program talks to the printer to print the PDF (#498).
+
+#### Projection mapping calibration
 
 Open `1600`'s desktop application. Press `1` and then click on the top left corner of the projection region.
-Repeat for `2`, `3`, and `4` in a clock-wise order. Press `\`` to stop editing corners.
+Repeat for `2`, `3`, and `4` in a clock-wise order. Press ` to stop editing corners.
 
 # Getting Involved
 
