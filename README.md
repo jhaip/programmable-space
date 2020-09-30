@@ -76,7 +76,7 @@ Having a mini display for every program is fun and helpful.
 - **Pros**: Takes advantage of how common 2D printers are. Programs can be sensed in any orientation. Papers can be cut and made different sizes. Support dynamic projection mapping well.
 - **Cons**: Camera systems have occlusion and lighting issues.
 
-**TODO: Add a diagram sketch here**
+![Paper dot sensing diagram](/doc/paper-dot-sensing.png?raw=true)
 
 ### 2. RFID cards with printed source code.
 
