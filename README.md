@@ -61,6 +61,8 @@ Two types of physical representations of code have been tested:
 
 ### 1. Papers with Colored Dots on corners
 
+![Paper dot sensing diagram](/doc/paper-dot-sensing.png?raw=true)
+
 Inspired by the papers of [Dynamicland](https://dynamicland.org/), programs are represented by pieces of paper with
 source code and colored dots printed on it. The printed source code is so people in the room can understand what the program does.
 The colored dots are so a camera and computer system can identify and understand what the program does.
@@ -76,9 +78,9 @@ Having a mini display for every program is fun and helpful.
 - **Pros**: Takes advantage of how common 2D printers are. Programs can be sensed in any orientation. Papers can be cut and made different sizes. Support dynamic projection mapping well.
 - **Cons**: Camera systems have occlusion and lighting issues.
 
-![Paper dot sensing diagram](/doc/paper-dot-sensing.png?raw=true)
-
 ### 2. RFID cards with printed source code.
+
+![RFID card sensing diagram](/doc/rfid-sensing.png?raw=true)
 
 Programs are represented by standard RFID cards with printed source code attached to it.
 Most commonly, I have [printed source code using a receipt thermal printer](https://haiperspace.com/writing/20-02-11-rfid-cards/)
@@ -94,8 +96,6 @@ For example, two [RFID sensors](https://vetco.net/products/rfid-reader-writer-mo
 - **Pros**: No occlusion or lighting issues. RFID cards are durable. Trading card size is nice to hold.
 - **Cons**: Can't detect orientation. Cards can only be placed on the fixed locations of RFID sensors.
   More expensive to scale. Projection mapping requires more calibration.
-
-![RFID card sensing diagram](/doc/rfid-sensing.png?raw=true)
 
 ## Software
 
