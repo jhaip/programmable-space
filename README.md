@@ -95,7 +95,7 @@ For example, two [RFID sensors](https://vetco.net/products/rfid-reader-writer-mo
 - **Cons**: Can't detect orientation. Cards can only be placed on the fixed locations of RFID sensors.
   More expensive to scale. Projection mapping requires more calibration.
 
-**TODO: Add a diagram sketch here**
+![RFID card sensing diagram](/doc/rfid-sensing.png?raw=true)
 
 ## Software
 
