@@ -29,7 +29,7 @@ We explore these ideas in a long term research project under the name "programma
 
 - Gradual
 - Room-scale
-- Multiplayer-social
+- Multiplayer/social
 - Always-on
 - Editable and understandable
 
