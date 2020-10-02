@@ -6,10 +6,13 @@ The idea of a programmable space is an ongoing area of research by [Jacob Haip](
 
 - [Backstory](#backstory)
 - [Project Overview](#project-overview)
+  - [Physical Objects](#physical-objects)
+  - [Software](#software)
+  - [Bootstrapping](#bootstrapping)
+  - [Editing Source Code](#editing-source-code)
 - [Gallery](#gallery)
 - [Setting up your own programmable space](#setting-up-your-own-programmable-space)
 - [Getting Involved](#getting-involved)
-- Development Log
 
 ---
 
@@ -46,7 +49,7 @@ The programmable space is the combination of two parts:
 Although this is a Github project and software systems are important to the project implementation, I should be clear this is not a "software project".
 The research goals of this project are to experience the physical side and the software implementation is just necessary step in the prototype.
 
-## Physical objects
+## Physical Objects
 
 Research so far has used the idea that textual/graphical code is printed on physical objects in the room.
 Although the project research explores more physical ways to make and mold systems, I don't imagine a world that is totally free of text
@@ -255,7 +258,7 @@ These programs are started by the `0__boot.js` program that is also started when
 **Protocol Adapters**
 * #20 - Accepts HTTP POST messages about claims and retracts and forwards them to the broker
 
-## Text Editing
+## Editing Source Code
 
 The ability to edit the source code of programs running in the room is one of the key ideas because it allows the programmable space to be improved using the
 programmable space itself. In this example we'll use we using the "papers with colored dots" method of sensing with textual source code that is edited directly. Program #1013 in the room is the "text editor". It displays and shows a text editor interface for whatever program that is above it in the room. Program #1013 does not interact with the host operating system at all (those tasks are handled by other programs as described below), so making alternative editing interfaces is pretty easy. The entire text editor is only 300 lines of code!
