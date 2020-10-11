@@ -301,6 +301,8 @@ Claims:
 
 ## Broker
 
+![Broker diagram](/doc/broker-diagram.png?raw=true)
+
 Main state:
 * List of active subscriptions
 * Fact Table - array of facts in memory
@@ -318,33 +320,24 @@ Notification Sender:
     * if (source, subscription ID) not in cache or if list of results is different than cached value:
         * Send ZeroMQ message to {source}
 
-Batch Handler
+Batch Worker
 * For each event (source, value):
     * JSON parse string value into list of claims and retracts
-    * For each claim or retract in list:
-        * Lock fact table
-        * Perform claim or retract
-        * Unlock fact table
+    * For each claim or retract in list: perform update on main fact table
     * Forward list of claims and retracts to all subscriber workers
 
 Subscribe Handler
 * For each subscription request event (source, value):
     * JSON parse string value into (subscription ID, query (list of facts))
-    * Claim subscription as a fact to the room (lock db, claim, unlock db)
+    * Claim subscription as a fact to the room
     * Add subscription to list of active subscriptions
     * Start new subscriber worker
 
 Subscriber worker
-* Make subscriber graph cache
-   * Based on query
-   * A node in the graph for each query part
-   * Node contains it's list of matching facts
-   * **TODO**: understand this more
-* Warm caches
-   * Reclaim all facts from the main fact table so the subscriber's graph cache are caught up
-* Listen for messages:
-    * "die" -> close self
-    * "batch" -> calculate new results. If they have changed, send a notification to the subscriber
+* Save a filtered fact table based on each query part of the subscription
+* Listen for messages forwarded from the Batch Worker
+    * do the claim/retract updates on each of the filtered fact tables
+    * if facts in fact table were updated: calculate new results and forward them to the notification worker
 
 Fact Table / Database
 * Term = (Type string, Value string)
@@ -359,9 +352,6 @@ Fact Table / Database
     * otherwise: delete from Database
 * match(): Datalog query match
 * Message format (program ID, subscription ID, rest of fact...)
-
-TODO:
-* How subscriptions die
 
 # Gallery
 
