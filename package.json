@@ -33,7 +33,7 @@
     "cors": "^2.8.4",
     "express": "^4.16.4",
     "express-ws": "^4.0.0",
-    "http-proxy": "^1.17.0",
+    "http-proxy": "^1.18.1",
     "jaeger-client": "^3.14.4",
     "node-udp-forwarder": "0.0.3",
     "npm-run-all": "^4.1.3",
