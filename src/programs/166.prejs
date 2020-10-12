@@ -1,0 +1,7 @@
+data = []
+size = 40
+
+when time is $t:
+    data.push(50 + 50*Math.sin(t/1000.0))
+    data = data.slice(-size)
+    claim "Sin wave" data is "${data.toString()}"

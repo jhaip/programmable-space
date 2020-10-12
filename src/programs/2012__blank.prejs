@@ -1,0 +1,10 @@
+let count = 0;
+global claim count is 0
+
+when circuit playground "BUTTON_A" has value 1:
+
+global retract count is $
+count += 1;
+global claim count is ${count}
+
+end

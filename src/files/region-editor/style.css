@@ -1,0 +1,31 @@
+html, body {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.parent {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  margin-bottom: 2rem;
+}
+
+small, strong {
+  display: block;
+}
+
+.left-col {
+  margin-left: 1rem;
+  line-height: 1.5rem;
+}
+
+.new-region {
+  padding: 1rem;
+  background-color: rgb(182, 255, 182);
+  margin-bottom: 1rem;
+}
+
+.continue-button {
+  padding: 10px;
+}

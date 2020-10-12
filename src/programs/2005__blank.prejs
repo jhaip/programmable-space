@@ -1,0 +1,5 @@
+when I wish I was highlighted $color by $source:
+  let ill = room.newIllumination()
+  ill.fill(color)
+  ill.rect(0, 0, 1920, 1080);
+  room.draw(ill, source)

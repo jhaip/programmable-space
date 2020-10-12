@@ -1,0 +1,6 @@
+when $ says the humidity is $H and temp is $T:
+if (H > 50) {
+  claim I wish I was highlighted red
+} else {
+  claim I wish I was highlighted green
+}

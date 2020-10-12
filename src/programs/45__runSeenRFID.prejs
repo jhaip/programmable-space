@@ -1,0 +1,13 @@
+when $photonId read $value on sensor $sensorId,
+     paper $paperId has RFID $value:
+    claim wish ${paperId} would be running
+    claim default display for ${paperId} is 1999
+    claim paper ${paperId} has width ${1024} height ${600} angle 0 at (0, 0)
+
+when Photon200038000747343232363230 read $value on sensor 1,
+     paper $paperId has RFID $value:
+    claim paper 1013 is pointing at paper ${paperId}
+
+when ArgonBLE read $value on sensor 1,
+     paper $paperId has RFID $value:
+    claim paper 1013 is pointing at paper ${paperId}

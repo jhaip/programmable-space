@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/pi/lovelace/jig pieditorstart
+# Copy this file to ~/.config/autostart/pidisplay.desktop

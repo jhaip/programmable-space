@@ -1,0 +1,10 @@
+claim wish circuit playground neopixel 9 had color 0 0 0
+
+when there is a cat:
+
+  claim wish circuit playground neopixel 9 had color 100 50 0
+
+otherwise:
+
+  claim wish circuit playground neopixel 9 had color 0 0 0
+

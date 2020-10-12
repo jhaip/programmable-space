@@ -1,0 +1,10 @@
+let minuteDelay = 5;
+
+when time is $t:
+
+let offset = t % (60*minuteDelay);
+if (offset === 0) {
+  claim wish ribbon moved every 50 ms
+} else if (offset == 5) {
+  claim wish ribbon moved every 1000 ms
+}

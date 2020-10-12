@@ -1,0 +1,3 @@
+when draw graphics $graphics on 1101:
+
+claim draw graphics`, ["text", graphics], `on web2

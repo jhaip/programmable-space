@@ -1,0 +1,18 @@
+[Unit]
+Description=Programmable Space Raspberry Pi
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+# Copy this file to /etc/systemd/system
+# sudo systemctl daemon-reload
+# sudo systemctl start pidisplay
+# Run at boot: sudo systemctl enable pidisplay
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+RemainAfterExit=yes
+ExecStart=/home/pi/lovelace/jig pieditorstart
+ExecStop=/home/pi/lovelace/jig stop
+
+[Install]
+WantedBy=multi-user.target

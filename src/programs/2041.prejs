@@ -1,0 +1,15 @@
+var C = [1,0,0,0,1,0,0,0,1];
+var D = "1997";
+
+when sticky $ calibration for $displayId is $M1 $M2 $M3 $M4 $M5 $M6 $M7 $M8 $M9:
+C = [+M1, +M2, +M3, +M4, +M5, +M6, +M7, +M8, +M9]
+D = `${displayId}`;
+end
+
+when laser in region $r,
+     region $r has name sticky:
+let ill = room.newIllumination()
+ill.set_transform(C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7], C[8], C[9])
+ill.fontsize(150);
+ill.text(100, 200, "That's my sticky!")
+room.draw(ill, D)

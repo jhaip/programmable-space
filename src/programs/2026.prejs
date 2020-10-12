@@ -1,0 +1,8 @@
+when count is $count:
+  let ill = room.newIllumination()
+  ill.push()
+  ill.fontcolor("white")
+  ill.fontsize(100)
+  ill.text(400, 400, `Count is ${count}`)
+  ill.pop()
+  room.draw(ill, "web2")

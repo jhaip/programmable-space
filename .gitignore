@@ -1,0 +1,14 @@
+node_modules
+.DS_Store
+.py[co]
+__pycache__
+.log
+src/files/*.pdf
+!src/programs/logs/.keep
+src/programs/logs/
+*.bin
+broker/db_view*.txt
+broker/server
+broker/server.log
+src/particle-photon/*/target
+build/config.gypi

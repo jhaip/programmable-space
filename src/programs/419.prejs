@@ -1,0 +1,72 @@
+const BOILERPLATE = `
+from helper2 import init
+import time
+from adafruit_crickit import crickit
+
+init(__file__, skipListening=True)
+
+motor_1 = crickit.dc_motor_1
+motor_2 = crickit.dc_motor_2
+speed_1 = 0.4
+speed_2 = speed_1
+
+def move(c1, c2, t):
+    motor_1.throttle = speed_1 * c1
+    motor_2.throttle = speed_2 * c2
+    time.sleep(t)
+
+move(0, 0, 1)
+`;
+
+const forward_time = 0.8;
+const turn_time = 0.62;
+const tile_code = {
+  'up': n => `move(1, 1, ${forward_time})\n`.repeat(n),
+  'down': n => `move(-1, -1, ${forward_time})\n`.repeat(n),
+  'left': n => `move(-1, 1, ${turn_time})\n`.repeat(n),
+  'right': n => `move(1, -1, ${turn_time})\n`.repeat(n),
+  'loopstart': n => `for i in range(${n}):\n`,
+  'loopstop': n => `\n`,
+  'stop': n => `move(0, 0, 1)\n`
+}
+const W = 6
+const H = 4
+let code = "";
+
+
+when new $results of tile $tile seen at $x $y @ $t:
+  cleanup
+  if (!results) return
+  let list = Array(W*H).fill("")
+  results.forEach(({ tile, x, y, t}) => {
+    list[+x + W * (+y)] = tile;
+  });
+  code = BOILERPLATE;
+  stack_level = 0;
+  list.forEach((tile, i) => {
+    if (tile !== "") {
+      if (tile === 'loopstop') {
+        if (stack_level <= 0) {
+          return;
+        } else {
+          stack_level -= 1;
+        }
+      }
+      let indent = " ".repeat(4 * stack_level);
+      let N = 1; // TODO, support repeating tiles N times
+      code += indent + (tile_code[tile])(N);
+      if (tile === 'loopstart') {
+        stack_level += 1;
+      }
+    }
+  });
+  while (stack_level > 0) {
+    code += "}\n";
+    stack_level -= 1;
+  }
+  code += tile_code['stop'](1);
+  claim block code`, ["text", code], `wip
+end
+
+when button was pressed @ $t:
+  claim wish`, ["text", code], `runs on robot

@@ -1,0 +1,7 @@
+
+when button was pressed @ $t:
+    claim I wish I was highlighted green
+    setTimeout(() => {
+      cleanup
+      room.flush()
+    }, 500);

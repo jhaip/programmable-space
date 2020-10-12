@@ -1,0 +1,21 @@
+[Unit]
+Description=Programmable Space Server
+After=network.target
+
+[Service]
+Type=oneshot
+User=jacob
+# Copy this file to /etc/systemd/system
+# sudo systemctl daemon-reload
+# sudo systemctl start progspace
+# Run at boot: sudo systemctl enable progspace
+Environment=GOPATH=/home/jacob/go
+Environment=GOBIN=/home/jacob/go/bin
+Environment=PATH=/home/jacob/bin:/home/jacob/.local/bin:/home/jacob/.nvm/versions/node/v10.6.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/$
+Environment=DYNAMIC_ROOT=/home/jacob/lovelace/
+RemainAfterExit=yes
+ExecStart=/home/jacob/lovelace/jig rfideditorstart3
+ExecStop=/usr/bin/sudo /home/jacob/lovelace/jig stop
+
+[Install]
+WantedBy=multi-user.target

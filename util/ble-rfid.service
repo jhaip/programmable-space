@@ -1,0 +1,17 @@
+[Unit]
+Description=Keep BLE Proxy Service Running on Disconnects
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# Copy this file to /etc/systemd/system
+# sudo systemctl daemon-reload
+# sudo systemctl start ble-rfid
+Environment=PATH=/home/jacob/bin:/home/jacob/.local/bin:/home/jacob/.nvm/versions/node/v10.6.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/$
+Restart=always
+ExecStart=/home/jacob/.nvm/versions/node/v10.6.0/bin/node /home/jacob/lovelace/src/standalone_processes/1850__bleProxyRfid.js
+ExecStop=/usr/bin/pkill -f standalone_processes/1850__bleProxyRfid.js
+
+[Install]
+WantedBy=multi-user.target

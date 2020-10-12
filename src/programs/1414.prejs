@@ -1,0 +1,7 @@
+data = []
+size = 20
+
+when measured latency $h ms at $:
+    data.push(h)
+    data = data.slice(-size)
+    claim "System Lag" data is "${data.toString()}"

@@ -1,0 +1,89 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+        {
+            "type": "cortex-debug",
+            "request": "attach",
+            "name": "Particle Debugger (photon, p1, electron)",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "STM32F205RG",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:extension.getDebuggerExecutable}",
+            "preLaunchTask": "Particle: Flash application for debug (local)",
+            "armToolchainPath": "${command:extension.getDebuggerCompilerDir}",
+            "svdFile": "${command:extension.getDebuggerSVDFile}",
+            "searchDir": [
+                "${command:extension.getDebuggerSearchDir}"
+            ],
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/stm32f2x.cfg"
+            ],
+            "postAttachCommands": [
+                "monitor reset halt"
+            ],
+            "windows": {
+                "configFiles": [
+                    "interface\\cmsis-dap.cfg",
+                    "target\\stm32f2x.cfg"
+                ]
+            }
+        },
+        {
+            "type": "cortex-debug",
+            "request": "attach",
+            "name": "Particle Debugger (argon, boron, xenon)",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "nRF52840_xxAA",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:extension.getDebuggerExecutable}",
+            "preLaunchTask": "Particle: Flash application for debug (local)",
+            "armToolchainPath": "${command:extension.getDebuggerCompilerDir}",
+            "svdFile": "${command:extension.getDebuggerSVDFile}",
+            "searchDir": [
+                "${command:extension.getDebuggerSearchDir}"
+            ],
+            "configFiles": [
+                "interface/cmsis-dap.cfg",
+                "target/nrf52-particle.cfg"
+            ],
+            "windows": {
+                "configFiles": [
+                    "interface\\cmsis-dap.cfg",
+                    "target\\nrf52-particle.cfg"
+                ]
+            }
+        },
+        {
+            "type": "cortex-debug",
+            "request": "attach",
+            "name": "Particle Programmer Shield v1.0 (photon, p1, electron)",
+            "servertype": "openocd",
+            "interface": "swd",
+            "device": "STM32F205RG",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:extension.getDebuggerExecutable}",
+            "preLaunchTask": "Particle: Flash application for debug (local)",
+            "armToolchainPath": "${command:extension.getDebuggerCompilerDir}",
+            "svdFile": "${command:extension.getDebuggerSVDFile}",
+            "searchDir": [
+                "${command:extension.getDebuggerSearchDir}"
+            ],
+            "configFiles": [
+                "interface/particle-ftdi.cfg",
+                "target/stm32f2x.cfg"
+            ],
+            "postAttachCommands": [
+                "monitor reset halt"
+            ],
+            "windows": {
+                "configFiles": [
+                    "interface\\particle-ftdi.cfg",
+                    "target\\stm32f2x.cfg"
+                ]
+            }
+        }
+    ]
+}

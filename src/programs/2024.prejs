@@ -1,0 +1,6 @@
+cleanup
+let ill = room.newIllumination()
+ill.fill("green")
+ill.rect(0, 0, 1280, 720)
+room.draw(ill, "web2")
+

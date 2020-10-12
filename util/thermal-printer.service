@@ -1,0 +1,18 @@
+[Unit]
+Description=Keep Thermal Printer Proxy Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# Copy this file to /etc/systemd/system
+# sudo systemctl daemon-reload
+# sudo systemctl start thermal-printer
+# Run at boot: sudo systemctl enable thermal-printer
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+Restart=always
+ExecStart=/usr/bin/python3 /home/pi/lovelace/src/standalone_processes/790__thermalPrinter.py
+ExecStop=/usr/bin/pkill -f standalone_processes/790__thermalPrinter.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+when time is $t:
+
+  for (let i=0; i<10; i+=1) {
+    let x = ((t % 10) >= 5) ? 5 : 0;
+    let y = ((t % 10) >= 5) ? 0 : 5;
+    let v = (i>=5) ? x : y;
+    claim wish circuit playground neopixel ${i} had color ${v} ${v} ${v}
+  }

@@ -1,0 +1,5 @@
+when measured latency $t ms at $:
+    let ill = room.newIllumination()
+    ill.fontsize(30)
+    ill.text(0, 0, `${t}ms\nLAG`)
+    room.draw(ill)

@@ -1,0 +1,9 @@
+data = []
+size = 20
+
+when $ says the humidity is $h and temp is $t:
+    data.push(h)
+    if (data.length > size) {
+        data = data.slice(-size)
+    }
+    claim "Humidity" data is "${data.toString()}"

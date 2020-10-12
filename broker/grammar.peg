@@ -1,0 +1,143 @@
+{
+// Example usage: $ parser2 "3 + (2 - 5 * 12)"
+
+package main
+
+import (
+	"fmt"
+    "strconv"
+    "strings"
+)
+
+// func main() {
+// 	if len(os.Args) != 2 {
+// 		log.Fatal("Usage: parser2 'EXPR'")
+// 	}
+// 	fmt.Println("before")
+// 	fmt.Println(os.Args[1])
+// 	fmt.Println("^ was the input")
+// 	msg := []byte("#1800 \"This \\\"is\\\" a test\" one \"two\" 0.5 2 $X $ % %Z")
+// 	// msg := []byte("#1800 fox is out")
+// 	// newParser(filename, b, opts...)
+// 	// .parse(g)
+// 	start := time.Now()
+
+// 	// got, err := ParseReader("", strings.NewReader(msg))
+// 	got, err := newParser("", msg).parse(g)
+// 	timeProcessing := time.Since(start)
+// 	fmt.Printf("processing: %s \n", timeProcessing)
+// 	fmt.Println("after")
+// 	if err != nil {
+// 		fmt.Println("error")
+// 		log.Fatal(err)
+// 	}
+// 	fmt.Println("DONE!")
+// 	fmt.Println(got)
+// }
+
+func parse_fact_string(fact_string string) []Term {
+	raw_terms, err := ParseReader("", strings.NewReader(fact_string))
+	checkErr(err)
+	terms, _ := raw_terms.([]Term)
+	return terms
+}
+
+}
+
+FactOrPatterm ← vals:Term* EOF {
+    res := make([]Term, 0)
+    for _, val := range vals.([]interface{}) {
+        if val != nil {
+            res = append(res, val.(Term))
+        }
+    }
+    return res, nil
+}
+
+Term ← val:( Id / Variable / Postfix / Value / Word / _ ) {
+    valAsTerm, alreadyTerm := val.(Term)
+    if alreadyTerm {
+        if valAsTerm.Type == "whitespace" {
+            return nil, nil
+        }
+        return valAsTerm, nil
+    }
+    // return val, nil
+    valAsString, _ := val.(string)
+    return Term{"text", valAsString}, nil
+}
+
+Value ← val:( Number / String / Bool / Null ) {
+    valAsFloat, isFloat := val.(float64)
+    if isFloat {
+        return Term{"float", strconv.FormatFloat(valAsFloat, 'f', 6, 64)}, nil
+    }
+    valAsInt, isInt := val.(int)
+    if isInt {
+        return Term{"integer", strconv.Itoa(valAsInt)}, nil
+    }
+    valAsString, _ := val.(string)
+    return Term{"text", valAsString}, nil
+}
+
+Id ← '#' ( [a-zA-Z0-9]+ ) {
+    return Term{"id", string(c.text[1:])}, nil
+}
+
+Variable ← '$' ( Integer / Word )? {
+    return Term{"variable", string(c.text[1:])}, nil
+}
+
+Postfix ← '%' ( Integer / Word )? {
+    return Term{"postfix", string(c.text[1:])}, nil
+}
+
+Number ← '-'? Integer ( '.' DecimalDigit+ )? Exponent? {
+    // JSON numbers have the same syntax as Go's, and are parseable using
+    // strconv.
+    // TODO: both of the following strconv functions return errors -> should these be caught?
+    if (strings.Contains(string(c.text), ".")) {
+        return strconv.ParseFloat(string(c.text), 64)
+    } else {
+        return strconv.Atoi(string(c.text))
+    }
+}
+
+Integer ← '0' / NonZeroDecimalDigit DecimalDigit*
+
+Exponent ← 'e'i [+-]? DecimalDigit+
+
+Word ← ([,()@] / [a-zA-Z]+ [a-zA-Z0-9]*) {
+    return string(c.text), nil
+}
+
+String ← '"' ( !EscapedChar . / '\\' EscapeSequence )* '"' {
+    // TODO : the forward slash (solidus) is not a valid escape in Go, it will
+    // fail if there's one in the string
+    // TODO: catch error from strconv.Unquote() ?
+    return strconv.Unquote(string(c.text))
+}
+
+EscapedChar ← [\x00-\x1f"\\]
+
+EscapeSequence ← SingleCharEscape / UnicodeEscape
+
+SingleCharEscape ← ["\\/bfnrt]
+
+UnicodeEscape ← 'u' HexDigit HexDigit HexDigit HexDigit
+
+DecimalDigit ← [0-9]
+
+NonZeroDecimalDigit ← [1-9]
+
+HexDigit ← [0-9a-f]i
+
+Bool ← "true" { return "true", nil } / "false" { return "false", nil }
+
+Null ← "null" { return "null", nil }
+
+_ "whitespace" ← [ \t\r\n]+ {
+    return Term{"whitespace", ""}, nil
+}
+
+EOF ← !.

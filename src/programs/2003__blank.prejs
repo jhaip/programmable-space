@@ -1,0 +1,15 @@
+claim I wish I was highlighted red
+
+/*
+when $ $photon sees color ( $r, $g, $b ):
+    cleanup
+    let r = results[0].r;
+    let g = results[0].g;
+    let b = results[0].b;
+    let scale = x => Math.floor(x * 0.3);
+    claim wish RGB light strand is color ${scale(r)} ${scale(g)} ${scale(b)}
+otherwise:
+    cleanup
+    claim wish RGB light strand is color 10 0 0
+end
+*/

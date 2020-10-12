@@ -1,0 +1,10 @@
+let lowMoisture = 500;
+let highMoisture = 1000;
+
+when Photon says "SOIL_MOISTURE" is $M:
+
+let P = 100 * (M - lowMoisture) / (highMoisture - lowMoisture)
+P = Math.floor(Math.min(100, Math.max(0, P)))
+P = 100 - P
+// invert so lamp is bright when soil is dry
+claim wish plant lamp was at ${P} percent

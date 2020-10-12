@@ -1,0 +1,5 @@
+when circuit playground LIGHT has value $x:
+
+let y = x > 100 ? 200 : 0
+
+claim wish circuit playground neopixel 2 had color ${y} 0 0

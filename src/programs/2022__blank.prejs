@@ -1,0 +1,6 @@
+when count is $x:
+
+for (let i=0; i<10; i+=1) {
+  let v = (x % 10 == i) ? 10 : 0;
+  claim wish circuit playground neopixel ${i} had color 0 ${v} 0
+}
