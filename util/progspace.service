@@ -9,13 +9,14 @@ User=jacob
 # sudo systemctl daemon-reload
 # sudo systemctl start progspace
 # Run at boot: sudo systemctl enable progspace
+# When run on a different computer you'll need to change "/home/jacob" to your computer's path
 Environment=GOPATH=/home/jacob/go
 Environment=GOBIN=/home/jacob/go/bin
 Environment=PATH=/home/jacob/bin:/home/jacob/.local/bin:/home/jacob/.nvm/versions/node/v10.6.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/$
-Environment=DYNAMIC_ROOT=/home/jacob/lovelace/
+Environment=DYNAMIC_ROOT=/home/jacob/programmable-space/
 RemainAfterExit=yes
-ExecStart=/home/jacob/lovelace/jig rfideditorstart3
-ExecStop=/usr/bin/sudo /home/jacob/lovelace/jig stop
+ExecStart=/home/jacob/programmable-space/jig rfideditorstart3
+ExecStop=/usr/bin/sudo /home/jacob/programmable-space/jig stop
 
 [Install]
 WantedBy=multi-user.target

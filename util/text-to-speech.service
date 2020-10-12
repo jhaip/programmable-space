@@ -12,8 +12,8 @@ User=root
 Environment=PATH=/home/pi/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/usr/local/go/bin:/home/pi/.local/bin
 Environment=PROG_SPACE_SERVER_URL='192.168.1.34'
 Restart=always
-ExecStart=/usr/bin/node /home/pi/lovelace/src/standalone_processes/793__textToSpeech.js
-ExecStop=/usr/bin/pkill -f standalone_processes/793__textToSpeech.js
+ExecStart=/usr/bin/node /home/pi/programmable-space/src/programs/793__textToSpeech.js
+ExecStop=/usr/bin/pkill -f programs/793__textToSpeech.js
 
 [Install]
 WantedBy=multi-user.target

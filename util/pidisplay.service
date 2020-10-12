@@ -11,8 +11,8 @@ User=root
 # Run at boot: sudo systemctl enable pidisplay
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
 RemainAfterExit=yes
-ExecStart=/home/pi/lovelace/jig pieditorstart
-ExecStop=/home/pi/lovelace/jig stop
+ExecStart=/home/pi/programmable-space/jig pieditorstart
+ExecStop=/home/pi/programmable-space/jig stop
 
 [Install]
 WantedBy=multi-user.target
