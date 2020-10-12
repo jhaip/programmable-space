@@ -11,7 +11,7 @@ app.use(express.static('./src/files/web-debugger'))
 
 app.get('/db', (req, res) => {
     // res.send('Hello World!')
-    fs.readFile('./new-backend/go-server/db_view_base64.txt', 'utf8', function (err, contents) {
+    fs.readFile('./broker/db_view_base64.txt', 'utf8', function (err, contents) {
         console.log(contents);
         const l = contents.split("\n");
         console.log(l);

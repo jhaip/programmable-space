@@ -426,7 +426,7 @@ Golang:
 - For the broker and a few core programs
 - [Golang 1.12](https://golang.org/)
 - Dependencies are tracked in the `go.mod` file and will be automatically downloaded and installed when running a Go program for the first time.
-- When building the Go files, you may need to copy the `new-backend/go-server/go.mod` and `new-backend/go-server/go.sum` files to the root folder of this repo in order for the `src/standalone_processes` Go files to be build properly.
+- When building the Go files, you may need to copy the `broker/go.mod` and `broker/go.sum` files to the root folder of this repo in order for the `src/programs/` Go files to be build properly.
 
 Node.js:
 
