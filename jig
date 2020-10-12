@@ -8,21 +8,21 @@ function cmd() {
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/0__boot.js &
+    node src/programs/0__boot.js &
     echo -e "booting"
   elif [ "$1" == "cvstart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    python3 src/standalone_processes/50__proxy.py &
-    python3 src/standalone_processes/1600__frame-to-dots.py &
-    cd src/standalone_processes
+    python3 src/programs/50__proxy.py &
+    python3 src/programs/1600__frame-to-dots.py &
+    cd src/programs
     go run 1800__dots-to-papers.go &
     cd ../..
     echo -e "booting"
@@ -30,7 +30,7 @@ function cmd() {
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
     v4l2-ctl \
@@ -46,9 +46,9 @@ function cmd() {
       --set-ctrl=exposure_absolute=150 \
       --set-ctrl=focus_auto=0
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
-    python3 src/standalone_processes/54__laserProxy.py &
-    python3 src/standalone_processes/1620__seeLaser.py &
-    sudo python3 src/standalone_processes/649__keyboard.py &
+    python3 src/programs/54__laserProxy.py &
+    python3 src/programs/1620__seeLaser.py &
+    sudo python3 src/programs/649__keyboard.py &
     echo -e "booting"
   elif [ "$1" == "lampstart" ]
   then
@@ -60,13 +60,13 @@ function cmd() {
       --set-ctrl=exposure_time_absolute=100
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1280,height=720,pixelformat=MPEG
     export DISPLAY=:0
-    python3 src/standalone_processes/1621__seeLaserLamp.py &
-    sudo python3 src/standalone_processes/650__keyboard.py &
+    python3 src/programs/1621__seeLaserLamp.py &
+    sudo python3 src/programs/650__keyboard.py &
     chromium-browser --kiosk --enable-webgl --ignore-gpu-blacklist --app=http://progspaceweb2.ngrok.io
     echo -e "booting"
   elif [ "$1" == "lampstart2" ]
   then
-    pkill -f "hello.love"
+    pkill -f "lua-graphics.love" ##############################
     v4l2-ctl \
       --set-ctrl=brightness=10 \
       --set-ctrl=contrast=0 \
@@ -76,17 +76,20 @@ function cmd() {
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1280,height=720,pixelformat=MPEG
     export DISPLAY=:0
     export PROG_SPACE_SERVER_URL="192.168.1.34"
-    python3 src/standalone_processes/1621__seeLaserLamp.py 1997 &
-    cd src/lua/graphics_test
+    python3 src/programs/1621__seeLaserLamp.py 1997 &
+    cd src
     # lua calendar-calibration.lua &
-    rm hello.love
-    zip hello.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
-    love ./hello.love 1997
-    cd ../../..
+    rm lua-graphics.love
+    zip lua-graphics.love \
+        programs/graphics.lua \
+        helpers/helper.lua helpers/matrix.lua helpers/json.lua helpers/zhelpers.lua \
+        files/Inconsolata-Regular.ttf
+    love ./lua-graphics.love 1997
+    cd ..
     echo -e "booting"
   elif [ "$1" == "lightcrafter" ]
   then
-    pkill -f "hello.love"
+    pkill -f "lua-graphics.love"
     v4l2-ctl \
       --set-ctrl=brightness=10 \
       --set-ctrl=contrast=0 \
@@ -97,32 +100,38 @@ function cmd() {
     export DISPLAY=:0
     export PROG_SPACE_SERVER_URL="192.168.1.34"
     # Start toggleLightcrafter via a separate service
-    # sudo python3 src/standalone_processes/1650__toggleLightcrafter.py &
-    python3 src/standalone_processes/1622__seeLaserLamp2.py 1998 &
-    cd src/lua/graphics_test
+    # sudo python3 src/programs/1650__toggleLightcrafter.py &
+    python3 src/programs/1622__seeLaserLamp2.py 1998 &
+    cd src
     # lua calendar-calibration.lua &
-    rm hello.love
-    zip hello.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
-    love ./hello.love 1998
-    cd ../../..
+    rm lua-graphics.love
+    zip lua-graphics.love \
+        programs/graphics.lua \
+        helpers/helper.lua helpers/matrix.lua helpers/json.lua helpers/zhelpers.lua \
+        files/Inconsolata-Regular.ttf
+    love ./lua-graphics.love 1998
+    cd ..
     echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
   then
-    pkill -f "hello.love"
+    pkill -f "lua-graphics.love"
     export DISPLAY=:0
     export PROG_SPACE_SERVER_URL="192.168.1.34"
-    sudo python3 src/standalone_processes/650__keyboard.py &
-    cd src/lua/graphics_test
-    rm hello.love
-    zip hello.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
-    love ./hello.love 1999
-    cd ../../..
+    sudo python3 src/programs/650__keyboard.py &
+    cd src
+    rm lua-graphics.love
+    zip lua-graphics.love \
+        programs/graphics.lua \
+        helpers/helper.lua helpers/matrix.lua helpers/json.lua helpers/zhelpers.lua \
+        files/Inconsolata-Regular.ttf
+    love ./lua-graphics.love 1999
+    cd ..
     echo -e "booting"
   elif [ "$1" == "lasersocksstart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
     v4l2-ctl \
@@ -138,19 +147,19 @@ function cmd() {
       --set-ctrl=exposure_absolute=150 \
       --set-ctrl=focus_auto=0
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
-    node src/standalone_processes/0__boot.js &
-    python3 src/standalone_processes/280__makeLaserRegion.py &
-    python3 src/standalone_processes/281__laserInRegion.py &
-    node src/standalone_processes/909__laserSocksReferee.js &
-    python3 src/standalone_processes/910__laserSocksScoreboard.py &
-    python3 src/standalone_processes/1620__seeLaser.py &
-    sudo python3 src/standalone_processes/649__keyboard.py &
+    node src/programs/0__boot.js &
+    python3 src/programs/280__makeLaserRegion.py &
+    python3 src/programs/281__laserInRegion.py &
+    node src/programs/909__laserSocksReferee.js &
+    python3 src/programs/910__laserSocksScoreboard.py &
+    python3 src/programs/1620__seeLaser.py &
+    sudo python3 src/programs/649__keyboard.py &
     echo -e "booting"
   elif [ "$1" == "tilestart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
     v4l2-ctl \
@@ -168,51 +177,51 @@ function cmd() {
       --set-ctrl=focus_auto=1
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
     sleep 2
-    python3 src/standalone_processes/53__tileProxy.py &
-    python3 src/standalone_processes/1610__seeCodeBlocks.py &
+    python3 src/programs/53__tileProxy.py &
+    python3 src/programs/1610__seeCodeBlocks.py &
     echo -e "booting"
   elif [ "$1" == "keyboardstart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    python3 src/standalone_processes/51__proxy.py &
-    sudo python3 src/standalone_processes/649__keyboard.py &
+    python3 src/programs/51__proxy.py &
+    sudo python3 src/programs/649__keyboard.py &
     echo -e "booting"
   elif [ "$1" == "robotstart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/577__programEditor.js &
-    node src/standalone_processes/1900__processManager.js &
-    node src/standalone_processes/105__robotCodeRunner.js &
-    node src/standalone_processes/10__debugViewer.js &
+    node src/programs/577__programEditor.js &
+    node src/programs/1900__processManager.js &
+    node src/programs/105__robotCodeRunner.js &
+    node src/programs/10__debugViewer.js &
     echo -e "booting"
   elif [ "$1" == "camerastart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    python3 src/standalone_processes/55__frameProxy.py &
-    python3 src/standalone_processes/1630__claimFrame.py &
+    python3 src/programs/55__frameProxy.py &
+    python3 src/programs/1630__claimFrame.py &
     echo -e "booting"
   elif [ "$1" == "calendarstart" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/20__httpClient.js &
-    node src/standalone_processes/12__regionDebug.js &
-    node src/standalone_processes/1246__webDisplay.js &
+    node src/programs/20__httpClient.js &
+    node src/programs/12__regionDebug.js &
+    node src/programs/1246__webDisplay.js &
     echo -e "booting"
     sleep 5
     chromium-browser --start-fullscreen http://localhost:3012
@@ -220,22 +229,22 @@ function cmd() {
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/1900__processManager.js &
-    node src/standalone_processes/10__debugViewer.js &
-    node src/standalone_processes/20__httpClient.js &
-    # node src/standalone_processes/40__parser.js &
-    python3 src/standalone_processes/498__printingManager.py &
-    # node src/standalone_processes/577__programEditor.js &
+    node src/programs/1900__processManager.js &
+    node src/programs/10__debugViewer.js &
+    node src/programs/20__httpClient.js &
+    # node src/programs/40__parser.js &
+    python3 src/programs/498__printingManager.py &
+    # node src/programs/577__programEditor.js &
     sleep 3
-    node src/standalone_processes/1013__textEditor.js &
-    node src/standalone_processes/1804__editPaperSeen.js &
-    python3 src/standalone_processes/57__editorToServerProxy.py &
-    python3 src/standalone_processes/1700__projectorDisplay.py &
-    sudo python3 src/standalone_processes/649__keyboard.py &
-    cd src/standalone_processes
+    node src/programs/1013__textEditor.js &
+    node src/programs/1804__editPaperSeen.js &
+    python3 src/programs/57__editorToServerProxy.py &
+    python3 src/programs/1700__projectorDisplay.py &
+    sudo python3 src/programs/649__keyboard.py &
+    cd src/programs
     go run 1382__print-paper.go &
     go run 1800__dots-to-papers.go &
     cd ../..
@@ -244,37 +253,37 @@ function cmd() {
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/1900__processManager.js &
-    node src/standalone_processes/10__debugViewer.js &
-    node src/standalone_processes/20__httpClient.js &
+    node src/programs/1900__processManager.js &
+    node src/programs/10__debugViewer.js &
+    node src/programs/20__httpClient.js &
     sleep 3
-    node src/standalone_processes/1013__textEditor.js &
-    node src/standalone_processes/1804__editPaperSeen.js &
-    node src/standalone_processes/980__thermalPrintCode.js &
-    python3 src/standalone_processes/57__editorToServerProxy.py &
-    python3 src/standalone_processes/1700__projectorDisplay.py &
-    sudo python3 src/standalone_processes/791__thermalPrinterLinux.py &
-    sudo python3 src/standalone_processes/1192__circuitPythonProxy.py &
-    sudo python3 src/standalone_processes/649__keyboard.py &
+    node src/programs/1013__textEditor.js &
+    node src/programs/1804__editPaperSeen.js &
+    node src/programs/980__thermalPrintCode.js &
+    python3 src/programs/57__editorToServerProxy.py &
+    python3 src/programs/1700__projectorDisplay.py &
+    sudo python3 src/programs/791__thermalPrinterLinux.py &
+    sudo python3 src/programs/1192__circuitPythonProxy.py &
+    sudo python3 src/programs/649__keyboard.py &
     echo -e "booting"
   elif [ "$1" == "rfideditorstart2" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/111__rfidEditorBoot.js &
+    node src/programs/111__rfidEditorBoot.js &
     sleep 2
-    sudo python3 src/standalone_processes/791__thermalPrinterLinux.py &
-    sudo python3 src/standalone_processes/1192__circuitPythonProxy.py &
-    sudo python3 src/standalone_processes/649__keyboard.py &
-    sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/standalone_processes/1850__bleProxyRfid.js &
-    # sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/standalone_processes/1193__bluefruitProxy.js &
-    python3 src/standalone_processes/1700__projectorDisplay.py &
+    sudo python3 src/programs/791__thermalPrinterLinux.py &
+    sudo python3 src/programs/1192__circuitPythonProxy.py &
+    sudo python3 src/programs/649__keyboard.py &
+    sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/1850__bleProxyRfid.js &
+    # sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/1193__bluefruitProxy.js &
+    python3 src/programs/1700__projectorDisplay.py &
     # ngrok http -subdomain=progspacemasterlist 3013 > /dev/null &
     ngrok start masterlist web2 -config=./src/ngrok/rfideditorstart2.conf > /dev/null
     echo -e "booting"
@@ -282,18 +291,18 @@ function cmd() {
   then
     cd broker
     /usr/local/go/bin/go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
     echo -e "done sleeping"
-    /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/standalone_processes/111__rfidEditorBoot.js &
+    /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/111__rfidEditorBoot.js &
     echo -e "done running 1"
     sleep 2
     echo -e "done sleeping 2"
-    # /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/standalone_processes/1850__bleProxyRfid.js &
+    # /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/1850__bleProxyRfid.js &
     sudo systemctl start ble-rfid
     echo -e "done running 2"
-    # sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/standalone_processes/1193__bluefruitProxy.js &
+    # sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/1193__bluefruitProxy.js &
     # ngrok http -subdomain=progspacemasterlist 3013 > /dev/null &
     /usr/local/bin/ngrok start masterlist web2 -config=./src/ngrok/rfideditorstart2.conf & > /dev/null
     echo -e "booting"
@@ -301,44 +310,44 @@ function cmd() {
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    node src/standalone_processes/1200__test.js &
-    node src/standalone_processes/1201__test.js &
+    node src/programs/1200__test.js &
+    node src/programs/1201__test.js &
     for value in {1202..1210}
     do
-      node src/standalone_processes/${value}__test.js &
+      node src/programs/${value}__test.js &
     done
     echo -e "booting"
   elif [ "$1" == "testcp" ]
   then
     for value in {1211..1299}
     do
-      cp src/standalone_processes/1202__test.js src/standalone_processes/${value}__test.js
+      cp src/programs/1202__test.js src/programs/${value}__test.js
     done
     echo -e "booting"
   elif [ "$1" == "pytest" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    python3 src/standalone_processes/1300__test.py &
+    python3 src/programs/1300__test.py &
     for value in {1301..1310}
     do
-      python3 src/standalone_processes/1301__test.py $value &
+      python3 src/programs/1301__test.py $value &
     done
     echo -e "booting"
   elif [ "$1" == "gotest" ]
   then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
-    echo -e "running server"
+    echo -e "running broker"
     cd ../..
     sleep 2
-    cd src/standalone_processes
+    cd src/programs
     go build 1400__exp.go
     for value in {1400..1499}
     do
@@ -348,22 +357,22 @@ function cmd() {
   elif [ "$1" == "stoptest" ]
   then
     pkill -f "go run broker.go parser2.go subscriber.go database.go"
-    pkill -f "/exe/server"
-    pkill -f src/standalone_processes/12*__test.js
-    pkill -f src/standalone_processes/13*__test.py
+    pkill -f "/exe/broker"
+    pkill -f src/programs/12*__test.js
+    pkill -f src/programs/13*__test.py
     pkill -f "1400__exp"
-    pkill -f "node src/standalone_processes"
-    pkill -f "python3 src/standalone_processes"
-    pkill -f "go run src/standalone_processes"
+    pkill -f "node src/programs"
+    pkill -f "python3 src/programs"
+    pkill -f "go run src/programs"
     pkill -f "/tmp/go-build"
   elif [ "$1" == "stop" ]
   then
     pkill -f "go run broker.go parser2.go subscriber.go database.go"
-    pkill -f "/exe/server"
-    pkill -f "src/standalone_processes/0__boot.js"
-    pkill -f "node src/standalone_processes"
-    pkill -f "python3 src/standalone_processes"
-    pkill -f "go run src/standalone_processes"
+    pkill -f "/exe/broker"
+    pkill -f "src/programs/0__boot.js"
+    pkill -f "node src/programs"
+    pkill -f "python3 src/programs"
+    pkill -f "go run src/programs"
     pkill -f "/tmp/go-build"
   elif [ "$1" == "webcam" ]
   then
@@ -386,19 +395,19 @@ function cmd() {
     tail -f /var/log/programmable-space/broker.log
   elif [ "$1" == "stopdisplays" ]
   then
-    pkill --signal 9 -f src/standalone_processes/648__keyboard.py
-    pkill --signal 9 -f src/standalone_processes/1700__projectorDisplay.py
-    pkill --signal 9 -f src/standalone_processes/1701__projectorDisplay.py
+    pkill --signal 9 -f src/programs/648__keyboard.py
+    pkill --signal 9 -f src/programs/1700__projectorDisplay.py
+    pkill --signal 9 -f src/programs/1701__projectorDisplay.py
   elif [ "$1" == "displays" ]
   then
     export DISPLAY=:0
-    pkill --signal 9 -f src/standalone_processes/648__keyboard.py
-    pkill --signal 9 -f src/standalone_processes/1700__projectorDisplay.py
-    pkill --signal 9 -f src/standalone_processes/1701__projectorDisplay.py
+    pkill --signal 9 -f src/programs/648__keyboard.py
+    pkill --signal 9 -f src/programs/1700__projectorDisplay.py
+    pkill --signal 9 -f src/programs/1701__projectorDisplay.py
     sleep 5
-    python3 src/standalone_processes/648__keyboard.py &
-    python3 src/standalone_processes/1700__projectorDisplay.py &
-    # python3 src/standalone_processes/1701__projectorDisplay.py &
+    python3 src/programs/648__keyboard.py &
+    python3 src/programs/1700__projectorDisplay.py &
+    # python3 src/programs/1701__projectorDisplay.py &
     sleep 5
     keyboard_pid=$(pgrep -f 648__keyboard.py)
     echo "keyboard pid $keyboard_pid"
