@@ -1,4 +1,4 @@
-const { room, myId, scriptName } = require('../helper2')(__filename);
+const { room, myId, scriptName } = require('../helpers/helper')(__filename);
 
 let N = 100
 let i = 1

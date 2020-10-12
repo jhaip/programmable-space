@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 room.cleanup()
 room.assert(`camera 1 has projector calibration TL (0, 0) TR (1920, 0) BR (1920, 1080) BL (0, 1080) @ 1`)

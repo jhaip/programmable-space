@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 const path = require('path');
 
 const savedCalibrationLocation = path.join(__dirname, '..', 'files', 'projectorCalibration.txt')

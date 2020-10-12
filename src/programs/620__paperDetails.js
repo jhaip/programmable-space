@@ -1,5 +1,5 @@
 const PerspT = require('perspective-transform');
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 
 const add_vec = (vec1, vec2) =>
   ({"x": vec1["x"] + vec2["x"], "y": vec1["y"] + vec2["y"]})

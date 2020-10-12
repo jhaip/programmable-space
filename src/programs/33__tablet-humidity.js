@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 room.on(
     `$photon says the humidity is $humidity and temp is $temp`,

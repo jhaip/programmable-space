@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 room.onRaw(`$ $ paper ${myId} is pointing at paper $id`,
            `$ $ paper $id has id $fullId`,

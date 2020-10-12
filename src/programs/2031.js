@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 let lowMoisture = 500;
 let highMoisture = 1000;

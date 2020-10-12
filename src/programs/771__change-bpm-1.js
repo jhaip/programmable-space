@@ -1,4 +1,4 @@
-const { room, myId, scriptName, run } = require('../helper2')(__filename)
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename)
 
 room.cleanup()
 room.retractAll("beats per minute is $")

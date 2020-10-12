@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 const request = require('request');
 
 var secretKey = process.env.DARKSKY_SECRET_KEY || "";

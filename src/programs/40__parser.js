@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 room.onGetSource('wisherId',
   `wish $name would be compiled to js`,
@@ -28,7 +28,7 @@ function parse(x) {
   let STATE = STATES.GLOBAL;
   let WHEN_VARIABLES_CACHE = "";
   let OUTPUT = "";
-  OUTPUT += "const { room, myId, run } = require('../helper2')(__filename);\n\n"
+  OUTPUT += "const { room, myId, run } = require('../helpers/helper')(__filename);\n\n"
 
   const claimRetractCleanupCheck = s => {
     let m = s.match(/^(\s*)claim (.+)\s*$/);

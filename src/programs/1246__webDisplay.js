@@ -2,7 +2,7 @@ const express = require('express')
 const enableWs = require('express-ws')
 const bodyParser = require("body-parser");
 const fs = require('fs');
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 const app = express();
 const port = 3012;
 

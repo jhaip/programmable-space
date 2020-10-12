@@ -1,4 +1,4 @@
-const { room, myId, run, MY_ID_STR } = require('../helper2')(__filename);
+const { room, myId, run, MY_ID_STR } = require('../helpers/helper')(__filename);
 
 const M = 1200;
 const P = parseInt(myId)-1;

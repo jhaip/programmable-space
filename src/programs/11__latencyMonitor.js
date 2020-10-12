@@ -1,4 +1,4 @@
-const { room, myId, scriptName, MY_ID_STR, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, MY_ID_STR, run } = require('../helpers/helper')(__filename);
 const fs = require('fs');
 const path = require('path');
 

@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 const CANVAS_WIDTH = 1280;
 const CANVAS_HEIGHT = 720;

@@ -1,4 +1,4 @@
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 
 room.on(
   `camera $cameraId sees paper $id at TL ($, $) TR ($, $) BR ($, $) BL ($, $) @ $time`,

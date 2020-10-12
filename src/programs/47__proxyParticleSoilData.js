@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 const path = require('path');
 const Particle = require('particle-api-js');
 const request = require('request');

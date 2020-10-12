@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 room.assert(`wish circuit playground neopixel 9 had color 0 0 0`)
 

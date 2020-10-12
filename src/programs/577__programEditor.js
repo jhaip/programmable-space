@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 
 room.onGetSource('wisherId',
   `wish $name has source code $sourceCode`,

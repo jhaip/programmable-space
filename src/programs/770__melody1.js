@@ -1,4 +1,4 @@
-const {room, myId, scriptName, run} = require('../helper2')(__filename)
+const {room, myId, scriptName, run} = require('../helpers/helper')(__filename)
 
 room.cleanup()
 room.assert("melody is", ["text", "60,62,64,66,68,66,64,62"])

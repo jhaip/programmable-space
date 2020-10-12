@@ -2,7 +2,7 @@ const spawn = require('child_process').spawn;
 const process = require('process');
 const path = require('path');
 const pkill = require('pkill');
-const { room, myId, run, MY_ID_STR, getIdFromProcessName, getIdStringFromId } = require('../helper2')(__filename);
+const { room, myId, run, MY_ID_STR, getIdFromProcessName, getIdStringFromId } = require('../helpers/helper')(__filename);
 
 let nameToProcessIdCache = {};
 

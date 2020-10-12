@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require("body-parser");
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 const app = express();
 const port = 5000;
 

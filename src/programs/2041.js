@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 var C = [1,0,0,0,1,0,0,0,1];
 var D = "1997";

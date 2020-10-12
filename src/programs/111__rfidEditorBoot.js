@@ -1,6 +1,6 @@
 const execFile = require('child_process').execFile;
 const execFileSync = require('child_process').execFileSync;
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 
 /*** Start the program that can start all other programs ***/
 console.error("pre--------DONE WITH INITIAL PROGRAM CODE")

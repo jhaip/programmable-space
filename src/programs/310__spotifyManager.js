@@ -2,7 +2,7 @@
  * Original code copied from https://github.com/spotify/web-api-auth-examples/blob/master/authorization_code/app.js
  */
 
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');

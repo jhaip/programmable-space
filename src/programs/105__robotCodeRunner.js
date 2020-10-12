@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 
 room.assert('wish', ["text", "1900__processManager.js"], 'would be running')
 

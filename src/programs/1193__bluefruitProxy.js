@@ -1,5 +1,5 @@
 
-const { room, myId, MY_ID_STR, run } = require('../helper2')(__filename);
+const { room, myId, MY_ID_STR, run } = require('../helpers/helper')(__filename);
 
 // var noble = require('noble');   //noble library
 var noble = require('@abandonware/noble');

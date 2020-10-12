@@ -1,4 +1,4 @@
-const { room, myId } = require('../helper2')(__filename);
+const { room, myId } = require('../helpers/helper')(__filename);
 
 room.cleanup();
 

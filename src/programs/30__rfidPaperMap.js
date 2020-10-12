@@ -1,4 +1,4 @@
-const { room, myId, run } = require('../helper2')(__filename);
+const { room, myId, run } = require('../helpers/helper')(__filename);
 
 room.assert(`paper 2000 has RFID`, ["text", "f26a0c2e"])
 room.assert(`paper 2001 has RFID`, ["text", "f238222e"])

@@ -1,4 +1,4 @@
-const { room, myId, run, MY_ID_STR, tracer, afterServerConnects } = require('../helper2')(__filename);
+const { room, myId, run, MY_ID_STR, tracer, afterServerConnects } = require('../helpers/helper')(__filename);
 
 const N = 10;
 const F = parseInt(myId) + N;
