@@ -1,5 +1,5 @@
 # Example from https://stackoverflow.com/questions/14804741/opencv-integration-with-wxpython
-from helper2 import init, claim, retract, prehook, subscription, batch, MY_ID_STR, listen, check_server_connection, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, MY_ID_STR, listen, check_server_connection, get_my_id_str
 import wx
 from imutils.video import WebcamVideoStream
 import imutils

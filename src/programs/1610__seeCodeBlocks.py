@@ -1,4 +1,4 @@
-from helper2 import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str
+from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str
 from imutils.video import WebcamVideoStream
 import numpy as np
 import cv2

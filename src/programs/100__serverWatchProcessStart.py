@@ -1,5 +1,5 @@
-from helper2 import init, claim, retract, prehook, subscription, batch, check_server_connection
-import helper2
+from helper import init, claim, retract, prehook, subscription, batch, check_server_connection
+import helper
 import logging
 import time
 import os

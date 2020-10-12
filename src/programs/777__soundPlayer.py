@@ -1,4 +1,4 @@
-from helper2 import init, claim, retract, prehook, subscription, batch, MY_ID_STR, listen
+from helper import init, claim, retract, prehook, subscription, batch, MY_ID_STR, listen
 import pygame
 import pygame.midi
 import logging

@@ -1,7 +1,7 @@
 import time
 import logging
 import pygame
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str, check_server_connection
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str, check_server_connection
 init(__file__, skipListening=True)
 batch([{"type": "retract", "fact": [["id", get_my_id_str()], ["postfix", ""]]}])
 last_server_health_check = time.time()

@@ -1,7 +1,7 @@
 const { room, myId, run } = require('../helpers/helper')(__filename);
 
 const BOILERPLATE = `
-from helper2 import init
+from helper import init
 import time
 from adafruit_crickit import crickit
 

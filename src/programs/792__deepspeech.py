@@ -1,4 +1,4 @@
-from helper2 import init, claim, retract, prehook, subscription, batch, MY_ID_STR, listen, check_server_connection, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, MY_ID_STR, listen, check_server_connection, get_my_id_str
 import time, logging
 from datetime import datetime
 import threading, collections, queue, os, os.path

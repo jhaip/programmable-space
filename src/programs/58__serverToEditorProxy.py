@@ -3,7 +3,7 @@ import logging
 import json
 import uuid
 import zmq
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 
 proxy_context = zmq.Context()
 proxy_client = None

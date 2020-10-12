@@ -1,6 +1,6 @@
 import subprocess
 import logging
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 
 @subscription(["$ $ wish file $name would be printed"])
 def sub_callback(results):

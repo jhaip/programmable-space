@@ -1,7 +1,7 @@
 import time
 import logging
 from pynput import keyboard
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 init(__file__, skipListening=True)
 
 is_ctrl_pressed = False

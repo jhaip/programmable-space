@@ -1,6 +1,6 @@
 import time
 import logging
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_pre_init, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_pre_init, get_my_id_str
 
 N = 10
 MY_ID = str(get_my_id_pre_init(__file__))

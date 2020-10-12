@@ -1,5 +1,5 @@
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str
-import helper2
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
+import helper
 import logging
 import busio
 import serial

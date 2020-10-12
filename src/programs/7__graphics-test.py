@@ -2,7 +2,7 @@ import time
 import logging
 import math
 import datetime
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 from graphics import Illumination
 
 @prehook

@@ -4,7 +4,7 @@ room.cleanup()
 room.assert(`hey11`)
 
 const code = `
-from helper2 import init
+from helper import init
 import time
 from adafruit_crickit import crickit
 

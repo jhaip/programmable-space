@@ -2,7 +2,7 @@ import time
 import logging
 import math
 import datetime
-from helper2 import init, claim, retract, prehook, subscription, batch, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 
 def get_paper_center(c):
     x = (c[0]["x"] + c[1]["x"] + c[2]["x"] + c[3]["x"]) * 0.25

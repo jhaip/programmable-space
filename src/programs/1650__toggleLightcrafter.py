@@ -1,5 +1,5 @@
-from helper2 import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str
-import helper2
+from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str
+import helper
 import logging
 import sys
 import time
