@@ -2,12 +2,10 @@ imutils==0.5.0
 requests==2.19.1
 opencv-python~=3.4
 # opencv-contrib-python==3.4.4.19
-pygame==1.9.5
-wxPython>=4.0.3
+# pygame==1.9.5
+# wxPython>=4.0.3
 pyzmq==17.1.2
 zmq==0.0.0
-opentracing==2.2.0
-jaeger-client==4.0.0
 keyboard==0.13.3
 pyserial==3.4
 adafruit-circuitpython-thermal-printer==1.1.4

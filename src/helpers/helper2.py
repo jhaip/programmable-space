@@ -6,30 +6,6 @@ import uuid
 import random
 import os
 import sys
-import opentracing
-from opentracing import Format, Tracer
-from jaeger_client import Config
-
-
-
-def init_jaeger_tracer():
-    # config = Config(
-    #     config={
-    #         'sampler': {
-    #             'type': 'const',
-    #             'param': 1,
-    #         },
-    #         'logging': True,
-    #     },  
-    #     service_name='room-service',
-    #     validate=True,
-    # )
-    # return config.initialize_tracer()
-    return Tracer()  # no-op tracer
-
-# this call also sets opentracing.tracer
-tracer = None
-ROOM_SPAN_CONTEXT = None
 
 context = zmq.Context()
 rpc_url = os.getenv('PROG_SPACE_SERVER_URL', "localhost")
@@ -126,7 +102,7 @@ def parse_results(val):
 
 
 def listen(blocking=True):
-    global server_listening, ROOM_SPAN_CONTEXT, tracer, MY_ID
+    global server_listening, MY_ID
     flags = 0
     if not blocking:
         flags = zmq.NOBLOCK
@@ -135,19 +111,14 @@ def listen(blocking=True):
     except zmq.Again:
         return False
     string = raw_msg[0].decode()
-    span = tracer.start_span('client-'+MY_ID+'-recv', references=opentracing.child_of(ROOM_SPAN_CONTEXT))
-    # preSpan = tracer.start_span('client-'+MY_ID+'-prerecv', child_of=span)
     source_len = 4
     server_send_time_len = 13
     id = string[source_len:(source_len + SUBSCRIPTION_ID_LEN)]
     val = string[(source_len + SUBSCRIPTION_ID_LEN +
                 server_send_time_len):]
-    # preSpan.finish()
     if id == init_ping_id:
         server_listening = True
         logging.info("SERVER IS LISTENING {}".format(MY_ID))
-        # ROOM_SPAN_CONTEXT = tracer.extract(format=Format.TEXT_MAP, carrier={"uber-trace-id": val})
-        # print(ROOM_SPAN_CONTEXT)
     elif id in select_ids:
         callback = select_ids[id]
         del select_ids[id]
@@ -155,13 +126,10 @@ def listen(blocking=True):
     elif id in subscription_ids:
         logging.debug(string)
         callback = subscription_ids[id]
-        # callbackSpan = tracer.start_span('client-'+MY_ID+'-callbackrecv', child_of=span)
         callback(parse_results(val))
-        # callbackSpan.finish()
     else:
         logging.info("UNRECOGNIZED:")
         logging.info(string)
-    # span.finish()
     return True
 
 
@@ -206,7 +174,7 @@ def check_server_connection():
 
 
 def init(root_filename, skipListening=False):
-    global MY_ID, MY_ID_STR, py_subscriptions, py_prehook, tracer
+    global MY_ID, MY_ID_STR, py_subscriptions, py_prehook
     scriptName = os.path.basename(root_filename)
     scriptNameNoExtension = os.path.splitext(scriptName)[0]
     fileDir = os.path.dirname(os.path.realpath(root_filename))
@@ -221,7 +189,6 @@ def init(root_filename, skipListening=False):
     print("tcp://{0}:5570".format(rpc_url))
     # print(logPath)
     # print("-")
-    tracer = init_jaeger_tracer()
     client.setsockopt(zmq.IDENTITY, MY_ID_STR.encode())
     client.connect("tcp://{0}:5570".format(rpc_url))
     print("connected")
@@ -265,13 +232,3 @@ def subscription(expr):
             func(x)
         return function_wrapper
     return subscription_decorator
-
-
-def tracer_cleanup():
-    global tracer
-    if tracer is not None:
-        time.sleep(2)   # yield to IOLoop to flush the spans - https://github.com/jaegertracing/jaeger-client-python/issues/50
-        tracer.close()  # flush any buffered spans
-
-import atexit
-atexit.register(tracer_cleanup)

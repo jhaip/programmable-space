@@ -2,29 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const zmq = require('zeromq');
 const uuidV4 = require('uuid/v4');
-const child_process = require("child_process");
-var initTracer = require('jaeger-client').initTracer;
-var opentracing = require('opentracing');
-
-// See schema https://github.com/jaegertracing/jaeger-client-node/blob/master/src/configuration.js#L37
-var config = {
-    serviceName: 'room-service',
-    'reporter': {
-        'logSpans': true,
-        'agentHost': 'localhost',
-        'agentPort': 6832
-    },
-    'sampler': {
-        'type': 'const',
-        'param': 1.0
-    }
-};
-var options = {
-    // metrics: metrics,
-    // logger: logger,
-};
-// var tracer = initTracer(config, options);  // uncomment to use real tracer
-var tracer = new opentracing.Tracer();  // no-op dummy tracer
 
 const randomId = () => 
     uuidV4();
@@ -153,7 +130,6 @@ function init(filename) {
     let batched_calls = []
     const DEFAULT_SUBSCRIPTION_ID = 0;
     let currentSubscriptionId = DEFAULT_SUBSCRIPTION_ID;
-    var wireCtx;
 
     const sleep = (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -179,13 +155,6 @@ function init(filename) {
     }
 
     const room = {
-        setCtx: ctx => {
-            wireCtx = ctx;
-            this.wireCtx = ctx;
-        },
-        wireCtx: () => {
-            return this.wireCtx;
-        },
         onRaw: async (...args) => {
             await waitForServerListening();
             const query_strings = args.slice(0, -1)
@@ -340,7 +309,6 @@ function init(filename) {
     }
 
     client.on('message', (request) => {
-        const span = tracer.startSpan(`client-${myId}-recv`, { childOf: room.wireCtx() });
         const msg = request.toString();
         // console.log(msg)
         const source_len = 4
@@ -351,7 +319,6 @@ function init(filename) {
         if (id == init_ping_id) {
             server_listening = true
             console.log(`SERVER LISTENING!! ${MY_ID_STR} ${val}`)
-            room.setCtx(tracer.extract(opentracing.FORMAT_TEXT_MAP, {"uber-trace-id": val}));
         } else if (id in select_ids) {
             const callback = select_ids[id]
             delete select_ids[id]
@@ -360,14 +327,11 @@ function init(filename) {
             callback = subscription_ids[id]
             // room.cleanup()
             const r = parseResult(val)
-            // const callbackSpan = tracer.startSpan(`client-${myId}-callbackrecv`, { childOf: span });
             callback(r)
-            // callbackSpan.finish();
             room.flush()
         } else {
             console.log("unknown subscription ID...")
         }
-        span.finish();
     });
 
     const run = async () => {
@@ -381,7 +345,7 @@ function init(filename) {
     }
 
     return {
-        room, myId, scriptName, MY_ID_STR, run, getIdFromProcessName, getIdStringFromId, tracer, afterServerConnects
+        room, myId, scriptName, MY_ID_STR, run, getIdFromProcessName, getIdStringFromId, afterServerConnects
     }
 }
 
