@@ -11,8 +11,8 @@ User=root
 # Run at boot: sudo systemctl enable thermal-printer
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
 Restart=always
-ExecStart=/usr/bin/python3 /home/pi/lovelace/src/standalone_processes/790__thermalPrinter.py
-ExecStop=/usr/bin/pkill -f standalone_processes/790__thermalPrinter.py
+ExecStart=/usr/bin/python3 /home/pi/programmable-space/src/programs/790__thermalPrinter.py
+ExecStop=/usr/bin/pkill -f programs/790__thermalPrinter.py
 
 [Install]
 WantedBy=multi-user.target

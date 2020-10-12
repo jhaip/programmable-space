@@ -10,5 +10,5 @@ src/programs/logs/
 broker/db_view*.txt
 broker/server
 broker/server.log
-src/particle-photon/*/target
+src/microcontrollers/particle-photon/*/target
 build/config.gypi
