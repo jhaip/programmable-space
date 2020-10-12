@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
-Exec=/home/pi/lovelace/jig lightcrafter
+Exec=/home/pi/programmable-space/jig lightcrafter
 # Copy this file to ~/.config/autostart/pidisplay.desktop

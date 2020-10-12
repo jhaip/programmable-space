@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
-Exec=/home/pi/lovelace/jig lampstart2
+Exec=/home/pi/programmable-space/jig lampstart2
 # Copy this file to ~/.config/autostart/lamp.desktop

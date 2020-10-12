@@ -5,7 +5,7 @@ const request = require('request');
 const fs = require('fs');
 const particle = new Particle();
 
-const LOGIN_INFO = { username: 'haipjacob@gmail.com', password: process.env.PARTICLE_PASSWORD };
+const LOGIN_INFO = { username: process.env.PARTICLE_USERNAME, password: process.env.PARTICLE_PASSWORD };
 
 var token;
 
