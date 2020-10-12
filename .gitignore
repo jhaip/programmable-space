@@ -8,7 +8,7 @@ src/files/*.pdf
 src/programs/logs/
 *.bin
 broker/db_view*.txt
-broker/server
-broker/server.log
+broker/broker
+broker/broker.log
 src/microcontrollers/particle-photon/*/target
 build/config.gypi

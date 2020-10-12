@@ -71,7 +71,7 @@ func subscriberBatchUpdateV3(sub *Subscription3, batch_messages []BatchMessage) 
 			anythingChanged := updateQueryPartMatchingFactsFromRetract(sub, Fact{terms})
 			updatedSubscriberOutput = updatedSubscriberOutput || anythingChanged
 		} else if batch_message.Type == "death" {
-			// TODO: don't reply logic from server.go that also does this retract
+			// TODO: don't reply logic from broker.go that also does this retract
 			dying_source := batch_message.Fact[0][1]
 			clearSourceClaims := []Term{Term{"id", dying_source}, Term{"postfix", ""}}
 			// TODO: clearSourceSubscriptions := []Term{Term{"text", "subscription"}, Term{"id", dying_source}, Term{"postfix", ""}}

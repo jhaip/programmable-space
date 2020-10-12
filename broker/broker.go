@@ -299,14 +299,14 @@ func batch_worker(batch_messages <-chan string, subscriptions_notifications chan
 				// Assume Fact = [["id", "0004"]]
 				dying_source := batch_message.Fact[0][1]
 				// This a blocking call that does a couple retracts and waits for a goroutine to die
-				// There is a potential for slowdown or blocking the whole server if a subscriber won't die
+				// There is a potential for slowdown or blocking the whole broker if a subscriber won't die
 				on_source_death(dying_source, db, subscriptions)
 			} else if batch_message.Type == "subscriptiondeath" {
 				// Assume Fact = [["id", "0004"], ["text", ..subscription id..]]
 				source := batch_message.Fact[0][1]
 				dying_subscription_id := batch_message.Fact[1][1]
 				// This a blocking call that does a couple retracts and waits for a goroutine to die
-				// There is a potential for slowdown or blocking the whole server if a subscriber won't die
+				// There is a potential for slowdown or blocking the whole broker if a subscriber won't die
 				on_subscription_death(source, dying_subscription_id, db, subscriptions)
 			}
 		}
