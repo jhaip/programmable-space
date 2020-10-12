@@ -1,4 +1,4 @@
-module github.com/jhaip/lovelace
+module github.com/jhaip/programmable-space
 
 go 1.12
 

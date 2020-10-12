@@ -316,31 +316,14 @@ func batch_worker(batch_messages <-chan string, subscriptions_notifications chan
 		subscriberMutex.RLock()
 		for _, subscription := range (*subscriptions).Subscriptions {
 			subscription.batch_messages <- batch_messages
-		}
+	}
 		subscriberMutex.RUnlock()
 	}
 }
 
-func GetBasePath() string {
-	envBasePath := os.Getenv("DYNAMIC_ROOT")
-	if envBasePath != "" {
-		return envBasePath + "/"
-	}
-	env := "HOME"
-	if runtime.GOOS == "windows" {
-		env = "USERPROFILE"
-	} else if runtime.GOOS == "plan9" {
-		env = "home"
-	}
-	return os.Getenv(env) + "/lovelace/"
-}
-
 func NewLogger() (*zap.Logger, error) {
-	// cfg := zap.NewProductionConfig()
-	cfg := zap.NewDevelopmentConfig()
-	cfg.OutputPaths = []string{
-		GetBasePath() + "new-backend/go-server/server.log",
-	}
+	cfg := zap.NewDevelopmentConfig()  // zap.NewProductionConfig()
+	cfg.OutputPaths = []string{"/var/log/programmable-space/broker.log"}
 	return cfg.Build()
 }
 

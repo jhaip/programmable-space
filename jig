@@ -6,8 +6,8 @@ cd "$parent_path"
 function cmd() {
   if [ "$1" == "start" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber_v3.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -15,8 +15,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "cvstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -28,8 +28,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "laserstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -120,8 +120,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "lasersocksstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -148,8 +148,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "tilestart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -173,8 +173,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "keyboardstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -183,8 +183,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "robotstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -195,8 +195,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "camerastart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -205,8 +205,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "calendarstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -218,8 +218,8 @@ function cmd() {
     chromium-browser --start-fullscreen http://localhost:3012
   elif [ "$1" == "editorstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -242,8 +242,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "rfideditorstart" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -262,8 +262,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "rfideditorstart2" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -280,8 +280,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "rfideditorstart3" ]
   then
-    cd new-backend/go-server
-    /usr/local/go/bin/go run server.go parser2.go subscriber_v3.go database.go &
+    cd broker
+    /usr/local/go/bin/go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -299,8 +299,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "test" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -320,8 +320,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "pytest" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -333,8 +333,8 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "gotest" ]
   then
-    cd new-backend/go-server
-    go run server.go parser2.go subscriber.go database.go &
+    cd broker
+    go run broker.go parser2.go subscriber.go database.go &
     echo -e "running server"
     cd ../..
     sleep 2
@@ -347,7 +347,7 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "stoptest" ]
   then
-    pkill -f "go run server.go parser2.go subscriber.go database.go"
+    pkill -f "go run broker.go parser2.go subscriber.go database.go"
     pkill -f "/exe/server"
     pkill -f src/standalone_processes/12*__test.js
     pkill -f src/standalone_processes/13*__test.py
@@ -358,7 +358,7 @@ function cmd() {
     pkill -f "/tmp/go-build"
   elif [ "$1" == "stop" ]
   then
-    pkill -f "go run server.go parser2.go subscriber.go database.go"
+    pkill -f "go run broker.go parser2.go subscriber.go database.go"
     pkill -f "/exe/server"
     pkill -f "src/standalone_processes/0__boot.js"
     pkill -f "node src/standalone_processes"
@@ -383,7 +383,7 @@ function cmd() {
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
   elif [ "$1" == "log" ]
   then
-    tail -f new-backend/go-server/server.log
+    tail -f /var/log/programmable-space/broker.log
   elif [ "$1" == "stopdisplays" ]
   then
     pkill --signal 9 -f src/standalone_processes/648__keyboard.py
