@@ -16,7 +16,7 @@ function runPaper(name) {
     }
     console.error(`kill ${validPid} old processes with the name "${name}"`)
     let languageProcess = 'node'
-    let programSource = `src/standalone_processes/${name}`
+    let programSource = `src/programs/${name}`
     let runArgs = [programSource];
     if (name.includes('.py')) {
       languageProcess = 'python3'

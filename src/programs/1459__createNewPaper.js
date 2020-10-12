@@ -27,7 +27,7 @@ room.onGetSource('wisherId',
       // create a new file with the source code
       cleanSourceCode = sourceCode.replace(new RegExp(String.fromCharCode(9787), 'g'), String.fromCharCode(34))
       const shortFilename = `${newId}.${language}`;
-      fs.writeFile(`src/standalone_processes/${shortFilename}`, cleanSourceCode, (err) => {
+      fs.writeFile(`src/programs/${shortFilename}`, cleanSourceCode, (err) => {
         if (err) {
           return console.log(err);
         }

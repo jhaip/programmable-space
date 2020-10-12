@@ -8,7 +8,7 @@ let data_cache = {};
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static('./web-tablet'))
+app.use(express.static('./src/files/web-tablet'))
 
 app.post('/cleanup-claim', (req, res) => {
     console.error("cleanup-claim")

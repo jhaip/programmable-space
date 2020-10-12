@@ -344,7 +344,7 @@ time.sleep(2)
 #     capture.read()
 
 if __name__ == '__main__':
-    dot_codes_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'files/dot-codes.txt')
+    dot_codes_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'files/dot-codes.txt')
     with open(dot_codes_path) as f:
         dot_codes = [line.rstrip('\n') for line in f]
     init(__file__, skipListening=True)

@@ -8,10 +8,10 @@ room.onGetSource('wisherId',
     console.log(results)
     room.cleanup()
     results.forEach(({ wisherId, name }) => {
-      const sourceCode = fs.readFileSync(`src/standalone_processes/${name}`, 'utf8');
+      const sourceCode = fs.readFileSync(`src/programs/${name}`, 'utf8');
       const parsedSourceCode = parse(sourceCode);
       fs.writeFile(
-        `src/standalone_processes/${name.replace(".prejs", ".js")}`,
+        `src/programs/${name.replace(".prejs", ".js")}`,
         parsedSourceCode, (err) => {
           if (err) throw err;
           console.error('The file has been saved!');

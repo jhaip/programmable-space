@@ -8,7 +8,7 @@ const port = 3013;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static('./src/web-display'))
+app.use(express.static('./src/files/web-display'))
 const expressWs = enableWs(app)
 
 var graphicsCache = [];

@@ -7,7 +7,7 @@ const port = 3011;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static('./src/region-editor'))
+app.use(express.static('./src/files/region-editor'))
 
 var regionData = [{
     'id': '9df78dc0-9e97-4a63-851e-b5bd61ba55c6',

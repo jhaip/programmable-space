@@ -2,7 +2,7 @@ const { room, myId, scriptName, MY_ID_STR, run } = require('../helper2')(__filen
 const fs = require('fs');
 const path = require('path');
 
-const stream = fs.createWriteStream(path.join(__dirname, 'files', 'latency-ms-log.txt'), { flags: 'a' });
+const stream = fs.createWriteStream(path.join(__dirname, '..', 'files', 'latency-ms-log.txt'), { flags: 'a' });
 
 var lastSentPing
 const serverTimeoutMs = 10000

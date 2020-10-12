@@ -7,7 +7,7 @@ const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static('./web-debugger'))
+app.use(express.static('./src/files/web-debugger'))
 
 app.get('/db', (req, res) => {
     // res.send('Hello World!')

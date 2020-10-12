@@ -18,7 +18,7 @@ room.onGetSource('wisherId',
       console.log(`#${wisherId} wish "${name}" has source code $`)
       room.retractFromSource(wisherId, `wish`, ["text", name], `has source code $`)
       room.retractAll(["text", name], `has source code $`);
-      fs.writeFile(`src/standalone_processes/${name}`, sourceCode, (err) => {
+      fs.writeFile(`src/programs/${name}`, sourceCode, (err) => {
         if (err) throw err;
         console.error('The file has been saved!');
         room.assert(["text", name], `has source code`, ["text", sourceCode]);

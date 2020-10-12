@@ -67,7 +67,6 @@ const loadModulesInFolder = folder => {
 loadModulesInFolder('.');
 // TODO: remove this HACK
 // need a way to exit the node program after all promises have returned
-// promises come from asserting and retracting things in the lovelace library code
 setTimeout(() => {
   process.exit()
 }, 5000)

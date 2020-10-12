@@ -54,7 +54,7 @@ SAMPLE_IMAGE_MATCH_THRESHOLD = 0.8  # Value 0 (0% match) to 1.0 (100% match)
 TILES = ["up", "down", "left", "right", "loopstart", "loopstop"]
 SAMPLE_IMAGES = []
 for name in TILES:
-    sample_image = cv2.imread(os.path.join(os.path.dirname(__file__), 'files/cv_tiles/{}.png'.format(name)))
+    sample_image = cv2.imread(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'files/cv_tiles/{}.png'.format(name)))
     sample_image = cv2.cvtColor(sample_image, cv2.COLOR_BGR2GRAY)
     SAMPLE_IMAGES.append(sample_image)
 

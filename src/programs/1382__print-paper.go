@@ -280,7 +280,7 @@ func initWishSubscription(client *zmq.Socket, MY_ID_STR string) string {
 func GetBasePath() string {
 	envBasePath := os.Getenv("DYNAMIC_ROOT")
 	if envBasePath != "" {
-		return envBasePath + "/src/standalone_processes/"
+		return envBasePath + "/src/programs/"
 	}
 	env := "HOME"
 	if runtime.GOOS == "windows" {
@@ -288,14 +288,14 @@ func GetBasePath() string {
 	} else if runtime.GOOS == "plan9" {
 		env = "home"
 	}
-	return os.Getenv(env) + "/lovelace/src/standalone_processes/"
+	return os.Getenv(env) + "/programmable-space/src/"
 }
 
 func main() {
 	BASE_PATH := GetBasePath()
 
 	/*** Set up logging ***/
-	LOG_PATH := BASE_PATH + "logs/1382__print-paper.log"
+	LOG_PATH := BASE_PATH + "programs/logs/1382__print-paper.log"
 	f, err := os.OpenFile(LOG_PATH, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)

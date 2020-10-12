@@ -1,7 +1,8 @@
 const fs = require('fs');
 const { room, myId, scriptName, run } = require('../helper2')(__filename);
+const path = require('path');
 
-const savedCalibrationLocation = __filename.replace(scriptName, 'files/projectorCalibration.txt')
+const savedCalibrationLocation = path.join(__dirname, '..', 'files', 'projectorCalibration.txt')
 
 fs.readFile(savedCalibrationLocation, 'utf8', function(err, contents) {
   if (err) {

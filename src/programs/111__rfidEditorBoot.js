@@ -6,12 +6,12 @@ const { room, myId, scriptName, run } = require('../helper2')(__filename);
 console.error("pre--------DONE WITH INITIAL PROGRAM CODE")
 const child0 = execFileSync(
     'node',
-    [`src/standalone_processes/390__initialProgramCode.js`]
+    [`src/programs/390__initialProgramCode.js`]
 );
 console.error("DONE WITH INITIAL PROGRAM CODE")
 const child = execFile(
     'node',
-    [`src/standalone_processes/1900__processManager.js`],
+    [`src/programs/1900__processManager.js`],
     (error, stdout, stderr) => {
         if (error) {
             console.error('stderr', stderr);

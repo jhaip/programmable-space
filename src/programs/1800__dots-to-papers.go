@@ -78,7 +78,7 @@ func checkErr(err error) {
 func GetBasePath() string {
 	envBasePath := os.Getenv("DYNAMIC_ROOT")
 	if envBasePath != "" {
-		return envBasePath + "/src/standalone_processes/"
+		return envBasePath + "/src/programs/"
 	}
 	env := "HOME"
 	if runtime.GOOS == "windows" {
@@ -86,7 +86,7 @@ func GetBasePath() string {
 	} else if runtime.GOOS == "plan9" {
 		env = "home"
 	}
-	return os.Getenv(env) + "/lovelace/src/standalone_processes/"
+	return os.Getenv(env) + "/programmable-space/src/"
 }
 
 // Copied from https://play.golang.org/p/4FkNSiUDMg
@@ -130,7 +130,7 @@ func main() {
 	BASE_PATH := GetBasePath()
 
 	/*** Set up logging ***/
-	LOG_PATH := BASE_PATH + "logs/1800__dots-to-papers.log"
+	LOG_PATH := BASE_PATH + "programs/logs/1800__dots-to-papers.log"
 	f, err := os.OpenFile(LOG_PATH, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
