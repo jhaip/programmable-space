@@ -1,1 +1,25 @@
-// Write your code here
+var last_time = 0;
+var expire_time = 0;
+var knownTimes = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
+when microphone heard $x @ $t:
+if ((x.includes("alarm") || x.includes("timer")) && x.includes("minute")) {
+  for (let i=0; i<knownTimes.length; i+=1) {
+    if (x.includes(knownTimes[i])) {
+      expire_time = last_time + i + 1;      
+    }
+  }
+}
+end
+
+when time is $t:
+last_time = t;
+if (expire_time > 0) {
+  if (t >= expire_time) {
+    expire_time = 0;
+    room.assert(`wish speaker said`, ["text", `timer is done`])
+  } else {
+    room.assert(`wish speaker said`, ["text", `${expire_time - t}`])
+  }
+}
+end

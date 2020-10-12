@@ -1,1 +1,8 @@
-// Write your code here
+when microphone heard $x @ $t:
+
+let ill = room.newIllumination()
+ill.fontsize(80)
+ill.stroke("white")
+ill.text(0, 0, "Microphone heard:")
+ill.text(0, 120, x)
+room.draw(ill)

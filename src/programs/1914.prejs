@@ -1,1 +1,6 @@
-// Write your code here
+when microphone heard $x @ $t:
+
+if (x.includes("what") && x.includes("time")) {
+  let d = (new Date()).toLocaleTimeString('en-US', {'hour': '2-digit', 'minute': '2-digit'})
+  room.assert(`wish speaker said`, ["text", `It is ${d}`])
+}

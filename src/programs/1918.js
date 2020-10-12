@@ -16,6 +16,4 @@ ill.rect(OFFSET-S, H-OFFSET-S, S, S);
 room.draw(ill, "1997")
 
 
-
-
 run();

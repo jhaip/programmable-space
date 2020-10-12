@@ -1,1 +1,5 @@
-// Write your code here
+when microphone heard $x @ $t:
+if (x.includes("hello")) {
+  claim wish speaker said "Happy Friday"
+}
+

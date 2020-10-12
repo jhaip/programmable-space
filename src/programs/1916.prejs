@@ -1,1 +1,5 @@
-// Write your code here
+when microphone heard $x @ $t,
+     current weather is $temp F and $weather:
+if (x.includes("what") && (x.includes("weather") || x.includes("temperature"))) {
+room.assert(`wish speaker said`, ["text", `It is ${temp} degrees and ${weather.split("-").join(" ")}`])
+}

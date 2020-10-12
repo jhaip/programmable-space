@@ -1,1 +1,4 @@
-// Write your code here
+when laser in region $r @ $t,
+     region $r has name album1:
+// It's Alright by Horsebeach
+claim wish spotify:track:0ZAdCDeysyoh5BOpuSGKy3 would be played on Spotify

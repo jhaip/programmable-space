@@ -1,1 +1,29 @@
-// Write your code here
+when time is $t:
+if (t%10 === 0) {
+  claim wish currently Spotify song would be updated
+}
+end
+
+when currently playing Spotify song is $title by $artist @ $t:
+let ill = room.newIllumination()
+ill.fontsize(50)
+ill.fontcolor(100, 100, 150)
+ill.text(20, 20, "Currently playing:")
+ill.text(20, 140, `${title}`)
+ill.text(20, 260, `${artist}`)
+room.draw(ill)
+otherwise:
+drawNothingPlaying();
+end
+
+when currently playing Spotify song is nothing @ $t:
+drawNothingPlaying();
+end
+
+function drawNothingPlaying(){ 
+let ill = room.newIllumination()
+ill.fontsize(100)
+ill.fontcolor(100, 100, 100)
+ill.text(20, 20, "Nothing playing")
+room.draw(ill)
+}

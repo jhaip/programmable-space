@@ -19,7 +19,7 @@ ill.nostroke()
 ill.fill("orange")
 ill.ellipse(-S, -S, S*2, S*2)
 ill.pop()
-room.draw(ill, "web2")
+room.draw(ill, "1998")
 
 
 

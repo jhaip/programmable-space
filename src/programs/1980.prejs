@@ -1,1 +1,14 @@
-// Write your code here
+when laser in region $r @ $t,
+     region $r has name $name:
+
+if (name === "albumcb") {
+claim wish spotify:album:3l7JWewI3ZByxaT5BCgRx2 would be played on Spotify
+} else if (name === "albumpsy") {
+claim wish spotify:track:4YxA2ymhdsh2ROqfkUxmxJ would be played on Spotify
+} else if (name === "albumrwo") {
+claim wish spotify:track:2hIwKcLHchJXjgFe2lxA2P would be played on Spotify
+} else if (name === "albumwiddit") {
+claim wish spotify:track:2L9mXwt6vJ3FxVxf7jsGkd would be played on Spotify
+}
+
+end
