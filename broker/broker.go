@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"io/ioutil"
-	"runtime"
 	"sort"
 	"strconv"
 	"sync"
