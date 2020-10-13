@@ -332,7 +332,7 @@ func GetBasePath() string {
 	} else if runtime.GOOS == "plan9" {
 		env = "home"
 	}
-	return os.Getenv(env)
+	return os.Getenv(env) + "/"
 }
 
 func NewLogger() (*zap.Logger, error) {
