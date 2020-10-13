@@ -332,13 +332,13 @@ func GetBasePath() string {
 	} else if runtime.GOOS == "plan9" {
 		env = "home"
 	}
-	return os.Getenv(env) + "/lovelace/"
+	return os.Getenv(env)
 }
 
 func NewLogger() (*zap.Logger, error) {
 	cfg := zap.NewDevelopmentConfig()  // zap.NewProductionConfig()
 	cfg.OutputPaths = []string{
-		GetBasePath() + "broker/server.log",
+		GetBasePath() + "broker/broker.log",
 	}
 	// cfg.OutputPaths = []string{"/var/log/programmable-space/broker.log"}
 	return cfg.Build()

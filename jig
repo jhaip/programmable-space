@@ -392,7 +392,7 @@ function cmd() {
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
   elif [ "$1" == "log" ]
   then
-    tail -f /var/log/programmable-space/broker.log
+    tail -f broker/broker.log
   elif [ "$1" == "stopdisplays" ]
   then
     pkill --signal 9 -f src/programs/648__keyboard.py
