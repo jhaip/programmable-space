@@ -9,7 +9,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/0__boot.js &
     echo -e "booting"
@@ -18,7 +18,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     python3 src/programs/50__proxy.py &
     python3 src/programs/1600__frame-to-dots.py &
@@ -31,7 +31,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     v4l2-ctl \
       --set-ctrl=brightness=1 \
@@ -132,7 +132,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     v4l2-ctl \
       --set-ctrl=brightness=1 \
@@ -160,7 +160,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     v4l2-ctl \
       --set-ctrl=brightness=50 \
@@ -185,7 +185,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     python3 src/programs/51__proxy.py &
     sudo python3 src/programs/649__keyboard.py &
@@ -195,7 +195,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/577__programEditor.js &
     node src/programs/1900__processManager.js &
@@ -207,7 +207,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     python3 src/programs/55__frameProxy.py &
     python3 src/programs/1630__claimFrame.py &
@@ -217,7 +217,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/20__httpClient.js &
     node src/programs/12__regionDebug.js &
@@ -230,7 +230,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/1900__processManager.js &
     node src/programs/10__debugViewer.js &
@@ -254,7 +254,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/1900__processManager.js &
     node src/programs/10__debugViewer.js &
@@ -274,7 +274,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/111__rfidEditorBoot.js &
     sleep 2
@@ -292,7 +292,7 @@ function cmd() {
     cd broker
     /usr/local/go/bin/go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     echo -e "done sleeping"
     /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/111__rfidEditorBoot.js &
@@ -311,7 +311,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     node src/programs/1200__test.js &
     node src/programs/1201__test.js &
@@ -332,7 +332,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     python3 src/programs/1300__test.py &
     for value in {1301..1310}
@@ -345,7 +345,7 @@ function cmd() {
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
-    cd ../..
+    cd ..
     sleep 2
     cd src/programs
     go build 1400__exp.go
