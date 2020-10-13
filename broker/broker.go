@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"runtime"
+	// "os"
+	// "runtime"
 	"sort"
 	"strconv"
 	"sync"
@@ -322,26 +322,26 @@ func batch_worker(batch_messages <-chan string, subscriptions_notifications chan
 	}
 }
 
-func GetBasePath() string {
-	envBasePath := os.Getenv("DYNAMIC_ROOT")
-	if envBasePath != "" {
-		return envBasePath + "/"
-	}
-	env := "HOME"
-	if runtime.GOOS == "windows" {
-		env = "USERPROFILE"
-	} else if runtime.GOOS == "plan9" {
-		env = "home"
-	}
-	return os.Getenv(env) + "/"
-}
+// func GetBasePath() string {
+// 	envBasePath := os.Getenv("DYNAMIC_ROOT")
+// 	if envBasePath != "" {
+// 		return envBasePath + "/"
+// 	}
+// 	env := "HOME"
+// 	if runtime.GOOS == "windows" {
+// 		env = "USERPROFILE"
+// 	} else if runtime.GOOS == "plan9" {
+// 		env = "home"
+// 	}
+// 	return os.Getenv(env) + "/programmable-space/"
+// }
 
 func NewLogger() (*zap.Logger, error) {
 	cfg := zap.NewDevelopmentConfig()  // zap.NewProductionConfig()
-	cfg.OutputPaths = []string{
-		GetBasePath() + "broker/broker.log",
-	}
-	// cfg.OutputPaths = []string{"/var/log/programmable-space/broker.log"}
+	// cfg.OutputPaths = []string{
+	// 	GetBasePath() + "broker/broker.log",
+	// }
+	cfg.OutputPaths = []string{"/var/log/programmable-space-broker.log"}
 	return cfg.Build()
 }
 
