@@ -105,8 +105,10 @@ function cmd() {
     cd src
     # lua calendar-calibration.lua &
     rm lua-graphics.love
+    rm /tmp/main.lua
+    cp programs/graphics.lua /tmp/main.lua
     zip lua-graphics.love \
-        programs/graphics.lua \
+        /tmp/main.lua \
         helpers/helper.lua helpers/matrix.lua helpers/json.lua helpers/zhelpers.lua \
         files/Inconsolata-Regular.ttf
     love ./lua-graphics.love 1998
@@ -120,8 +122,10 @@ function cmd() {
     sudo python3 src/programs/650__keyboard.py &
     cd src
     rm lua-graphics.love
+    rm /tmp/main.lua
+    cp programs/graphics.lua /tmp/main.lua
     zip lua-graphics.love \
-        programs/graphics.lua \
+        /tmp/main.lua \
         helpers/helper.lua helpers/matrix.lua helpers/json.lua helpers/zhelpers.lua \
         files/Inconsolata-Regular.ttf
     love ./lua-graphics.love 1999
