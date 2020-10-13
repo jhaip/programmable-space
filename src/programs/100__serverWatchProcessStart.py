@@ -19,7 +19,7 @@ def check_kill_process(pstring):
             logging.info("not my PID {}".format(pid))
             os.kill(int(pid), signal.SIGKILL)
 
-helper2.rpc_url = "192.168.1.34"
+helper.rpc_url = "192.168.1.34"
 
 if len(sys.argv) != 2:
     logging.info("Expected a single argument of the process to run!")

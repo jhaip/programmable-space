@@ -9,7 +9,7 @@ import time
 import logging
 import sys
 
-helper2.rpc_url = "192.168.1.34"
+helper.rpc_url = "192.168.1.34"
 
 CAMERA_ID = "9999"
 if len(sys.argv) - 1 > 0:

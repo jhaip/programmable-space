@@ -5,7 +5,7 @@ import busio
 import serial
 import adafruit_thermal_printer
 
-helper2.rpc_url = "192.168.1.34"
+helper.rpc_url = "192.168.1.34"
 
 ThermalPrinter = adafruit_thermal_printer.get_printer_class(2.64)
 uart = serial.Serial("/dev/serial0", 19200, timeout=5)
