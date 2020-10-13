@@ -62,6 +62,7 @@ type BatchMessage struct {
 func checkErr(err error) {
 	if err != nil {
 		zap.L().Fatal("FATAL ERROR", zap.Error(err))
+		fmt.Println(err)
 		panic(err)
 	}
 }
