@@ -6,6 +6,7 @@ __pycache__
 src/files/*.pdf
 !src/programs/logs/.keep
 src/programs/logs/
+src/lua-bundle
 *.bin
 broker/db_view*.txt
 broker/broker
