@@ -13,6 +13,7 @@ The idea of a programmable space is an ongoing area of research by [Jacob Haip](
 - [Gallery](#gallery)
 - [Setting up your own programmable space](#setting-up-your-own-programmable-space)
 - [Getting Involved](#getting-involved)
+- [Inspirations](#inspirations)
 
 ---
 
@@ -543,3 +544,9 @@ you and the people that share your space and to share your findings.
 What were people empowered to do?
 What new types of challenges were found in trying to move a computer system into the physical world?
 What types of edits and usage cases were valuable to the people in your space?
+
+# Inspirations
+
+- [Dynamicland](https://dynamicland.org/)
+- ["Living Room"](https://github.com/living-room) project @ Recurse Center
+- Saul Greenberg and Chester Fitchett. 2001. Phidgets: easy development of physical interfaces through physical widgets. In <i>Proceedings of the 14th annual ACM symposium on User interface software and technology</i> (<i>UIST '01</i>). Association for Computing Machinery, New York, NY, USA, 209–218. DOI:https://doi.org/10.1145/502348.502388
