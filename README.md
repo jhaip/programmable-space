@@ -220,6 +220,12 @@ The broker should be "local" to the programs in the room and only serve about as
 Programs have been implemented in multiple programming languages (Python, Node.js, Golang, Lua, an experiemental custom langauge).
 The bidirectional communiation between programs and the broker is handled via ZeroMQ TCP sockets (ROUTER/DEALER pattern).
 
+## Topic Deep Dives:
+
+- [Bootstrapping](/docs/bootstrapping.md)
+- [Editing Source Code](/docs/editing-source-code.md)
+- [Broker](/docs/broker.md)
+
 # Gallery
 
 - [Musical Posters](https://twitter.com/jhaip/status/1299815186493300740). 2020-08-29
