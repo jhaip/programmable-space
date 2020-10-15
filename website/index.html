@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Programmable Space</title>
+  <style>
+    body {
+  font-family: helvetica, arial, sans-serif;
+  margin: 2em;
+  max-width: 1040px;
+  margin: 70px auto;
+  padding: 0 20px;
+}
+
+h1 {
+  font-style: italic;
+  color: #373fff;
+}
+.p1 {
+  color: #e44a7b;
+  font-weight: 700;
+}
+
+p {
+  font-size: 2em;
+  max-width: 1000px;
+  margin: 0 auto 1.5rem auto;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+.break {
+  margin-bottom: 4.5rem;
+}
+
+.link {
+  font-size: 2em;
+  margin-bottom: 1rem;
+}
+
+a {
+  color: #296ff3;
+}
+
+.gallery-title {
+  color: #777;
+  margin-bottom: 0.75rem;
+}
+
+.gallery__item-title {
+  font-size: 2em;
+}
+.gallery__item {
+  max-width: 1000px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  padding-top: 40px;
+  border-top: 2px solid #DDD;
+}
+.gallery__item a {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 18px;
+}
+.gallery__item--description {
+  width: 350px;
+  margin-right: 30px;
+}
+.gallery__item--expl {
+  margin-top: 20px;
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 600px;
+}
+.gallery__item--date {
+  margin-top: 20px;
+  color: #777;
+}
+
+.gallery__item-picture {
+  flex-grow: 1;
+}
+.embed-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.embed-container iframe,
+.embed-container object,
+.embed-container embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.max-height-image {
+  height: 360px;
+}
+
+@media only screen and (max-width: 1000px) {
+  body {
+    max-width: auto;
+    padding: 0;
+    margin: 5vw;
+  }
+  p {
+    font-size: 24px;
+    line-height: 1.5;
+  }
+  .link {
+    font-size: 24px;
+  }
+  .gallery__item {
+    flex-direction: column-reverse;
+  }
+  .gallery__item--description {
+    width: auto;
+    margin: 0 0 30px 0;
+  }
+  .max-height-image {
+    max-width: 100%;
+    height: auto;
+  }
+}
+  </style>
+</head>
+
+<body>
+  <p>
+    In a <span class="p1">programmable space</span>, the concept of a computer
+    is expanded outside a little rectangular screen. Interacting with a
+    programmable space means using <span class="p2">physical objects</span>,
+    not virtual ones on a screen. Bringing computing to the scale of a room
+    makes it a <span class="p3">communal and social experience</span>.
+  </p>
+
+  <p>
+    An ongoing research project by
+    <a href="https://haiperspace.com">Jacob Haip</a>, an independent
+    researcher based in Boston, USA.
+  </p>
+  <div class="break"></div>
+
+  <div class="link">
+    <a href="https://github.com/jhaip/programmable-space">
+      Project Details
+    </a>
+  </div>
+
+  <div class="link">
+    <a href="https://github.com/jhaip/programmable-space#setting-up-your-own-programmable-space">
+      Set up your own programmable space
+    </a>
+  </div>
+  <div class="link">
+    <a href="https://github.com/jhaip/programmable-space#getting-involved">
+      Getting Involved
+    </a>
+  </div>
+
+  <div class="break"></div>
+
+  <div>
+    <p class="gallery-title">
+      Gallery
+    </p>
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe title="vimeo-player"
+            src="https://player.vimeo.com/video/452907856?loop=1&amp;byline=0&amp;&portrait=0&title=0" width="640"
+            height="360" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Musical Posters
+        </div>
+        <div class="gallery__item--date">
+          2020-08-29
+        </div>
+        <div class="gallery__item--expl">
+          Leaning into the aesthetic of hanging posters of your favorite bands on the wall!
+          What if you could hear the band just by pointing at it?
+          Based on the "Laser Regions" demo from 2019.
+        </div>
+        <a href="https://twitter.com/jhaip/status/1299815186493300740">See More →</a>
+      </div>
+    </div>
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe src="https://player.vimeo.com/video/438758942?loop=1&amp;byline=0&amp;&portrait=0&title=0" width="640"
+            height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Voice Assistant Reimagined
+        </div>
+        <div class="gallery__item--date">
+          2020-07-15
+        </div>
+        <div class="gallery__item--expl">
+          A voice assistant that is made personal and valuable to people in the room by customizing it with programmable
+          cards.
+        </div>
+
+        <a href="https://vimeo.com/438758942">See More →</a>
+      </div>
+    </div>
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe title="vimeo-player"
+            src="https://player.vimeo.com/video/403876366?loop=1&amp;byline=0&amp;&portrait=0&title=0" width="360"
+            height="640" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Dangling String
+        </div>
+        <div class="gallery__item--date">
+          2020-04-03
+        </div>
+        <div class="gallery__item--expl">
+          A recreation of "Dangling String" by Natalie Jeremijenko that slowly twirls and then spins every 20 minutes.
+          Experimenting with beautiful and functional devices that are meant to calmly use periphery senses.
+        </div>
+
+        <a href="https://twitter.com/jhaip/status/1246211983269126146">See More →</a>
+      </div>
+    </div>
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe src="https://player.vimeo.com/video/400827615?autoplay=1&loop=1&title=0&byline=0&portrait=0"
+            width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Calendar as input/output
+        </div>
+        <div class="gallery__item--date">
+          2020-03-25
+        </div>
+        <div class="gallery__item--expl">
+          A paper calendar hanging on the wall used as an input and output to the programmable room.
+          A projecting desk lamp is used to augment the calendar and a laser pointer is used to select dates.
+        </div>
+
+        <a href="https://vimeo.com/400827615">See More →</a>
+      </div>
+    </div>
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe src="https://player.vimeo.com/video/396850279?title=0&byline=0&portrait=0" width="360" height="640"
+            frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Turtlebot Simulation
+        </div>
+        <div class="gallery__item--date">
+          2020-03-10
+        </div>
+        <div class="gallery__item--expl">
+          RFID Card programs are used as inputs to a turtlebot simulation.
+        </div>
+
+        <a href="https://twitter.com/jhaip/status/1237577165731840000">See More →</a>
+      </div>
+    </div>
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe src="https://player.vimeo.com/video/391765260?autoplay=1&loop=1&title=0&byline=0&portrait=0"
+            width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          AR Desk Lamp
+        </div>
+        <div class="gallery__item--date">
+          2020-02-16
+        </div>
+        <div class="gallery__item--expl">
+          Desk lamp with projector, camera, and raspberry pi inside is used to display graphics on a desk.
+        </div>
+
+        <a href="https://vimeo.com/391765260">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <img src="https://haiperspace.com/writing/20-02-11-rfid-cards/rfid-card-cover.png" class="max-height-image" />
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Programs as RFID Cards
+        </div>
+        <div class="gallery__item--date">
+          2020-02-11
+        </div>
+        <div class="gallery__item--expl">
+          Programs in the programmable space are represented by RFID Cards with program source code printed on receipt
+          paper.
+        </div>
+
+        <a href="https://haiperspace.com/writing/20-02-11-rfid-cards/">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <blockquote class="twitter-tweet">
+        <p lang="en" dir="ltr">I’ve wanted to recreate the “Animation World” from <a
+            href="https://twitter.com/TablaViva?ref_src=twsrc%5Etfw">@TablaViva</a> for almost two years now and I
+          finally got around to it. So fun! <a href="https://t.co/j5WAKgkA45">pic.twitter.com/j5WAKgkA45</a></p>&mdash;
+        Jacob Haip (@jhaip) <a href="https://twitter.com/jhaip/status/1177193544240508928?ref_src=twsrc%5Etfw">September
+          26, 2019</a>
+      </blockquote>
+      <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Drawn Animations
+        </div>
+        <div class="gallery__item--date">
+          2019-09-26
+        </div>
+        <div class="gallery__item--expl">
+          A fun and informal way to make short hand-drawn animations.
+          One program claims each frame to the room and then another program draws the animation.
+        </div>
+        <a href="https://twitter.com/jhaip/status/1177193544240508928">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/xSSVTTso0LM?controls=0"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Laser Regions
+        </div>
+        <div class="gallery__item--date">
+          2019-09-08
+        </div>
+        <div class="gallery__item--expl">
+          Parts of the wall are traced using a laser pointer and given a name in the programmable space.
+          These regions can be used to make things like a map that shows nearby restaurants when you point at it.
+        </div>
+        <a href="https://haiperspace.com/writing/19-09-08-physical-programming/#laser-regions">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/277migTZoKs" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Non-Textual Robot Programming
+        </div>
+        <div class="gallery__item--date">
+          2019-09-08
+        </div>
+        <div class="gallery__item--expl">
+          An experiment in programming in the programmable space without editing text.
+          Lego blocks with symbols on them are used to control the movement of a robot.
+        </div>
+        <a href="https://haiperspace.com/writing/19-09-08-physical-programming/#text-free-robot-programming">See More
+          →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/XUQAKwLFuNI" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Spatial Data Flow
+        </div>
+        <div class="gallery__item--date">
+          2019-09-08
+        </div>
+        <div class="gallery__item--expl">
+          Using the spatial arrangement of papers to do "visual programming" where data flows and is
+          transformed/visualized by each program.
+        </div>
+        <a href="https://haiperspace.com/writing/19-09-08-physical-programming/#spatial-awareness">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <div class="embed-container">
+          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/7MkvT4ZfDpE" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Microcontrollers Programming
+        </div>
+        <div class="gallery__item--date">
+          2019-03-17
+        </div>
+        <div class="gallery__item--expl">
+          Code is transferred to a microcontroller by physically putting the code next to the microcontroller.
+          Making it more understandable what the microcontroller is doing and what code it is running.
+        </div>
+        <a href="https://haiperspace.com/writing/19-03-17-programmable-space/">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <div class="gallery__item-picture">
+        <img src="https://haiperspace.com/writing/19-03-17-programmable-space/full_table_with_humidity_code_stand.jpg"
+          class="max-height-image" />
+      </div>
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Programs as RFID Clipboards
+        </div>
+        <div class="gallery__item--date">
+          2019-03-17
+        </div>
+        <div class="gallery__item--expl">
+          Programs represented physically in the room by clipboards with RFID cards taped to the back.
+          The clipboards hold the program's printed source code so people in the room can understand what the program
+          does.
+        </div>
+        <a href="https://haiperspace.com/writing/19-03-17-programmable-space/">See More →</a>
+      </div>
+    </div>
+
+    <div class="gallery__item">
+      <img src="https://haiperspace.com/writing/19-01-20-research-update/setup.jpg" class="max-height-image" />
+      <div class="gallery__item--description">
+        <div class="gallery__item-title">
+          Fixed Grid of Programs
+        </div>
+        <div class="gallery__item--date">
+          2019-01-20
+        </div>
+        <div class="gallery__item--expl">
+          An early experiment that avoided making program sensing code by having a fixed grid of programs that were
+          always running.
+          Proved programs could run separately, but it showed programs needed to be made physical in the future to use
+          the full scale of the room.
+        </div>
+        <a href="http://haiperspace.com/writing/19-01-20-research-update/">See More →</a>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
