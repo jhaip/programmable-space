@@ -64,7 +64,7 @@ Two types of physical representations of code have been tested:
 
 ### 1. Papers with Colored Dots on corners
 
-![Paper dot sensing diagram](/doc/paper-dot-sensing.png?raw=true)
+![Paper dot sensing diagram](/docs/paper-dot-sensing.png?raw=true)
 
 Inspired by the papers of [Dynamicland](https://dynamicland.org/), programs are represented by pieces of paper with
 source code and colored dots printed on it. The printed source code is so people in the room can understand what the program does.
@@ -83,7 +83,7 @@ Having a mini display for every program is fun and helpful.
 
 ### 2. RFID cards with printed source code.
 
-![RFID card sensing diagram](/doc/rfid-sensing.png?raw=true)
+![RFID card sensing diagram](/docs/rfid-sensing.png?raw=true)
 
 Programs are represented by standard RFID cards with printed source code attached to it.
 Most commonly, I have [printed source code using a receipt thermal printer](https://haiperspace.com/writing/20-02-11-rfid-cards/)
@@ -234,29 +234,36 @@ that are needed to get the system to a level where all other programs can be mad
 These programs are started by the `0__boot.js` program that is also started when booting the system:
 
 **Paper dot program detection:**
-* #1601 Grab frames from webcam, process them, and claim facts about what programs are seen in the room
+
+- #1601 Grab frames from webcam, process them, and claim facts about what programs are seen in the room
 
 **Editing papers:**
-* #577 Program Editor - Subscribes to facts about changes to source code and makes the corresponding changes to the files on the host OS
-* #1459 Create new program - Subscribes to facts about creating new papers and creates the new source code files on the host OS
-* #40 Custom JavaScript compiler - A simple compiler that transforms program source code into JavaScript source code that can be run on the host OS
+
+- #577 Program Editor - Subscribes to facts about changes to source code and makes the corresponding changes to the files on the host OS
+- #1459 Create new program - Subscribes to facts about creating new papers and creates the new source code files on the host OS
+- #40 Custom JavaScript compiler - A simple compiler that transforms program source code into JavaScript source code that can be run on the host OS
 
 **Printing**
-* #498 Printing Manager - Subscribes to facts about files on the host OS being printed and sends the job to the printer
-* #1382 Print Paper - Subscribes to facts about a particular program being printed and generates a PDF file that can be printed by #498
+
+- #498 Printing Manager - Subscribes to facts about files on the host OS being printed and sends the job to the printer
+- #1382 Print Paper - Subscribes to facts about a particular program being printed and generates a PDF file that can be printed by #498
 
 **Display**
-* #1999 Lua graphics manager - Subscribes to facts about graphical displays and draws them in a fullscreen window on the host OS
+
+- #1999 Lua graphics manager - Subscribes to facts about graphical displays and draws them in a fullscreen window on the host OS
 
 **Keyboard Input**
-* #648 - Listens for OS keyboard events and claims them to the room as a fact
+
+- #648 - Listens for OS keyboard events and claims them to the room as a fact
 
 **Debug**
-* #10 - A live view of the entire contents of the broker's fact table
-* #11 Latency measurment - Measures the round trip time of claiming a fact and receiving a subscription notification about it
+
+- #10 - A live view of the entire contents of the broker's fact table
+- #11 Latency measurment - Measures the round trip time of claiming a fact and receiving a subscription notification about it
 
 **Protocol Adapters**
-* #20 - Accepts HTTP POST messages about claims and retracts and forwards them to the broker
+
+- #20 - Accepts HTTP POST messages about claims and retracts and forwards them to the broker
 
 ## Editing Source Code
 
@@ -266,18 +273,19 @@ programmable space itself. In this example we'll use we using the "papers with c
 **Program #1013 - Text Editor:**
 
 Subscriptions:
-* Get source code of the program the text editor is pointing at and the text editor's size:
+
+- Get source code of the program the text editor is pointing at and the text editor's size:
   ```
   paper 1013 is pointing at paper $targetId,
   $targetName has paper ID $targetId,
   $targetName has source code $sourceCode,
   paper 1013 has width $myWidth height $myHeight angle $ at ( $ , $ )
   ```
-  * #277 claims which papers are pointing at each other. This depends on #1601 to do the paper detection and tracking.
-  * #390 claims what papers and source codes are in the system at boot
-  * #577 claims facts about new source codes when programs are edited
-  * #620 calculates a simple width, height, position, and angle based on the raw #1601 paper detection.
-* Keyboard input:
+  - #277 claims which papers are pointing at each other. This depends on #1601 to do the paper detection and tracking.
+  - #390 claims what papers and source codes are in the system at boot
+  - #577 claims facts about new source codes when programs are edited
+  - #620 calculates a simple width, height, position, and angle based on the raw #1601 paper detection.
+- Keyboard input:
   ```
   keyboard $ typed key $key @ $t
   ```
@@ -285,73 +293,81 @@ Subscriptions:
   ```
   keyboard $ typed special key $specialKey @ $t
   ```
-  * #648 listens for keyboard events on the host operating system and claims them to the room as facts
+  - #648 listens for keyboard events on the host operating system and claims them to the room as facts
 
 Claims:
-* `wish {targetName} has source code {updated source code}`
-    * Subscribed to by #577 to claim the new source code. #577 causes #40 to compile the code and edit the file for the program on the host operating system.
-* `wish {targetName} would be running` (Retract then claim)
-    * Subscribed to by #1900 to restart the program on the host operating system after the source code was edited
-* `wish a paper would be created in {language} with source code {code} @ {currentTime}`
-    * Subscribed to by #1459 which create the needed files on the host operating system and make the claims about the new program similar to #390 during boot.
-* `wish paper {targetID} at {targetName} would be printed`
-    * Subscribed to by #1382 which creates a PDF of the updated source code. #1382 makes a claim that #498 subscribes to that causes this PDF to be printed on a printer in the room.
-* `draw graphics {serializedGraphics} on 1013`
-    * Subscribed to by #1999 which renders the graphics needed to be projection mapping on top of the #1013 program in the room.
+
+- `wish {targetName} has source code {updated source code}`
+  - Subscribed to by #577 to claim the new source code. #577 causes #40 to compile the code and edit the file for the program on the host operating system.
+- `wish {targetName} would be running` (Retract then claim)
+  - Subscribed to by #1900 to restart the program on the host operating system after the source code was edited
+- `wish a paper would be created in {language} with source code {code} @ {currentTime}`
+  - Subscribed to by #1459 which create the needed files on the host operating system and make the claims about the new program similar to #390 during boot.
+- `wish paper {targetID} at {targetName} would be printed`
+  - Subscribed to by #1382 which creates a PDF of the updated source code. #1382 makes a claim that #498 subscribes to that causes this PDF to be printed on a printer in the room.
+- `draw graphics {serializedGraphics} on 1013`
+  - Subscribed to by #1999 which renders the graphics needed to be projection mapping on top of the #1013 program in the room.
 
 ## Broker
 
-![Broker diagram](/doc/broker-diagram.png?raw=true)
+![Broker diagram](/docs/broker-diagram.png?raw=true)
 
 Main state:
-* List of active subscriptions
-* Fact Table - array of facts in memory
+
+- List of active subscriptions
+- Fact Table - array of facts in memory
 
 Main loop:
-* Receive event. Event = (type, source, value)
-* type = PING -> Send blank notification messages to {source} 
-* type = BATCH -> forward event to Batch Handler
-* type = SUBSCRIBE -> forward event to Subscribe Handler
+
+- Receive event. Event = (type, source, value)
+- type = PING -> Send blank notification messages to {source}
+- type = BATCH -> forward event to Batch Handler
+- type = SUBSCRIBE -> forward event to Subscribe Handler
 
 Notification Sender:
-* Owns the ZeroMQ DEALER socket
-* Keep cache of the last value send to a (source, subscription ID)
-* For all notifications (source, subscription ID, list of results)
-    * if (source, subscription ID) not in cache or if list of results is different than cached value:
-        * Send ZeroMQ message to {source}
+
+- Owns the ZeroMQ DEALER socket
+- Keep cache of the last value send to a (source, subscription ID)
+- For all notifications (source, subscription ID, list of results)
+  - if (source, subscription ID) not in cache or if list of results is different than cached value:
+    - Send ZeroMQ message to {source}
 
 Batch Worker
-* For each event (source, value):
-    * JSON parse string value into list of claims and retracts
-    * For each claim or retract in list: perform update on main fact table
-    * Forward list of claims and retracts to all subscriber workers
+
+- For each event (source, value):
+  - JSON parse string value into list of claims and retracts
+  - For each claim or retract in list: perform update on main fact table
+  - Forward list of claims and retracts to all subscriber workers
 
 Subscribe Handler
-* For each subscription request event (source, value):
-    * JSON parse string value into (subscription ID, query (list of facts))
-    * Claim subscription as a fact to the room
-    * Add subscription to list of active subscriptions
-    * Start new subscriber worker
+
+- For each subscription request event (source, value):
+  - JSON parse string value into (subscription ID, query (list of facts))
+  - Claim subscription as a fact to the room
+  - Add subscription to list of active subscriptions
+  - Start new subscriber worker
 
 Subscriber worker
-* Save a filtered fact table based on each query part of the subscription
-* Listen for messages forwarded from the Batch Worker
-    * do the claim/retract updates on each of the filtered fact tables
-    * if facts in fact table were updated: calculate new results and forward them to the notification worker
+
+- Save a filtered fact table based on each query part of the subscription
+- Listen for messages forwarded from the Batch Worker
+  - do the claim/retract updates on each of the filtered fact tables
+  - if facts in fact table were updated: calculate new results and forward them to the notification worker
 
 Fact Table / Database
-* Term = (Type string, Value string)
-* Fact = []Term
-* Database = map[serialized fact to string] -> Fact
-* Claim (fact):
-    * Database[serialized(fact)] = fact
-* Retract (query):
-    * if query has no variables or wildcards:
-        * For all facts in Database:
-            * if match(): delete from Database
-    * otherwise: delete from Database
-* match(): Datalog query match
-* Message format (program ID, subscription ID, rest of fact...)
+
+- Term = (Type string, Value string)
+- Fact = []Term
+- Database = map[serialized fact to string] -> Fact
+- Claim (fact):
+  - Database[serialized(fact)] = fact
+- Retract (query):
+  - if query has no variables or wildcards:
+    - For all facts in Database:
+      - if match(): delete from Database
+  - otherwise: delete from Database
+- match(): Datalog query match
+- Message format (program ID, subscription ID, rest of fact...)
 
 # Gallery
 
