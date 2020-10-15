@@ -244,7 +244,7 @@ The bidirectional communiation between programs and the broker is handled via Ze
 
 # Setting up your own programmable space
 
-Every space is different and should be built to fit the needs, experience, and goals of the people that work within it. The room is not an app you download and run, but something that should be built by you. But spaces do have similar baseline needs:
+Every space is different and should be built to fit the needs, experience, and goals of the people that work within it. A programmable space is not an app you download and run, but something that should be built by you. But spaces do have similar baseline needs:
 
 - A way for humans and computers to understand what programs are running and which are not.
 - Some sort of display that running programs can use for visual feedback
@@ -257,10 +257,7 @@ This guide will assume you have a webcam and a projector to do projection mappin
 and an alternative display like a computer monitor if you don't have a projector.
 A more immersive experience can be made by putting the cameras and projectors in the ceiling, but to
 begin with I'll assume you are pointing the projector and camera at a wall. A magnetic whiteboard is a nice way
-to attach papers to the wall, but I have also used rolled painter's tape.
-
-Programs are represented physically as papers with code written on them. When a paper is face-up, showing the code, then it is running. A camera is used as a sensor. Papers are marked with patterns of colored dots in their corners for identification. A camera frame can be process to figure out where the dots are, what papers they correspond to, and therefore where papers are visible in the space.
-A projector displays graphics on the programs as the running programs instruct them to.
+to attach papers to the wall, but I have also used painter's tape.
 
 ## Bill of Materials
 
@@ -276,13 +273,12 @@ A projector displays graphics on the programs as the running programs instruct t
 
    - Some way to mount the projector
 
-4. A generic color 2D printer
+4. A generic color 2D printer for printing the papers that represent programs.
 
 5. Magnetic whiteboard or painters tape to attach papers to the wall
 
 6. A computer monitor or TV as a supplemental display.
    - A monitor is useful when starting the computer and when debugging
-   - I use a TV as a supplemental display. Best used to display one thing as a time in full screen, such as a text editor. TVs and monitors are less immersive than projection, but they can be useful when used as a pure display and not as the screen for a computer's operating system.
 
 Arrange the webcam and projector so that the webcam can see all of the projection area and a little more.
 
@@ -297,7 +293,7 @@ Golang:
 
 - For the broker and a few core programs
 - [Golang 1.12](https://golang.org/)
-- Dependencies are tracked in the `go.mod` file and will be automatically downloaded and installed when running a Go program for the first time.
+- Dependencies are tracked in the `broker/go.mod` file and will be automatically downloaded and installed when running a Go program for the first time.
 - When building the Go files, you may need to copy the `broker/go.mod` and `broker/go.sum` files to the root folder of this repo in order for the `src/programs/` Go files to be build properly.
 
 Node.js:
@@ -317,7 +313,7 @@ Python:
 
 Lua/Love2D:
 
-- Used for graphical output `src/lua/graphics_test/main.lua`
+- Used for graphical output `src/programs/graphics.lua`
 - `sudo apt install lua5.1`
 - `sudo apt install love` (for love 2d)
 - `sudo apt install luarocks`
@@ -353,37 +349,34 @@ For moving windows around programmatically `sudo apt install xdotool` is needed.
 
 **Starting the broker**:
 
-- Run `./jig start`
-  - This starts the broker and `0__boot.js`
+- Run `./jig start`. This starts the broker and `0__boot.js`
 
 **Paper sensing**:
 
-1. Grab a frame from the webcam and find everything that looks like a dot (#1600)
-2. Get the list of dots and figure out what papers they map to using the knowledge that papers have only certains patterns of dots in the four corners of a paper (#1800)
-3. Get the list of visual papers and wish that the corresponding program stored on a computer was running. (#826)
-4. Get all wishes for programs that should be running and run them on a computer. (#1900)
+1. Grab a frame from the webcam and detect papers (#1601)
+2. Get the list of visible papers and wish that the corresponding program stored on a computer be running. (#826)
+3. Get all wishes for programs that should be running and run them on a computer. (#1900)
 
 **Projection**:
 
-1. A process listens for the locations of all papers and each papers wishes for graphics to be drawn on them. Additionally it listens for a projector-camera calibration so the display is able to perform the projection mapping. (`src/lua/graphics_test/main.lua`)
+1. A process listens for the locations of all papers and each papers wishes for graphics to be drawn on them. Additionally it listens for a projector-camera calibration so the display is able to perform the projection mapping. (`src/programs/graphics.lua`)
 
 **Program editing**:
 
-To edit and create programs, there is a special piece of paper that edits the code of whatever paper it is pointing at. The code being edited is projected on to the text editor paper. A wireless keyboard associated with the text editor edits the text. When a new version of code is saved, a new version of the paper is printed out of a new sheet of paper to replace the old piece of paper.
+The `1013` program is used to edit the source code of programs in the room. It edits the code of whatever program it is pointing at. The code being edited is projected onto the text editor program.
 
-1. The input from a wireless keyboard is captured and claimed to the room (#648)
-2. When the system starts, a program reads the contents of all code files and claims them to the room (#390)
-3. The text editor paper (#1013):
-   a. Gets the source of the program it is editing
-   b. Listens for the latest key presses to control the text editor cursor
-   c. Wishes the text editor graphics would be projected on it
-   d. When saving a program, the text editor wishes some other process would persist the new source code
-4. A program listens for wishes of edited programs, transforms the code from the room's domain specific language into, and then wishes that the files on disk would be edited and run (#40). Another program persists the changes to the source code to the computer's disk (#577) and then causes the process to be restarted (#1900).
-5. Simultaneously when saving a program, another program generates a PDF of a new piece of paper (#1382) and then another program talks to the printer to print the PDF (#498).
+[Read more about source code editing here](/docs/editing-source-code.md).
+
+**Debugging**:
+
+- Open `localhost:3000` in your browser to see the broker's fact table
+- `./jig log` to see the broker log
+- `ps aux | grep programs/` to see what programs are running
+- `tail -f src/programs/logs/YOUR_PROGRAM_NAME.log` to see the logs from a particular program.
 
 #### Projection mapping calibration
 
-Open `1600`'s desktop application. Press `1` and then click on the top left corner of the projection region.
+Open `1601`'s desktop application. Press `1` and then click on the top left corner of the projection region.
 Repeat for `2`, `3`, and `4` in a clock-wise order. Press ` to stop editing corners.
 
 # Getting Involved
@@ -391,11 +384,9 @@ Repeat for `2`, `3`, and `4` in a clock-wise order. Press ` to stop editing corn
 As this is an informal and long-term research project, we invite everyone to make their own programmable spaces and share their thoughts.
 A programmable space is not an application that can just be downloaded to a computer, but this Github repository
 contains a broker and an example set of programs that is a good starting point for your own programmable space.
-There are many technical changes and areas where this repositories broker and example programs could be improved - make
-a fork of this repository and make pull requests if you would like to suggest an improvement.
+Fork this repository and make pull requests if you would like to suggest an improvement.
 
-An even more important way to contribute to this project is to build a programmable space system that is valuable to
-you and the people that share your space and to share your findings.
+An even more important way to contribute to this project is to build a programmable space system that is valuable to the people around you and then share your findings.
 What were people empowered to do?
 What new types of challenges were found in trying to move a computer system into the physical world?
 What types of edits and usage cases were valuable to the people in your space?
@@ -404,4 +395,5 @@ What types of edits and usage cases were valuable to the people in your space?
 
 - [Dynamicland](https://dynamicland.org/)
 - ["Living Room"](https://github.com/living-room) project @ Recurse Center
-- Saul Greenberg and Chester Fitchett. 2001. Phidgets: easy development of physical interfaces through physical widgets. In <i>Proceedings of the 14th annual ACM symposium on User interface software and technology</i> (<i>UIST '01</i>). Association for Computing Machinery, New York, NY, USA, 209–218. DOI:https://doi.org/10.1145/502348.502388
+- Phidgets: easy development of physical interfaces through physical widgets. UIST 2001
+- Tangible Bits: Towards Seamless Interfaces between People, Bits, and Atoms. CHI 1997
