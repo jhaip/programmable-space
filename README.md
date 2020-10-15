@@ -20,10 +20,10 @@ The idea of a programmable space is an ongoing area of research by [Jacob Haip](
 
 # Backstory
 
-Today people can do almost everything on a computer, but "using a computer" means everyone stares at apps on their own little rectangular screens. This is sad because it makes people tired of screens, antisocial, reduces people to button clicks, and convinces people that they "aren't good with computers".
+Today people can do almost everything on a computer, but "using a computer" means staring at apps on their own little rectangular screens. This is sad because it makes people tired of screens, antisocial, reduces people to button clicks, and convinces people that they "aren't good with computers".
 
 How can we change the affordances of using a computer so that they are more humane and inviting?
-Computers demand all your foreground attention in a fixed position. How can we take advantage of periphery senses and the full body capability of people?
+Computers demand all your foreground attention in a fixed position. How can we take advantage of periphery senses and the full body capabilities of people?
 Computer GUIs cram so much information in screens behind layers of menus and pages when there is so much space in the world! How can we take advantage of all the space in the room?
 People consume apps and don't feel empowered to do much besides download a better app. In some ways this makes sense when the barrier to making something new is so formal. How can we make editing the tools you use a normal and easy part of using a computer?
 
@@ -38,24 +38,23 @@ We explore these ideas in a long term research project under the name "programma
 # Project Overview
 
 Most research so far has used the idea that computer programs have a 1-1 mapping with physical objects.
-Physical objects have the source code written/printed on them so people in the room can understand what the code is/does.
-There is no use of traditional GUI computer interface: everything is remade in the room.
+Physical objects have the source code written/printed on them so people in the room can read what the code does.
+There is no use of traditional GUI computer interface - everything is remade in the room.
 
 [Click here to see an example of a minimal programmable space](https://haiperspace.com/writing/20-02-11-rfid-cards/) that uses RFID cards as the physical representation of programs.
 
-The programmable space is the combination of two parts:
+A programmable space is the combination of two parts:
 
 1. What the physical objects are, how people interact with them, and how they can be used as inputs to the system
-2. The specific technical implementation that brings the system to life and defines the semantics of the code, what is possible for people in a programmable space, and how it can be implemented on existing computer systems.
+2. The software implementation that brings the system to life. This defines the semantics of the code, what is possible for people in a programmable space, and how it can be implemented on existing computer systems.
 
-Although this is a Github project and software systems are important to the project implementation, I should be clear this is not a "software project".
-The research goals of this project are to experience the physical side and the software implementation is just necessary step in the prototype.
+The code in this Github project covers the software implementation. The physical side is described in this README and is illustrated in the [Gallery](#gallery).
 
 ## Physical Objects
 
-Research so far has used the idea that textual/graphical code is printed on physical objects in the room.
-Although the project research explores more physical ways to make and mold systems, I don't imagine a world that is totally free of text
-and building on existing programming languages is a convenient starting point.
+Research so far has used the idea that program source code is printed on physical objects in the room.
+Although this research explores more physical ways to make and mold systems, I don't imagine a world that is totally free of text
+and building on existing textual programming languages is a convenient starting point.
 
 Therefore there are two main types of physical objects:
 
@@ -64,7 +63,7 @@ Therefore there are two main types of physical objects:
 
 Two types of physical representations of code have been tested:
 
-### 1. Papers with Colored Dots on corners
+### 1. Programs represented by papers with colored dots on corners
 
 ![Paper dot sensing diagram](/docs/paper-dot-sensing.png?raw=true)
 
@@ -72,7 +71,7 @@ Inspired by the papers of [Dynamicland](https://dynamicland.org/), programs are 
 source code and colored dots printed on it. The printed source code is so people in the room can understand what the program does.
 The colored dots are so a camera and computer system can identify and understand what the program does.
 
-Each paper has four sets of colored dots in each corner. Four different colors are used along with seven dots per corner.
+Each paper has four sets of colored dots in each corner. Four different colors are used for the seven dots in each corner.
 Each corner can uniquely identify the papers, but 3 or 4 corners are needed to get the size and orientation of a paper.
 A program takes in webcam images, processes them with OpenCV, and then claims what and where papers are located in the room.
 
@@ -80,10 +79,10 @@ The middle of the paper is also a nice canvas for projecting graphics onto the p
 The projector and camera can be calibrated together to enable projection mapping wherever papers are put in the room.
 Having a mini display for every program is fun and helpful.
 
-- **Pros**: Takes advantage of how common 2D printers are. Programs can be sensed in any orientation. Papers can be cut and made different sizes. Support dynamic projection mapping well.
+- **Pros**: Takes advantage of how common 2D printers are. Programs can be sensed in any orientation. Papers can be cut and made different sizes. Supports dynamic projection mapping well.
 - **Cons**: Camera systems have occlusion and lighting issues.
 
-### 2. RFID cards with printed source code.
+### 2. Programs represented by RFID cards with printed source code.
 
 ![RFID card sensing diagram](/docs/rfid-sensing.png?raw=true)
 
@@ -93,7 +92,7 @@ and used a plastic trading card case to hold both the RFID card and the receipt 
 Another variant I have tried is [taping RFID cards to the back of clipboards](https://haiperspace.com/writing/19-03-17-programmable-space/) that hold full size papers with printed source code.
 
 The RFID cards are sensed by RFID readers. RFID sensors can only sense one card at a time and cards must be placed
-directly on top of the sensor so a separate sensor is needed for every place a program can be placed.
+directly on top of the sensor so a separate sensor is needed for every program.
 For example, two [RFID sensors](https://vetco.net/products/rfid-reader-writer-module-for-arduino-d40?gclid=EAIaIQobChMIysHuremK7AIVmoTICh0sgganEAQYAiABEgKCMPD_BwE) can be hidden behind an [angled photo frame](https://www.dollartree.com/special-moments-freestanding-borderless-horizontal-plastic-photo-frames-6x4-in/225398):
 
 ![code stand](https://haiperspace.com/writing/20-02-11-rfid-cards/rfid-card-cover.png)
@@ -107,10 +106,10 @@ For example, two [RFID sensors](https://vetco.net/products/rfid-reader-writer-mo
 Behind the scenes, the pieces of code with a 1-1 mapping to physical objects run on computers as normal Operating System processes.
 Users do not use a normal computer GUI directly, and so many low-level actions such as running programs, editing programs, printing,
 graphical displays, sound, etc. are remade in the physical context of the room.
-There is a core group of "boot programs" that are still programs that live physically in the room, but form the "Operating System"
+There is a core group of "boot programs" that form the "Operating System"
 layer that support all the other programs in the room.
 
-Each process connects to a broker that manages communication with the system.
+Each process connects to a broker that manages communication within the system.
 The broker manages the "fact table" and communication between processes.
 The processes themselves handle the sensing of physical objects and all other functionality of the system.
 
@@ -146,7 +145,7 @@ Claim(Soil moisture is 50.3)
 Retract(Soil moisture is 50.3)
 // $ is a single wildcard value of any type
 Retract(Soil moisture is $)
-// % is a postfix wilcard that matches until the end of the fact
+// % is a postfix wildcard that matches until the end of the fact
 Retract(Soil moisture %)
 ```
 
@@ -168,7 +167,7 @@ Programs can listen for changes to the fact table to influence their own actions
 > ```
 > Light should be $value
 > -->
-> 1. value = red
+> 1. value = off
 > ```
 >
 > ```
@@ -199,23 +198,23 @@ Programs can listen for changes to the fact table to influence their own actions
 
 The Fact Table is maintained by a broker.
 
-**_Broker_** = Software system that objects and program talk to that manages updates to the Fact Table and informs subscribers about changes. All Claims, Retracts, Subscriptions, and Subscription Results flow through it.
+**_Broker_** = Software system that objects and programs talk to that manages updates to the Fact Table and informs subscribers about changes. All Claims, Retracts, Subscriptions, and Subscription Results flow through it.
 
 The Broker also performs helpful things like
 
 1. Saving a prior history of facts for new subscribers
-2. Performance intensive code to handle pub/sub
+2. Performance critical code to calculate subscription results
 3. Consolidating Datalog query logic
 
 The shared fact table is used as a communication mechanism between programs for this project because it:
 
-- Allows the people writing programs to claims facts and subscriptions that read closer to a sentence.
+- Allows the people writing programs to claims facts and subscriptions that read like a sentence.
 - Allows programs to communicate asyncronously without needing to know about other programs.
 - Maps well to the idea that programs in the same physical space share common knowledge.
 
-When a program is stopped, all the facts and subscriptions is made in the shared fact table are removed. This keeps the shared fact table relevant only the programs that are currently visible in the room and running. Additionally all facts in the shared fact table record what program claimed the fact so the same fact claimed by two different programs is considered two unique facts.
+When a program is stopped, all the facts and subscriptions it made in the shared fact table are removed. This keeps the shared fact table relevant only the programs that are currently visible in the room and running. Additionally all facts in the shared fact table record what program claimed the fact so the same fact claimed by two different programs is considered two unique facts.
 
-The broker should be "local" to the programs in the room and only serve about as many programs that can fit in a single "space" or "room". For larger spaces or to connect multiple rooms together, facts can be explicitly shared to other brokers and computers. In this way data and programs are federated. Federation is useful both technically (because a single broker cannot hold all the facts in the universe) and to aid in the understanding of the people working in a space. For example the position of a paper on a table is very important to someone reading the paper at the same table, but the position of a paper in a different room is irrelevant unless the person at the table as some special reason they care about something going on somewhere else.
+The broker should be "local" to the programs in the room and only serve about as many programs that can fit in a single "space" or "room". For larger spaces or to connect multiple rooms together, facts can be explicitly shared to other brokers and computers. In this way data and programs are federated. Federation is useful both technically (because a single broker cannot hold all the facts in the universe) and to aid in the understanding of the people working in a space. For example, the position of a paper on a table is very important to someone reading the paper at the same table, but the position of a paper in a different room is irrelevant unless the person at the table has some special reason they care about something going on somewhere else.
 
 Programs have been implemented in multiple programming languages (Python, Node.js, Golang, Lua, an experiemental custom langauge).
 The bidirectional communiation between programs and the broker is handled via ZeroMQ TCP sockets (ROUTER/DEALER pattern).
@@ -232,7 +231,7 @@ The bidirectional communiation between programs and the broker is handled via Ze
 - [Voice Assistant reimagined](https://vimeo.com/438758942). 2020-07-15
 - [Recreation of the "Dangling String"](https://twitter.com/jhaip/status/1246211983269126146). 2020-04-03
 - [Calendar on wall and input and output using laser pointer and projector desk lamp](https://vimeo.com/400827615). 2020-03-25
-- [Turtlebot simulation using cards as input parameters](https://vimeo.com/391765260). 2020-03-10
+- [Turtlebot simulation using cards as input parameters](https://twitter.com/jhaip/status/1237577165731840000). 2020-03-10
 - [Desk lamp with projector inside used as output](https://vimeo.com/391765260). 2020-02-16.
 - [Programs represented by RFID Cards and receipt paper](https://haiperspace.com/writing/20-02-11-rfid-cards/). 2020-02-11
 - [Animated drawing from papers on desk](https://twitter.com/jhaip/status/1177193544240508928). 2019-09-26
