@@ -45,8 +45,6 @@ def draw_text(img, text, x, y, fontsize=80):
 
 def draw():
     global graphics
-    # clearing image to white
-    display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
     font_size = 72
     for g in graphics:
         opt = g["options"]
@@ -85,11 +83,14 @@ def sub_callback_graphics(results):
     if new_graphics_map != graphics_map:
         graphics = new_graphics
         graphics_map = new_graphics_map
-        draw()
         if partial_update_draw_count > 20:
             partial_update_draw_count = 0
+            draw()
             display.draw_full(constants.DisplayModes.GC16)
         else:
+            # clearing image to white
+            display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
+            draw()
             display.draw_partial(constants.DisplayModes.DU)
 
 init(__file__)
