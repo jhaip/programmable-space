@@ -68,8 +68,6 @@ def sub_callback_graphics(results):
     logging.info("sub_callback_graphics")
     logging.info(results)
 
-    partial_update_draw_count += 1
-
     new_graphics = []
     new_graphics_map = {}
     # Here we should calculate if we should do a partial or a full refresh?
@@ -83,6 +81,7 @@ def sub_callback_graphics(results):
     if new_graphics_map != graphics_map:
         graphics = new_graphics
         graphics_map = new_graphics_map
+        partial_update_draw_count += 1
         if partial_update_draw_count > 20:
             partial_update_draw_count = 0
             draw()
