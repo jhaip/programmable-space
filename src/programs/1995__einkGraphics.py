@@ -7,6 +7,7 @@ import json
 import logging
 
 graphics = []
+graphics_map = {}
 
 print('Initializing EPD...')
 # here, spi_hz controls the rate of data transfer to the device, so a higher
@@ -36,7 +37,6 @@ def draw_text(img, text, x, y, fontsize=80):
         font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', fontsize)
     except OSError:
         font = ImageFont.truetype('/usr/share/fonts/TTF/DejaVuSans.ttf', fontsize)
-    text_height = fontsize
     draw.text((x, y), text, font=font)
 
 
@@ -55,23 +55,30 @@ def draw():
             lines = str(opt["text"]).split("\n")
             line_height = font_size * 1.3
             for i, l in enumerate(lines):
-                draw_text(display.frame_buf, l, opt["x"], opt["y"] + i * line_height)
+                draw_text(display.frame_buf, l, opt["x"], opt["y"] + i * line_height, font_size)
         elif command_type == "fontsize":
             if opt:
                 font_size = opt
     display.draw_full(constants.DisplayModes.GC16)
 
 
-@subscription(["$ $ draw graphics $graphics on $"]) # get_my_id_pre_init(__file__)])
+@subscription(["$ $ draw graphics $graphics on 1999"]) # get_my_id_pre_init(__file__)])
 def sub_callback_graphics(results):
-    global graphics
+    global graphics, graphics_map
     logging.info("sub_callback_graphics")
     logging.info(results)
-    graphics = []
+
+    new_graphics = []
+    new_graphics_gap = {}
     # Here we should calculate if we should do a partial or a full refresh?
     # or maybe we always do a partial and then every Nth update do a full?
     for v in results:
-        graphics.extend(json.loads(v["graphics"]))
-    draw()
+        new_graphics_gap[v] = True
+        new_graphics.extend(json.loads(v["graphics"]))
+    
+    if new_graphics_map != graphics_map:
+        graphics = new_graphics
+        graphics_map = new_graphics_gap
+        draw()
 
 init(__file__)
