@@ -9,6 +9,7 @@ import logging
 
 graphics = []
 graphics_map = {}
+partial_update_draw_count = 0
 
 print('Initializing EPD...')
 # here, spi_hz controls the rate of data transfer to the device, so a higher
@@ -46,7 +47,7 @@ def draw():
     global graphics
     # clearing image to white
     display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
-    font_size = 80
+    font_size = 72
     for g in graphics:
         opt = g["options"]
         command_type = g["type"]
@@ -61,14 +62,15 @@ def draw():
         elif command_type == "fontsize":
             if opt:
                 font_size = opt
-    display.draw_full(constants.DisplayModes.GC16)
 
 
 @subscription(["$ $ draw graphics $graphics on 1999"]) # get_my_id_pre_init(__file__)])
 def sub_callback_graphics(results):
-    global graphics, graphics_map
+    global graphics, graphics_map, partial_update_draw_count
     logging.info("sub_callback_graphics")
     logging.info(results)
+
+    partial_update_draw_count += 1
 
     new_graphics = []
     new_graphics_map = {}
@@ -84,5 +86,10 @@ def sub_callback_graphics(results):
         graphics = new_graphics
         graphics_map = new_graphics_map
         draw()
+        if partial_update_draw_count > 20:
+            partial_update_draw_count = 0
+            display.draw_full(constants.DisplayModes.GC16)
+        else:
+            display.draw_partial(constants.DisplayModes.DU)
 
 init(__file__)
