@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 from IT8951 import constants
 from IT8951.display import AutoEPDDisplay
 import time
+import json
 import logging
 
 graphics = []
