@@ -2,6 +2,7 @@ from helper import init, claim, retract, prehook, subscription, batch, MY_ID_STR
 from PIL import Image, ImageDraw, ImageFont
 from IT8951 import constants
 from IT8951.display import AutoEPDDisplay
+from os import path
 import time
 import json
 import logging
@@ -34,7 +35,8 @@ def draw_text(img, text, x, y, fontsize=80):
     draw = ImageDraw.Draw(img)
     # TODO: cache loaded fonts
     try:
-        font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeSans.ttf', fontsize)
+        font_path = path.join(path.dirname(path.dirname(__file__)), 'files/Inconsolata-Regular.ttf')
+        font = ImageFont.truetype(font_path, fontsize)
     except OSError:
         font = ImageFont.truetype('/usr/share/fonts/TTF/DejaVuSans.ttf', fontsize)
     draw.text((x, y), text, font=font)
