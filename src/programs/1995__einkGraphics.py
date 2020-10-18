@@ -73,8 +73,10 @@ def sub_callback_graphics(results):
     # Here we should calculate if we should do a partial or a full refresh?
     # or maybe we always do a partial and then every Nth update do a full?
     for v in results:
-        new_graphics_gap[v] = True
-        new_graphics.extend(json.loads(v["graphics"]))
+        graphics_list = json.loads(v["graphics"])
+        new_graphics.extend(graphics_list)
+        for g in graphics_list:
+            new_graphics_gap[json.dumps(g)] = True
     
     if new_graphics_map != graphics_map:
         graphics = new_graphics
