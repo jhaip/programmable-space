@@ -60,7 +60,7 @@ def draw():
     display.draw_full(constants.DisplayModes.GC16)
 
 
-@subscription(["$ $ draw graphics $graphics on " + get_my_id_pre_init(__file__)])
+@subscription(["$ $ draw graphics $graphics on $"]) # get_my_id_pre_init(__file__)])
 def sub_callback_graphics(results):
     global graphics
     logging.info("sub_callback_graphics")
