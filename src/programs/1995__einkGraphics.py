@@ -66,7 +66,7 @@ def draw_thread(q):
     partial_update_draw_count = 0
     while True:
         try:
-            graphics = q[0][:]  # Make a copy of q[0], not sure if needed
+            graphics = q.pop()
             partial_update_draw_count += 1
             if partial_update_draw_count > 100:
                 partial_update_draw_count = 0
@@ -82,10 +82,18 @@ def draw_thread(q):
         except IndexError:
             pass
 
+@prehook
+def my_prehook():
+    batch_claims = []
+    batch_claims.append({"type": "death", "fact": [
+        ["id", get_my_id_str()],
+    ]})
+    batch(batch_claims)
+    logging.error("cleaning my old subs")
 
 @subscription(["$ $ draw graphics $graphics on 1999"]) # get_my_id_pre_init(__file__)])
 def sub_callback_graphics(results):
-    global graphics_map
+    global graphics_map, last_graphics
     logging.info("sub_callback_graphics")
     logging.info(results)
 
@@ -102,6 +110,7 @@ def sub_callback_graphics(results):
     if new_graphics_map != graphics_map:
         graphics_map = new_graphics_map
         last_graphics.append(new_graphics)
+        logging.error("updated graphics")
 
 worker = threading.Thread(target=draw_thread, args=(last_graphics,))
 worker.setDaemon(True)
