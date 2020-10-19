@@ -94,8 +94,8 @@ def my_prehook():
 @subscription(["$ $ draw graphics $graphics on 1999"]) # get_my_id_pre_init(__file__)])
 def sub_callback_graphics(results):
     global graphics_map, last_graphics
-    logging.info("sub_callback_graphics")
-    logging.info(results)
+    # logging.info("sub_callback_graphics")
+    # logging.info(results)
 
     new_graphics = []
     new_graphics_map = {}
