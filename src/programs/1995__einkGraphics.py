@@ -3,21 +3,14 @@ from PIL import Image, ImageDraw, ImageFont
 from IT8951 import constants
 from IT8951.display import AutoEPDDisplay
 from os import path
+from collections import deque
+import threading
 import time
 import json
 import logging
 
-graphics = []
+last_graphics = deque(maxlen=1)
 graphics_map = {}
-partial_update_draw_count = 0
-
-print('Initializing EPD...')
-# here, spi_hz controls the rate of data transfer to the device, so a higher
-# value means faster display refreshes. the documentation for the IT8951 device
-# says the max is 24 MHz (24000000), but my device seems to still work as high as
-# 80 MHz (80000000)
-rotate = None
-display = AutoEPDDisplay(vcom=-1.32, rotate=rotate, spi_hz=24000000)
 
 def display_image_8bpp(display):
     img_path = 'images/sleeping_penguin.png'
@@ -43,8 +36,7 @@ def draw_text(img, text, x, y, fontsize=80):
     draw.text((x, y), text, font=font)
 
 
-def draw():
-    global graphics
+def draw(display, graphics):
     font_size = 72
     for g in graphics:
         opt = g["options"]
@@ -62,9 +54,38 @@ def draw():
                 font_size = opt
 
 
+def draw_thread(q):
+    print('Initializing EPD...')
+    logging.info('Initializing EPD...')
+    # here, spi_hz controls the rate of data transfer to the device, so a higher
+    # value means faster display refreshes. the documentation for the IT8951 device
+    # says the max is 24 MHz (24000000), but my device seems to still work as high as
+    # 80 MHz (80000000)
+    rotate = None
+    display = AutoEPDDisplay(vcom=-1.32, rotate=rotate, spi_hz=24000000)
+    partial_update_draw_count = 0
+    while True:
+        try:
+            graphics = q[0][:]  # Make a copy of q[0], not sure if needed
+            partial_update_draw_count += 1
+            if partial_update_draw_count > 100:
+                partial_update_draw_count = 0
+                display.clear()
+            if partial_update_draw_count % 20 == 0:
+                draw(display, graphics)
+                display.draw_full(constants.DisplayModes.GC16)
+            else:
+                # clearing image to white
+                display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
+                draw(display, graphics)
+                display.draw_partial(constants.DisplayModes.DU)
+        except IndexError:
+            pass
+
+
 @subscription(["$ $ draw graphics $graphics on 1999"]) # get_my_id_pre_init(__file__)])
 def sub_callback_graphics(results):
-    global graphics, graphics_map, partial_update_draw_count
+    global graphics_map
     logging.info("sub_callback_graphics")
     logging.info(results)
 
@@ -79,19 +100,11 @@ def sub_callback_graphics(results):
             new_graphics_map[json.dumps(g)] = True
     
     if new_graphics_map != graphics_map:
-        graphics = new_graphics
         graphics_map = new_graphics_map
-        partial_update_draw_count += 1
-        if partial_update_draw_count > 100:
-            partial_update_draw_count = 0
-            display.clear()
-        if partial_update_draw_count % 20 == 0:
-            draw()
-            display.draw_full(constants.DisplayModes.GC16)
-        else:
-            # clearing image to white
-            display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
-            draw()
-            display.draw_partial(constants.DisplayModes.DU)
+        last_graphics.append(new_graphics)
+
+worker = threading.Thread(target=draw_thread, args=(last_graphics,))
+worker.setDaemon(True)
+worker.start()
 
 init(__file__)
