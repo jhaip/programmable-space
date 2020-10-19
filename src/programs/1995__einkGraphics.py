@@ -86,7 +86,7 @@ def draw_thread(q):
 def my_prehook():
     batch_claims = []
     batch_claims.append({"type": "death", "fact": [
-        ["id", get_my_id_str()],
+        ["id", get_my_id_pre_init(__file__)],
     ]})
     batch(batch_claims)
     logging.error("cleaning my old subs")
