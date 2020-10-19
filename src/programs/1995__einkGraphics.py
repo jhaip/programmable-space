@@ -82,8 +82,10 @@ def sub_callback_graphics(results):
         graphics = new_graphics
         graphics_map = new_graphics_map
         partial_update_draw_count += 1
-        if partial_update_draw_count > 20:
+        if partial_update_draw_count > 100:
             partial_update_draw_count = 0
+            display.clear()
+        if partial_update_draw_count % 20 == 0:
             draw()
             display.draw_full(constants.DisplayModes.GC16)
         else:
