@@ -80,7 +80,7 @@ def draw_thread(q):
                 draw(display, graphics)
                 display.draw_partial(constants.DisplayModes.DU)
         except IndexError:
-            pass
+            time.sleep(0.01)
 
 @prehook
 def my_prehook():
