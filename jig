@@ -217,6 +217,18 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "camerastart" ]
   then
+    v4l2-ctl \
+      --set-ctrl=brightness=50 \
+      --set-ctrl=contrast=0 \
+      --set-ctrl=saturation=0 \
+      --set-ctrl=sharpness=0 \
+      --set-ctrl=exposure_time_absolute=1000
+    v4l2-ctl --device /dev/video0 --set-fmt-video=width=1280,height=720,pixelformat=MPEG
+    export PROG_SPACE_SERVER_URL="192.168.1.34"
+    python3 src/programs/1630__claimFrame.py &
+    echo -e "booting"
+  elif [ "$1" == "camerastart2" ]
+  then
     cd broker
     go run broker.go parser2.go subscriber.go database.go &
     echo -e "running broker"
