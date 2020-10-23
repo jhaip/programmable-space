@@ -13,7 +13,7 @@ COMBINED_TRANSFORM:setMatrix(
 
 graphics_cache = {}
 font = false
-font_cache = {}
+font_cache = {} -- TODO: limit size of font cache to prevent memory issues
 image_cache = {}
 image_cache_len = 0
 MAX_IMAGE_CACHE_LEN = 10 -- decoded base64 images are cached, but we don't want to store them forever
