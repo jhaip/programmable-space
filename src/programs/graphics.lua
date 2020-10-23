@@ -15,6 +15,8 @@ graphics_cache = {}
 font = false
 font_cache = {}
 image_cache = {}
+image_cache_len = 0
+MAX_IMAGE_CACHE_LEN = 10 -- decoded base64 images are cached, but we don't want to store them forever
 is_first_update = true
 
 local colors = {
@@ -235,7 +237,12 @@ function love.draw()
                 decoded = love.data.decode( 'data', 'base64', opt.bitmap_image_base64 )
                 imageData = love.image.newImageData( decoded )
                 image = love.graphics.newImage( imageData )
+                if image_cache_len > MAX_IMAGE_CACHE_LEN then
+                    image_cache = {}
+                    image_cache_len = 0
+                end
                 image_cache[opt.bitmap_image_base64] = image
+                image_cache_len = image_cache_len + 1
             else
                 image = image_cache[opt.bitmap_image_base64]
             end
