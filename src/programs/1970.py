@@ -57,9 +57,7 @@ def b64img_to_cv2_img(encoded_data):
     return img
 
 
-def detect(frame_data):
-    new_img_str = base64.b64decode(b64_img_str)
-    image = # TODO
+def detect(image):
     warped = cv2.flip( warped, -1 )  # flip both axes
     warped_grey = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     ret, threshold_image = cv2.threshold(warped_grey, THRESHOLD, 255, cv2.THRESH_BINARY)
