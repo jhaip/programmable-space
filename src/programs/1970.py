@@ -58,7 +58,7 @@ def b64img_to_cv2_img(encoded_data):
 
 
 def detect(image):
-    warped = cv2.flip( warped, -1 )  # flip both axes
+    warped = cv2.flip( image, -1 )  # flip both axes
     warped_grey = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     ret, threshold_image = cv2.threshold(warped_grey, THRESHOLD, 255, cv2.THRESH_BINARY)
     im2, raw_contours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
