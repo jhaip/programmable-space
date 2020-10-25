@@ -112,7 +112,7 @@ def sub_callback_frame(results):
     if results and len(results) > 0:
         b64_frame_data = results[0]["frame"]
         frame_img = b64img_to_cv2_img(b64_frame_data)
-        if frame_img not None:
+        if frame_img is not None:
             subframe_data = detect(frame_img)
             claim_data(subframe_data)
         else:
