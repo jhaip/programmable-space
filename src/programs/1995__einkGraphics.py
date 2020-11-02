@@ -4,6 +4,7 @@ from IT8951 import constants
 from IT8951.display import AutoEPDDisplay
 from os import path
 from collections import deque
+from datetime import datetime
 import threading
 import time
 import json
@@ -65,12 +66,14 @@ def draw_thread(q):
     display = AutoEPDDisplay(vcom=-1.32, rotate=rotate, spi_hz=24000000)
     partial_update_draw_count = 0
     last_drawn_graphics = None
+    last_clear = datetime.now()
     while True:
         try:
-            partial_update_draw_count += 1
             graphics = q.pop()
             last_drawn_graphics = graphics
-            if partial_update_draw_count % 20 == 0:
+            partial_update_draw_count += 1
+            if partial_update_draw_count > 10:
+                partial_update_draw_count = 0
                 draw(display, graphics)
                 display.draw_full(constants.DisplayModes.GC16)
             else:
@@ -80,12 +83,12 @@ def draw_thread(q):
                 display.draw_partial(constants.DisplayModes.DU)
         except IndexError:
             time.sleep(0.01)
-            if partial_update_draw_count > 1000:
-                partial_update_draw_count = 0
+            if (datetime.now() - last_clear).total_seconds() > 60:
                 display.clear()
                 if last_drawn_graphics is not None:
                     draw(display, last_drawn_graphics)
                     display.draw_full(constants.DisplayModes.GC16)
+                last_clear = datetime.now()
 
 @prehook
 def my_prehook():
