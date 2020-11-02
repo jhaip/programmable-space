@@ -67,6 +67,9 @@ def draw_thread(q):
     while True:
         try:
             graphics = q.pop()
+            if graphics == "CLEAR_SCREEN":
+                display.clear()
+                continue
             partial_update_draw_count += 1
             if partial_update_draw_count > 100:
                 partial_update_draw_count = 0
@@ -112,8 +115,16 @@ def sub_callback_graphics(results):
         last_graphics.append(new_graphics)
         logging.error("updated graphics")
 
+def hard_clear_timer(q):
+    while True:
+        time.sleep(10)
+        q.append("CLEAR")
+
 worker = threading.Thread(target=draw_thread, args=(last_graphics,))
 worker.setDaemon(True)
 worker.start()
+hard_clear_thread = threading.Thread(target=hard_clear_timer, args=(last_graphics,))
+hard_clear_thread.setDaemon(True)
+hard_clear_thread.start()
 
 init(__file__)
