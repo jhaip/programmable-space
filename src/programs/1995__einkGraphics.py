@@ -118,7 +118,7 @@ def sub_callback_graphics(results):
 def hard_clear_timer(q):
     while True:
         time.sleep(10)
-        q.append("CLEAR")
+        q.append("CLEAR_SCREEN")
 
 worker = threading.Thread(target=draw_thread, args=(last_graphics,))
 worker.setDaemon(True)
