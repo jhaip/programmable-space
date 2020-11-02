@@ -64,16 +64,12 @@ def draw_thread(q):
     rotate = None
     display = AutoEPDDisplay(vcom=-1.32, rotate=rotate, spi_hz=24000000)
     partial_update_draw_count = 0
+    last_drawn_graphics = None
     while True:
         try:
-            graphics = q.pop()
-            if graphics == "CLEAR_SCREEN":
-                display.clear()
-                continue
             partial_update_draw_count += 1
-            if partial_update_draw_count > 100:
-                partial_update_draw_count = 0
-                display.clear()
+            graphics = q.pop()
+            last_drawn_graphics = graphics
             if partial_update_draw_count % 20 == 0:
                 draw(display, graphics)
                 display.draw_full(constants.DisplayModes.GC16)
@@ -84,6 +80,12 @@ def draw_thread(q):
                 display.draw_partial(constants.DisplayModes.DU)
         except IndexError:
             time.sleep(0.01)
+            if partial_update_draw_count > 1000:
+                partial_update_draw_count = 0
+                display.clear()
+                if last_drawn_graphics is not None:
+                    draw(display, last_drawn_graphics)
+                    display.draw_full(constants.DisplayModes.GC16)
 
 @prehook
 def my_prehook():
@@ -115,16 +117,8 @@ def sub_callback_graphics(results):
         last_graphics.append(new_graphics)
         logging.error("updated graphics")
 
-def hard_clear_timer(q):
-    while True:
-        time.sleep(10)
-        q.append("CLEAR_SCREEN")
-
 worker = threading.Thread(target=draw_thread, args=(last_graphics,))
 worker.setDaemon(True)
 worker.start()
-hard_clear_thread = threading.Thread(target=hard_clear_timer, args=(last_graphics,))
-hard_clear_thread.setDaemon(True)
-hard_clear_thread.start()
 
 init(__file__)
