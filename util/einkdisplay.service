@@ -4,7 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+WorkingDirectory=/home/pi/
+User=pi
 # Copy this file to /etc/systemd/system
 # sudo systemctl daemon-reload
 # sudo systemctl start einkdisplay
