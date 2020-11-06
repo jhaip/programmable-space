@@ -70,10 +70,12 @@ def draw_thread(q):
     while True:
         try:
             graphics = q.pop()
+            logging.error("drawing updated graphics")
             last_drawn_graphics = graphics
             partial_update_draw_count += 1
             if partial_update_draw_count > 10:
                 partial_update_draw_count = 0
+                display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
                 draw(display, graphics)
                 display.draw_full(constants.DisplayModes.GC16)
             else:
