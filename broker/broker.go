@@ -109,7 +109,7 @@ func metrics_worker(metric_updates <-chan Metric) {
 	for update := range metric_updates {
 		cache_value, cache_hit := cache[update.Type][update.Source]
 		if cache_hit == false {
-			cache[update.Type][update.Source] = 0
+			cache[update.Type][update.Source] = 1
 		} else {
 			cache[update.Type][update.Source] = cache_value + 1
 		}
