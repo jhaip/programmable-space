@@ -59,6 +59,11 @@ type BatchMessage struct {
 	Fact [][]string `json:"fact"`
 }
 
+type Metric struct {
+	Type string		`json:"type"`
+	Source string	`json:"source"`
+}
+
 func checkErr(err error) {
 	if err != nil {
 		fmt.Println(err)
@@ -71,7 +76,7 @@ func makeTimestampMillis() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func notification_worker(notifications <-chan Notification, client *zmq.Socket) {
+func notification_worker(notifications <-chan Notification, client *zmq.Socket, metrics chan<- Metric) {
 	cache := make(map[string]string)
 	for notification := range notifications {
 		msg := fmt.Sprintf("%s%s%s", notification.Source, notification.Id, notification.Result)
@@ -84,6 +89,35 @@ func notification_worker(notifications <-chan Notification, client *zmq.Socket) 
 			_, sendErr := client.SendMessage(notification.Source, msgWithTime)
 			checkErr(sendErr)
 			zmqClient.Unlock()
+			metrics <- Metric{"NOTIFICATION", notification.Source}
+		}
+	}
+}
+
+func make_new_metric_cache() map[string]map[string]int {
+	cache := make(map[string]map[string]int)
+	cache["PING"] = make(map[string]int)
+	cache["SUBSCRIBE"] = make(map[string]int)
+	cache["BATCH"] = make(map[string]int)
+	cache["NOTIFICATION"] = make(map[string]int)
+	return cache
+}
+
+func metrics_worker(metric_updates <-chan Metric) {
+	cache := make_new_metric_cache()
+	lastLog := time.Now()
+	for update := range metric_updates {
+		cache_value, cache_hit := cache[update.Type][update.Source]
+		if cache_hit == false {
+			cache[update.Type][update.Source] = 0
+		} else {
+			cache[update.Type][update.Source] = cache_value + 1
+		}
+		timeElapsed := time.Since(lastLog)
+		if timeElapsed.Seconds() >= 10 {
+			zap.L().Info("METRIC UDPATE", zap.Any("metrics", cache), zap.Duration("timeSinceLastLog", timeElapsed))
+			lastLog = time.Now()
+			cache = make_new_metric_cache()
 		}
 	}
 }
@@ -367,9 +401,10 @@ func main() {
 	subscriptions_notifications := make(chan bool, 1000)
 	notifications := make(chan Notification, 1000)
 	batch_messages := make(chan string, 1000)
+	metrics_messages := make(chan Metric, 1000)
 
 	go subscribe_worker(subscription_messages, subscriptions_notifications, &subscriptions, notifications, &factDatabase)
-	go notification_worker(notifications, client)
+	go notification_worker(notifications, client, metrics_messages)
 	go debug_database_observer(&factDatabase)
 	go batch_worker(batch_messages, subscriptions_notifications, &factDatabase, &subscriptions)
 
@@ -392,10 +427,13 @@ func main() {
 		if event_type == ".....PING" {
 			zap.L().Debug("got PING", zap.String("source", source), zap.String("value", val))
 			notifications <- Notification{source, val, ""}
+			metrics_messages <- Metric{"PING", source}
 		} else if event_type == "SUBSCRIBE" {
 			subscription_messages <- msg
+			metrics_messages <- Metric{"SUBSCRIBE", source}
 		} else if event_type == "....BATCH" {
 			batch_messages <- msg
+			metrics_messages <- Metric{"BATCH", source}
 		}
 		time.Sleep(time.Duration(1) * time.Microsecond)
 	}
