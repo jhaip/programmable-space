@@ -407,6 +407,7 @@ func main() {
 	go notification_worker(notifications, client, metrics_messages)
 	go debug_database_observer(&factDatabase)
 	go batch_worker(batch_messages, subscriptions_notifications, &factDatabase, &subscriptions)
+	go metrics_worker(metrics_messages)
 
 	zap.L().Info("listening...")
 	for {
