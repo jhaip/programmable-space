@@ -68,6 +68,7 @@ function parse_results(val)
     return results
 end
 
+-- results bool if a message was received
 function room.listen(blocking)
     flags = 0
     if blocking == false then
@@ -98,8 +99,9 @@ function room.listen(blocking)
                 callback(parsed_results)
             end
         end
+        return true
     end
-    print("TODO")
+    return false
 end
 
 function room.claim(batch_claims)

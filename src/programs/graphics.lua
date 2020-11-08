@@ -258,7 +258,10 @@ end
 
 function love.update()
     if is_first_update == false then
-        room.listen(true) -- blocking listen
+        recvd = room.listen(false)
+        while recvd == true do
+            recvd = room.listen(false)
+        end
     else
         is_first_update = false
     end
