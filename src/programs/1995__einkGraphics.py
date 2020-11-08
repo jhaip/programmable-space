@@ -67,6 +67,7 @@ def draw_thread(q):
     partial_update_draw_count = 0
     last_drawn_graphics = None
     last_clear = datetime.now()
+    last_total_reset = datetime.now()
     while True:
         try:
             graphics = q.pop()
@@ -85,6 +86,10 @@ def draw_thread(q):
                 display.draw_partial(constants.DisplayModes.DU)
         except IndexError:
             time.sleep(0.01)
+            if (datetime.now() - last_total_reset).total_seconds() > 60*60*6: # 6 hours
+                logging.error("REINIT EINK DISPLAY")
+                display = AutoEPDDisplay(vcom=-1.32, rotate=rotate, spi_hz=24000000)
+                last_total_reset = datetime.now()
             if (datetime.now() - last_clear).total_seconds() > 60:
                 display.clear()
                 if last_drawn_graphics is not None:
