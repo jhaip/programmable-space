@@ -210,6 +210,11 @@ func main() {
 	// set webcam properties
 	webcam.Set(gocv.VideoCaptureFrameWidth, 1920)
 	webcam.Set(gocv.VideoCaptureFrameHeight, 1080)
+	if HEADLESS == true {
+		// Rpi camera stuff
+		webcam.Set(gocv.VideoCaptureBufferSize, 1)
+		webcam.Set(gocv.VideoCaptureFPS, 2)
+	}
 
 	// read an initial image
 	if ok := webcam.Read(&img); !ok {
