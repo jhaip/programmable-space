@@ -31,7 +31,7 @@ const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
 const HEADLESS = os.Getenv("HEADLESS_CV") != ""
-var lastLoopTime := time.Now()
+var lastLoopTime = time.Now()
 
 type Vec struct {
 	X int `json:"x"`
