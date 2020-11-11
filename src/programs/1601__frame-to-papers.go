@@ -332,9 +332,9 @@ func main() {
 
 		// time.Sleep(10 * time.Millisecond)
 		// draw the keypoints on the webcam image
-		// if len(dotKeyPoints) > 0 {
-		gocv.DrawKeyPoints(img, dotKeyPoints, &simpleKP, color.RGBA{0, 0, 255, 0}, gocv.DrawDefault)
-		// }
+		if len(dotKeyPoints) > 0 {
+			gocv.DrawKeyPoints(img, dotKeyPoints, &simpleKP, color.RGBA{0, 0, 255, 0}, gocv.DrawDefault)
+		}
 		for _, paper := range papers {
 			fmt.Printf("Showing paper! %v %v %v\n", paper.Corners[0].X, paper.Corners[0].Y, paper.Id);
 			gocv.Line(&simpleKP, image.Pt(paper.Corners[0].X, paper.Corners[0].Y), image.Pt(paper.Corners[1].X, paper.Corners[1].Y), color.RGBA{0, 255, 0, 0}, 2)
@@ -361,7 +361,11 @@ func main() {
 			}
 		} else {
 			// claim base64 screenshot every X frames
-			claimBase64Screenshot(client, MY_ID_STR, simpleKP)
+			if simpleKP.Empty() == false {
+				claimBase64Screenshot(client, MY_ID_STR, simpleKP)
+			} else {
+				claimBase64Screenshot(client, MY_ID_STR, img)
+			}
 			// limit FPS
 			time.Sleep(1 * time.Second - time.Since(start))
 		}
