@@ -933,7 +933,7 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	// claim image as base64
 	imgImg, err := img.ToImage()
 	checkErr(err)
-	scaled := resize.Resize(320, 0, imgImg, resize.Lanczos3) // 320px, 0 = keep aspect ratio
+	scaled := resize.Resize(192, 0, imgImg, resize.Lanczos3) // 320px, 0 = keep aspect ratio
 	var buf bytes.Buffer
 	// err = Encode(&buf, img, &Options{Quality: tc.quality})
 	encodeErr := png.Encode(&buf, scaled)
