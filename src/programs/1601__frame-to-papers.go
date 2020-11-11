@@ -30,8 +30,6 @@ const dotSize = 12
 const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
-const HEADLESS = os.Getenv("HEADLESS_CV") != ""
-var lastLoopTime = time.Now()
 
 type Vec struct {
 	X int `json:"x"`
@@ -183,7 +181,8 @@ func main() {
 	defer webcam.Close()
 
 	// open display window
-	var window gocv.Window
+	var HEADLESS = os.Getenv("HEADLESS_CV") != ""
+	var window *gocv.Window
 	if HEADLESS == false {
 		window = gocv.NewWindow("Tracking")
 		defer window.Close()
@@ -355,8 +354,7 @@ func main() {
 			// claim base64 screenshot every X frames
 			claimBase64Screenshot(client, MY_ID_STR, img)
 			// limit FPS
-			time.Sleep(1 * time.Second - time.Since(lastLoopTime))
-			lastLoopTime = time.Now()
+			time.Sleep(1 * time.Second - time.Since(start))
 		}
 	}
 }
