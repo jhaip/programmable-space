@@ -30,6 +30,8 @@ const dotSize = 12
 const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
+const HEADLESS = os.Getenv("HEADLESS_CV") != ""
+var lastLoopTime := time.Now()
 
 type Vec struct {
 	X int `json:"x"`
@@ -181,8 +183,11 @@ func main() {
 	defer webcam.Close()
 
 	// open display window
-	window := gocv.NewWindow("Tracking")
-	defer window.Close()
+	var window gocv.Window
+	if HEADLESS == false {
+		window = gocv.NewWindow("Tracking")
+		defer window.Close()
+	}
 
 	// create simple blob detector with parameters
 	params := gocv.NewSimpleBlobDetectorParams()
@@ -233,7 +238,7 @@ func main() {
 		}
 
 		log.Println("waiting for dots")
-		points, dotKeyPoints, dotError := getDots(window, deviceID, webcam, bdp, img)
+		points, dotKeyPoints, dotError := getDots(deviceID, webcam, bdp, img)
 		log.Println("got dots")
 		checkErr(dotError)
 
@@ -336,14 +341,22 @@ func main() {
 				gocv.FontHersheyPlain, 1.2, color.RGBA{0, 0, 255, 0}, 2)
 		}
 		// show the image in the window, and wait
-		window.IMShow(simpleKP)
-		// this also limits the FPS - 1000 / 250 = 4 fps
-		keyId := window.WaitKey(lag)
-		if keyId == 27 {
-			return
-		} else if keyId == 99 {
-			// 99 == c key
+		if HEADLESS == false {
+			window.IMShow(simpleKP)
+			// this also limits the FPS - 1000 / 250 = 4 fps
+			keyId := window.WaitKey(lag)
+			if keyId == 27 {
+				return
+			} else if keyId == 99 {
+				// 99 == c key
+				claimBase64Screenshot(client, MY_ID_STR, img)
+			}
+		} else {
+			// claim base64 screenshot every X frames
 			claimBase64Screenshot(client, MY_ID_STR, img)
+			// limit FPS
+			time.Sleep(1 * time.Second - time.Since(lastLoopTime))
+			lastLoopTime = time.Now()
 		}
 	}
 }
@@ -745,7 +758,7 @@ func GetVecbAt(m gocv.Mat, row int, col int) []uint8 {
 	return v
 }
 
-func getDots(window *gocv.Window, deviceID string, webcam *gocv.VideoCapture, bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint, error) {
+func getDots(deviceID string, webcam *gocv.VideoCapture, bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint, error) {
 	if ok := webcam.Read(&img); !ok {
 		fmt.Printf("Device closed: %v\n", deviceID)
 		return nil, nil, errors.New("DEVICE_CLOSED")
