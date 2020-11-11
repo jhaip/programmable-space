@@ -361,7 +361,7 @@ func main() {
 			}
 		} else {
 			// claim base64 screenshot every X frames
-			claimBase64Screenshot(client, MY_ID_STR, img)
+			claimBase64Screenshot(client, MY_ID_STR, simpleKP)
 			// limit FPS
 			time.Sleep(1 * time.Second - time.Since(start))
 		}
