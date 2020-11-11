@@ -217,23 +217,27 @@ func main() {
 		return
 	}
 
+	lag := 250
 	lag_sub_id, lag_sub_id_err := newUUID()
 	checkErr(lag_sub_id_err)
-	lag_sub_query := map[string]interface{}{"id": lag_sub_id, "facts": []string{"$ $ measured latency $lag ms at $"}}
-	lag_sub_query_msg, _ := json.Marshal(lag_sub_query)
-	lag_sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, lag_sub_query_msg)
-	client.SendMessage(lag_sub_msg)
+	if HEADLESS == false {
+		lag_sub_query := map[string]interface{}{"id": lag_sub_id, "facts": []string{"$ $ measured latency $lag ms at $"}}
+		lag_sub_query_msg, _ := json.Marshal(lag_sub_query)
+		lag_sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, lag_sub_query_msg)
+		client.SendMessage(lag_sub_msg)
+	}
 
-	lag := 250
 	papers_cache := make(map[string]PaperCache)
 
 	for {
 		start := time.Now()
 
-		hasNewLag, newLag := getLag(client, MY_ID_STR, lag_sub_id)
-		if (hasNewLag) {
-			log.Println("**UPDATED LAG", newLag)
-			lag = newLag
+		if HEADLESS == false {
+			hasNewLag, newLag := getLag(client, MY_ID_STR, lag_sub_id)
+			if (hasNewLag) {
+				log.Println("**UPDATED LAG", newLag)
+				lag = newLag
+			}
 		}
 
 		log.Println("waiting for dots")
