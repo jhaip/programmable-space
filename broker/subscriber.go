@@ -109,7 +109,7 @@ func startSubscriberV3(subscriptionData Subscription, notifications chan<- Notif
 	// TODO: DRY up this?
 	results_pre := subscriberCollectSolutions(subscriber.queryPartMatchingFacts, subQueryAsFact, 0, QueryResult{})
 	results_as_str_pre := marshal_query_result(results_pre)
-	notifications <- Notification{subscriptionData.Source, subscriptionData.Id, results_as_str_pre}
+	notifications <- Notification{subscriptionData.Source, subscriptionData.Id, results_as_str_pre, "preexisting"}
 
 	zap.L().Info("inside startSubscriber v3")
 	for batch_messages := range subscriptionData.batch_messages {
@@ -120,7 +120,11 @@ func startSubscriberV3(subscriptionData Subscription, notifications chan<- Notif
 			results := subscriberCollectSolutions(subscriber.queryPartMatchingFacts, subQueryAsFact, 0, QueryResult{})
 			// TODO: sort results?
 			results_as_str := marshal_query_result(results)
-			notifications <- Notification{subscriptionData.Source, subscriptionData.Id, results_as_str}
+			var update_source string
+			if len(batch_messages) > 0 {
+				update_source = batch_messages[0].Fact[0][1]
+			}
+			notifications <- Notification{subscriptionData.Source, subscriptionData.Id, results_as_str, update_source}
 		}
 	}
 	subscriptionData.dead.Done()

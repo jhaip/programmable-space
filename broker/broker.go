@@ -52,6 +52,7 @@ type Notification struct {
 	Source string
 	Id     string
 	Result string
+	UpdateSource string
 }
 
 type BatchMessage struct {
@@ -62,6 +63,7 @@ type BatchMessage struct {
 type Metric struct {
 	Type string		`json:"type"`
 	Source string	`json:"source"`
+	Dest string  	`json:"dest"`
 }
 
 func checkErr(err error) {
@@ -89,7 +91,7 @@ func notification_worker(notifications <-chan Notification, client *zmq.Socket, 
 			_, sendErr := client.SendMessage(notification.Source, msgWithTime)
 			checkErr(sendErr)
 			zmqClient.Unlock()
-			metrics <- Metric{"NOTIFICATION", notification.Source}
+			metrics <- Metric{"NOTIFICATION", notification.Source, notification.UpdateSource}
 		}
 	}
 }
@@ -105,6 +107,7 @@ func make_new_metric_cache() map[string]map[string]int {
 
 func metrics_worker(metric_updates <-chan Metric) {
 	cache := make_new_metric_cache()
+	notificationMap := make(map[string]map[string]bool)
 	lastLog := time.Now()
 	for update := range metric_updates {
 		cache_value, cache_hit := cache[update.Type][update.Source]
@@ -113,9 +116,17 @@ func metrics_worker(metric_updates <-chan Metric) {
 		} else {
 			cache[update.Type][update.Source] = cache_value + 1
 		}
+		if update.Type == "NOTIFICATION" {
+			_,  notificationMapHit := notificationMap[update.Type]
+			if notificationMapHit == false {
+				notificationMap[update.Type] = make(map[string]bool)
+			}
+			notificationMap[update.Type][update.Dest] = true
+		}
 		timeElapsed := time.Since(lastLog)
 		if timeElapsed.Seconds() >= 10 {
 			zap.L().Info("METRIC UDPATE", zap.Any("metrics", cache), zap.Duration("timeSinceLastLog", timeElapsed))
+			zap.L().Info("NOTIFICATION MAP", zap.Any("map", notificationMap))
 			lastLog = time.Now()
 			cache = make_new_metric_cache()
 		}
@@ -427,14 +438,14 @@ func main() {
 		val := msg[(event_type_len + source_len):]
 		if event_type == ".....PING" {
 			zap.L().Debug("got PING", zap.String("source", source), zap.String("value", val))
-			notifications <- Notification{source, val, ""}
-			metrics_messages <- Metric{"PING", source}
+			notifications <- Notification{source, val, "", "ping"}
+			metrics_messages <- Metric{"PING", source, ""}
 		} else if event_type == "SUBSCRIBE" {
 			subscription_messages <- msg
-			metrics_messages <- Metric{"SUBSCRIBE", source}
+			metrics_messages <- Metric{"SUBSCRIBE", source, ""}
 		} else if event_type == "....BATCH" {
 			batch_messages <- msg
-			metrics_messages <- Metric{"BATCH", source}
+			metrics_messages <- Metric{"BATCH", source, ""}
 		}
 		time.Sleep(time.Duration(1) * time.Microsecond)
 	}
