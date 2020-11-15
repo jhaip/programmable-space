@@ -117,11 +117,11 @@ func metrics_worker(metric_updates <-chan Metric) {
 			cache[update.Type][update.Source] = cache_value + 1
 		}
 		if update.Type == "NOTIFICATION" {
-			_,  notificationMapHit := notificationMap[update.Type]
+			_,  notificationMapHit := notificationMap[update.Source]
 			if notificationMapHit == false {
-				notificationMap[update.Type] = make(map[string]bool)
+				notificationMap[update.Source] = make(map[string]bool)
 			}
-			notificationMap[update.Type][update.Dest] = true
+			notificationMap[update.Source][update.Dest] = true
 		}
 		timeElapsed := time.Since(lastLog)
 		if timeElapsed.Seconds() >= 10 {
