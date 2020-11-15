@@ -116,7 +116,7 @@ func metrics_worker(metric_updates <-chan Metric) {
 		} else {
 			cache[update.Type][update.Source] = cache_value + 1
 		}
-		if update.Type == "NOTIFICATION" {
+		if update.Type == "NOTIFICATION" && update.Dest != "ping" {
 			_,  notificationMapHit := notificationMap[update.Source]
 			if notificationMapHit == false {
 				notificationMap[update.Source] = make(map[string]bool)
@@ -129,6 +129,7 @@ func metrics_worker(metric_updates <-chan Metric) {
 			zap.L().Info("NOTIFICATION MAP", zap.Any("map", notificationMap))
 			lastLog = time.Now()
 			cache = make_new_metric_cache()
+			notificationMap = make(map[string]map[string]bool)
 		}
 	}
 }
