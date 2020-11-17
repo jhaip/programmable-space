@@ -14,7 +14,7 @@ type Subscription3 struct {
 	queryPartMatchingFacts  []map[string]Fact
 }
 
-func setupSubscriber(query [][]Term, preExistingFacts map[string]Fact) Subscription3 {
+func setupSubscriber(query [][]Term, preExistingFacts map[string]Fact, metrics chan<- Metric, subscriptionSource string) Subscription3 {
 	subscriber := Subscription3{query, make([]map[string]Fact, len(query))}
 	// Initialize the queryPartMatchingFacts cache
 	for i, queryPart := range query {
@@ -24,6 +24,7 @@ func setupSubscriber(query [][]Term, preExistingFacts map[string]Fact) Subscript
 			did_match, _ := fact_match(Fact{queryPart}, fact, empty_env)
 			if did_match {
 				subscriber.queryPartMatchingFacts[i][factKey] = fact
+				metrics <- Metric{"MAP", fact.Terms[0].Value, subscriptionSource}
 			}
 		}
 	}
@@ -97,8 +98,8 @@ func subscriberCollectSolutions(queryPartMatchingFacts []map[string]Fact, query 
 	return solutions
 }
 
-func startSubscriberV3(subscriptionData Subscription, notifications chan<- Notification, preExistingFacts map[string]Fact) {
-	subscriber := setupSubscriber(subscriptionData.Query, preExistingFacts)
+func startSubscriberV3(subscriptionData Subscription, notifications chan<- Notification, preExistingFacts map[string]Fact, metrics chan<- Metric) {
+	subscriber := setupSubscriber(subscriptionData.Query, preExistingFacts, metrics, subscriptionData.Source)
 	subscriptionData.warmed.Done()
 	subQueryAsFact := make([]Fact, len(subscriber.query))
 	for i, val := range subscriber.query {
@@ -124,6 +125,7 @@ func startSubscriberV3(subscriptionData Subscription, notifications chan<- Notif
 			if len(batch_messages) > 0 {
 				update_source = batch_messages[0].Fact[0][1]
 			}
+			metrics <- Metric{"MAP", update_source, subscriptionData.Source}
 			notifications <- Notification{subscriptionData.Source, subscriptionData.Id, results_as_str, update_source}
 		}
 	}

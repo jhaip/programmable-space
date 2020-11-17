@@ -46,7 +46,8 @@ func TestMakeSubscriberV3(t *testing.T) {
 	subscription.dead.Add(1)
 	subscription.warmed.Add(1)
 	notifications := make(chan Notification, 1000)
-	go startSubscriberV3(subscription, notifications, makeFactDatabase())
+	metrics := make(chan Metric, 1000)
+	go startSubscriberV3(subscription, notifications, makeFactDatabase(), metrics)
 
 	time.Sleep(CHANNEL_MESSAGE_DELIVERY_TEST_WAIT)
 
@@ -135,7 +136,8 @@ func TestSubscriberV3NewClaimSameResult(t *testing.T) {
 	subscription.dead.Add(1)
 	subscription.warmed.Add(1)
 	notifications := make(chan Notification, 1000)
-	go startSubscriberV3(subscription, notifications, db)
+	metrics := make(chan Metric, 1000)
+	go startSubscriberV3(subscription, notifications, db, metrics)
 
 	time.Sleep(CHANNEL_MESSAGE_DELIVERY_TEST_WAIT)
 

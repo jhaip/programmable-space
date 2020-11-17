@@ -110,18 +110,19 @@ func metrics_worker(metric_updates <-chan Metric) {
 	notificationMap := make(map[string]map[string]bool)
 	lastLog := time.Now()
 	for update := range metric_updates {
-		cache_value, cache_hit := cache[update.Type][update.Source]
-		if cache_hit == false {
-			cache[update.Type][update.Source] = 1
-		} else {
-			cache[update.Type][update.Source] = cache_value + 1
-		}
-		if update.Type == "NOTIFICATION" && update.Dest != "ping" {
+		if update.Type == "MAP" {
 			_,  notificationMapHit := notificationMap[update.Source]
 			if notificationMapHit == false {
 				notificationMap[update.Source] = make(map[string]bool)
 			}
 			notificationMap[update.Source][update.Dest] = true
+		} else {
+			cache_value, cache_hit := cache[update.Type][update.Source]
+			if cache_hit == false {
+				cache[update.Type][update.Source] = 1
+			} else {
+				cache[update.Type][update.Source] = cache_value + 1
+			}
 		}
 		timeElapsed := time.Since(lastLog)
 		if timeElapsed.Seconds() >= 10 {
@@ -152,6 +153,7 @@ func subscribe_worker(subscription_messages <-chan string,
 	subscriptions_notifications chan<- bool,
 	subscriptions *Subscriptions,
 	notifications chan<- Notification,
+	metrics chan<- Metric,
 	db *map[string]Fact) {
 
 	event_type_len := 9
@@ -194,7 +196,7 @@ func subscribe_worker(subscription_messages <-chan string,
 			}
 			subscriberMutex.Unlock()
 			// go startSubscriber(newSubscription, notifications, copyDatabase(db))
-			go startSubscriberV3(newSubscription, notifications, copyDatabase(db))
+			go startSubscriberV3(newSubscription, notifications, copyDatabase(db), metrics)
 			// subscriptions_notifications <- true // is this still needed?
 		}
 	}
@@ -415,7 +417,7 @@ func main() {
 	batch_messages := make(chan string, 1000)
 	metrics_messages := make(chan Metric, 1000)
 
-	go subscribe_worker(subscription_messages, subscriptions_notifications, &subscriptions, notifications, &factDatabase)
+	go subscribe_worker(subscription_messages, subscriptions_notifications, &subscriptions, notifications, metrics_messages, &factDatabase)
 	go notification_worker(notifications, client, metrics_messages)
 	go debug_database_observer(&factDatabase)
 	go batch_worker(batch_messages, subscriptions_notifications, &factDatabase, &subscriptions)
