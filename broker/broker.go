@@ -130,7 +130,7 @@ func metrics_worker(metric_updates <-chan Metric) {
 			zap.L().Info("NOTIFICATION MAP", zap.Any("map", notificationMap))
 			lastLog = time.Now()
 			cache = make_new_metric_cache()
-			notificationMap = make(map[string]map[string]bool)
+			// notificationMap = make(map[string]map[string]bool)
 		}
 	}
 }
