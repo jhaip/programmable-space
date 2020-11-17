@@ -123,7 +123,7 @@ func startSubscriberV3(subscriptionData Subscription, notifications chan<- Notif
 			results_as_str := marshal_query_result(results)
 			var update_source string
 			if len(batch_messages) > 0 {
-				update_source = batch_messages[0].Fact[0][1]
+				update_source = batch_messages[len(batch_messages)-1].Fact[0][1]
 			}
 			metrics <- Metric{"MAP", update_source, subscriptionData.Source}
 			notifications <- Notification{subscriptionData.Source, subscriptionData.Id, results_as_str, update_source}
