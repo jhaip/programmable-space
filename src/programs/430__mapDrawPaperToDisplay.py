@@ -47,10 +47,10 @@ def sub_callback_calibration(results):
             logging.error("RECAL PROJECTION MATRIX")
             pts1 = np.float32(projector_calibration)
             display_calibration = [
-                [result["rx1"], result["ry1"]],
-                [result["rx2"], result["ry2"]],
-                [result["rx4"], result["ry4"]],
-                [result["rx3"], result["ry3"]] # notice the order is not clock-wise
+                [result["dx1"], result["dy1"]],
+                [result["dx2"], result["dy2"]],
+                [result["dx4"], result["dy4"]],
+                [result["dx3"], result["dy3"]] # notice the order is not clock-wise
             ]
             pts2 = np.float32(display_calibration)
             projection_matrix = cv2.getPerspectiveTransform(
