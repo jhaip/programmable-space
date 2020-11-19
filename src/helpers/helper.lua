@@ -48,12 +48,12 @@ function parse_results(val)
     local json_val = json.decode(val)
     local results = {}
     for i = 1, #json_val do
-        print(json_val[i])
+        -- print(json_val[i])
         local result = json_val[i]
         local new_result = {}
         for key, val in pairs(result) do  -- Table iteration.
-            print(key, val)
-            print(val[0], val[1], val[2])
+            -- print(key, val)
+            -- print(val[0], val[1], val[2])
             local value_type = val[1]
             if value_type == "integer" then
                 new_result[key] = tonumber(val[2])
@@ -76,27 +76,30 @@ function room.listen(blocking)
     end
     local raw_msg = client:recv_multipart(flags)
     print("received!")
-    print(raw_msg)
+    -- print(raw_msg)
     if raw_msg ~= nil then
         if #raw_msg > 0 then
-            print(raw_msg[1])
+            -- print(raw_msg[1])
             msg_string = raw_msg[1]
             -- 1999b4a4f075-9fde-41ae-c1cb-bea4ea0b2b381584545958956[{}]
             local source_len = 4
             local server_send_time_len = 13
             local id = string.sub(msg_string, source_len + 1, source_len + SUBSCRIPTION_ID_LEN)
             local val = string.sub(msg_string, source_len + 1 + SUBSCRIPTION_ID_LEN + server_send_time_len)
-            print("ID")
-            print(id)
-            print("VAL")
-            print(val)
+            -- print("ID")
+            -- print(id)
+            -- print("VAL")
+            -- print(val)
             if id == init_ping_id then
                 server_listening = true
             elseif subscription_ids[id] ~= nil then
-                print("Found matching sub id")
+                -- print("Found matching sub id")
                 local callback = subscription_ids[id]
                 local parsed_results = parse_results(val)
                 callback(parsed_results)
+            else
+                print("unknown sub id:")
+                print(id)
             end
         end
         return true

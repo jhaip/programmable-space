@@ -207,8 +207,6 @@ function love.draw()
             if font_cache[opt_font_size] == nil then
                 print("created new font")
                 font_cache[opt_font_size] = love.graphics.newFont("Inconsolata-Regular.ttf", opt_font_size)
-            else
-                print("using cached font")
             end
             font = font_cache[opt_font_size]
             love.graphics.setFont(font)

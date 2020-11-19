@@ -941,7 +941,7 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	// encode to base64
 	b64EncodedImage := base64.StdEncoding.EncodeToString(buf.Bytes())
 	fmt.Println("Len image %v\n", len(b64EncodedImage))
-	fmt.Println(b64EncodedImage)
+	// fmt.Println(b64EncodedImage)
 	// end claim image as base64
 
 	log.Println("CLAIM IMAGE -----")
