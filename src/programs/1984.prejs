@@ -1,1 +1,7 @@
-// Write your code here
+const W = 50;
+const H = 100;
+
+when camera sees subframe $i $frame @ $:
+let ill = room.newIllumination()
+ill.image(i*W*2, 0, W*2, H*2, frame)
+room.draw(ill)

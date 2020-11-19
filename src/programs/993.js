@@ -7,9 +7,10 @@ room.on(`paper ${myId} has width $width height $height angle $angle at ($x, $y)`
             results.forEach(({ width, height, angle, x, y }) => {
                 let ill = room.newIllumination()
                 let degreeAngle = Math.floor(angle * 180.0 / Math.PI);
-                const fontSize = 40;
+                const fontSize = 400;
+                ill.fontcolor(255, 255, 255)
                 ill.fontsize(fontSize)
-                ill.text(0, height/2 - fontSize*1.3, `${degreeAngle}°`)
+                ill.text(100, 720/2 - fontSize*0.5, `${degreeAngle}°`)
                 room.draw(ill)
                 room.assert(`angle is ${degreeAngle}`)
             });

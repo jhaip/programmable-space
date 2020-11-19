@@ -1,1 +1,19 @@
-// Write your code here
+FRAMES = []
+currentFrame = 0
+
+when new $results of camera sees subframe $i $frame @ $:
+FRAMES = results.slice(0)
+FRAMES.sort((a,b) => a["i"] - b["i"])
+end
+
+when time is $t:
+if (FRAMES.length > 0) {
+currentFrame += 1
+if (currentFrame >= FRAMES.length) {
+  currentFrame = 0;
+}
+let ill = room.newIllumination()
+ill.image(0, 0, 5*50, 5*100, FRAMES[currentFrame]["frame"])
+room.draw(ill)
+}
+end

@@ -56,11 +56,11 @@ def get_paper_you_point_at(papers, you_id, WISKER_LENGTH):
     for paper in papers:
         if len(paper["corners"]) == 4:
             if str(paper["id"]) == str(you_id):
-                my_paper = paper["corners"]
+                my_paper = paper
             else:
                 valid_papers.append(paper)
     if my_paper is not None and len(valid_papers) > 0:
-        wisker = get_paper_wisker(my_paper, "up", WISKER_LENGTH)
+        wisker = get_paper_wisker(my_paper["corners"], "up", WISKER_LENGTH)
         for paper in valid_papers:
             corners = paper["corners"]
             if my_paper["seenByCamera"] != paper["seenByCamera"]:
@@ -76,7 +76,7 @@ def get_paper_you_point_at(papers, you_id, WISKER_LENGTH):
 def sub_callback_papers(results):
     papers = list(map(lambda p: ({
         "id": p["id"],
-        "seenByCamera": p["cameraId"]
+        "seenByCamera": p["cameraId"],
         "corners": [
             {"x": p["x1"], "y": p["y1"]},
             {"x": p["x2"], "y": p["y2"]},

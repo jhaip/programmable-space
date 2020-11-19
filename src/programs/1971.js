@@ -10,9 +10,10 @@ room.onRaw(`$ $ paper ${myId} is pointing at paper $id`,
     data = x.toString().split(" , ").map(v => parseFloat(v))
     ill = room.newIllumination()
     ill.nostroke()
+    ill.scale(3, 3)
     ill.fill(200, 100, 100)
     data.forEach((d, i) => {
-      ill.rect(0, 10*i, d, 10)
+      ill.rect(0, 10*i, d*100, 10)
     })
     ill.translate(20, 0)
     ill.rotate(Math.PI/2.0)
