@@ -5,12 +5,10 @@ import cv2
 import logging
 import json
 
-DISPLAY_WIDTH = 1920
-DISPLAY_HEIGHT = 1080
+PAPER_DISPLAY_WIDTH = 1920
+PAPER_DISPLAY_HEIGHT = 1080
 projector_calibrations = {}
 projection_matrixes = {}
-DOTS_CAMERA_ID = 1
-DISPLAY_TARGET_ID = 1993 # 1993
 
 def project(calibration_id, x, y):
     global projection_matrixes
@@ -26,9 +24,11 @@ def project(calibration_id, x, y):
     return (int(dst[0][0][0]), int(dst[0][0][1]))
 
 
-@subscription(["$ $ camera {} has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $time".format(DOTS_CAMERA_ID)])
+@subscription([
+    "$ $ camera $cam has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $",
+    "$ $ camera $cam should calibrate to $dx1 $dy1 $dx2 $dy2 $dx3 $dy3 $dx4 $dy4 on display $"])
 def sub_callback_calibration(results):
-    global projector_calibrations, projection_matrixes, inverse_projection_matrixes, DISPLAY_WIDTH, DISPLAY_WIDTH
+    global projector_calibrations, projection_matrixes
     logging.info("sub_callback_calibration")
     logging.info(results)
     if results:
@@ -39,20 +39,32 @@ def sub_callback_calibration(results):
                 [result["x4"], result["y4"]],
                 [result["x3"], result["y3"]] # notice the order is not clock-wise
             ]
+            camera_id = result["cam"]
+            if camera_id in projector_calibrations and projector_calibrations[camera_id] == projector_calibration:
+                logging.error("skipping camera {} calibration because it hasn't changed".format(camera_id))
+                continue
             logging.info(projector_calibration)
             logging.error("RECAL PROJECTION MATRIX")
             pts1 = np.float32(projector_calibration)
-            pts2 = np.float32(
-                [[0, 0], [DISPLAY_WIDTH, 0], [0, DISPLAY_HEIGHT], [DISPLAY_WIDTH, DISPLAY_HEIGHT]])
+            display_calibration = [
+                [result["rx1"], result["ry1"]],
+                [result["rx2"], result["ry2"]],
+                [result["rx4"], result["ry4"]],
+                [result["rx3"], result["ry3"]] # notice the order is not clock-wise
+            ]
+            pts2 = np.float32(display_calibration)
             projection_matrix = cv2.getPerspectiveTransform(
                 pts1, pts2)
-            projector_calibrations[DOTS_CAMERA_ID] = projector_calibration
-            projection_matrixes[DOTS_CAMERA_ID] = projection_matrix
+            projector_calibrations[camera_id] = projector_calibration
+            projection_matrixes[camera_id] = projection_matrix
             logging.error("RECAL PROJECTION MATRIX -- done")
 
 
+# maybe we should cache where papers are what their graphics are to avoid recalculating everything
+# when on programs position or graphics change
 @subscription([
-    "$ $ camera {} sees paper $programNumber at TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $t2".format(DOTS_CAMERA_ID),
+    "$ $ camera $cam sees paper $programNumber at TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $t2",
+    "$ $ camera $cam should calibrate to $ $ $ $ $ $ $ $ on display $displayid",
     "$ $ draw graphics $graphics on $programNumber"])
 def sub_callback_graphics(results):
     claims = []
@@ -66,12 +78,13 @@ def sub_callback_graphics(results):
             graphics_json = json.loads(result["graphics"])
             if len(graphics_json) > 0:
                 src = np.float32(
-                    [[0, 0], [DISPLAY_WIDTH, 0], [0, DISPLAY_HEIGHT], [DISPLAY_WIDTH, DISPLAY_HEIGHT]])
+                    [[0, 0], [PAPER_DISPLAY_WIDTH, 0], [0, PAPER_DISPLAY_HEIGHT], [PAPER_DISPLAY_WIDTH, PAPER_DISPLAY_HEIGHT]])
+                camera_id = result["cam"]
                 dst = np.float32([
-                    project(DOTS_CAMERA_ID, result["x1"], result["y1"]),
-                    project(DOTS_CAMERA_ID, result["x2"], result["y2"]),
-                    project(DOTS_CAMERA_ID, result["x4"], result["y4"]),
-                    project(DOTS_CAMERA_ID, result["x3"], result["y3"]) # notice the order is not clock-wise
+                    project(camera_id, result["x1"], result["y1"]),
+                    project(camera_id, result["x2"], result["y2"]),
+                    project(camera_id, result["x4"], result["y4"]),
+                    project(camera_id, result["x3"], result["y3"]) # notice the order is not clock-wise
                 ])
                 paper_proj_matrix = cv2.getPerspectiveTransform(
                     src, dst)
@@ -93,7 +106,7 @@ def sub_callback_graphics(results):
                     ["text", "graphics"],
                     ["text", json.dumps(graphics_json)],
                     ["text", "on"],
-                    ["integer", str(DISPLAY_TARGET_ID)],
+                    ["integer", str(result["displayid"])],
                 ]})
     batch(claims)
 

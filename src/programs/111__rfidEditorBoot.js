@@ -103,6 +103,7 @@ const h = 720;
 const o = 200;
 room.assert(`camera`, ["text", "1997"], `should calibrate to ${o} ${o} ${w - o} ${o} ${w - o} ${h - o} ${o} ${h - o} on display`, ["text", "1997"])
 room.assert(`camera`, ["text", "1998"], `should calibrate to 0 0 854 0 854 480 0 480 on display`, ["text", "1998"])
+room.assert(`camera`, ["text", "1"], `should calibrate to 0 0 1280 0 1280 720 0 720 on display`, ["text", "1993"])
 // screen region calibration adapter
 // room.assert(`camera 99 sees paper 287 at TL (0, 0) TR (2, 1) BR (2, 2) BL (1, 2) @ 1`)
 // Maker laser region
