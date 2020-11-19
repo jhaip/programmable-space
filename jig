@@ -125,8 +125,9 @@ function cmd() {
     pkill -f "lua-graphics.love"
     export DISPLAY=:0
     export PROG_SPACE_SERVER_URL="192.168.1.34"
+    export HEADLESS_CV=true
     cd src/programs
-    HEADLESS_CV=true go run 1601__frame-to-papers.go 0 &
+    go run 1601__frame-to-papers.go 0 &
     cd ../..
     cd src
     rm lua-graphics.love
@@ -141,7 +142,7 @@ function cmd() {
     cd lua-bundle
     zip lua-graphics.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
     cd ..
-    love ./lua-bundle/lua-graphics.love 1993
+    love ./lua-bundle/lua-graphics.love 1993 &
     cd ..
     echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
