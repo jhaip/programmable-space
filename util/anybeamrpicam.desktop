@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/pi/programmable-space/jig anybeampicam
+# Copy this file to ~/.config/autostart/anybeampicam.desktop
