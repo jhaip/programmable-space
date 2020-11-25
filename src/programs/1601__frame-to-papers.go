@@ -233,6 +233,7 @@ func main() {
 
 	if HEADLESS {
 		drainImg := gocv.NewMat()
+		defer drainImg.Close()
 		go drainFrames(deviceID, webcam, drainImg)
 	}
 
