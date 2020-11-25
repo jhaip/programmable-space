@@ -30,6 +30,7 @@ const dotSize = 12
 const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
+var webcamMutex sync.Mutex
 
 type Vec struct {
 	X int `json:"x"`
@@ -210,11 +211,6 @@ func main() {
 	// set webcam properties
 	webcam.Set(gocv.VideoCaptureFrameWidth, 1920)
 	webcam.Set(gocv.VideoCaptureFrameHeight, 1080)
-	if HEADLESS == true {
-		// Rpi camera stuff
-		webcam.Set(gocv.VideoCaptureBufferSize, 1)
-		webcam.Set(gocv.VideoCaptureFPS, 2)
-	}
 
 	// read an initial image
 	if ok := webcam.Read(&img); !ok {
@@ -233,6 +229,10 @@ func main() {
 	}
 
 	papers_cache := make(map[string]PaperCache)
+
+	if HEADLESS {
+		go drainFrames(webcam)
+	}
 
 	for {
 		start := time.Now()
@@ -769,11 +769,24 @@ func GetVecbAt(m gocv.Mat, row int, col int) []uint8 {
 	return v
 }
 
+func drainFrames(webcam *gocv.VideoCapture) {
+	for {
+		webcamMutex.Lock()
+		if ok := webcam.Read(&img); !ok {
+			fmt.Printf("Device closed: %v\n", deviceID)
+		}	
+		webcamMutex.Unlock()
+		runtime.Gosched()
+    }
+}
+
 func getDots(deviceID string, webcam *gocv.VideoCapture, bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint, error) {
+	webcamMutex.Lock()
 	if ok := webcam.Read(&img); !ok {
 		fmt.Printf("Device closed: %v\n", deviceID)
 		return nil, nil, errors.New("DEVICE_CLOSED")
 	}
+	webcamMutex.Unlock()
 
 	if img.Empty() {
 		return make([]Dot, 0), make([]gocv.KeyPoint, 0), nil
