@@ -19,6 +19,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"gocv.io/x/gocv"
@@ -231,7 +232,8 @@ func main() {
 	papers_cache := make(map[string]PaperCache)
 
 	if HEADLESS {
-		go drainFrames(webcam)
+		drainImg := gocv.NewMat()
+		go drainFrames(deviceID, webcam, drainImg)
 	}
 
 	for {
@@ -769,7 +771,7 @@ func GetVecbAt(m gocv.Mat, row int, col int) []uint8 {
 	return v
 }
 
-func drainFrames(webcam *gocv.VideoCapture) {
+func drainFrames(deviceID string, webcam *gocv.VideoCapture, img gocv.Mat) {
 	for {
 		webcamMutex.Lock()
 		if ok := webcam.Read(&img); !ok {
