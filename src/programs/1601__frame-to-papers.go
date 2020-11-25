@@ -212,6 +212,7 @@ func main() {
 	// set webcam properties
 	webcam.Set(gocv.VideoCaptureFrameWidth, 1920)
 	webcam.Set(gocv.VideoCaptureFrameHeight, 1080)
+	webcam.Set(gocv.VideoCaptureFPS, 30)
 
 	// read an initial image
 	if ok := webcam.Read(&img); !ok {
