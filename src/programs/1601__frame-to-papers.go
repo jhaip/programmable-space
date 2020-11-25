@@ -213,6 +213,8 @@ func main() {
 	webcam.Set(gocv.VideoCaptureFrameWidth, 1920)
 	webcam.Set(gocv.VideoCaptureFrameHeight, 1080)
 	webcam.Set(gocv.VideoCaptureFPS, 30)
+	// YUYV = 1448695129
+	webcam.Set(gocv.VideoCaptureFOURCC, 1195724877) // MPEG
 
 	// read an initial image
 	if ok := webcam.Read(&img); !ok {
