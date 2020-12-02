@@ -150,11 +150,11 @@ function cmd() {
     pkill -f "1601__frame-to-papers.go"
     pkill -f "exe/1601__frame-to-papers"
     pkill -f "lua-graphics.love"
-    export DISPLAY=:0
+    export DISPLAY=:1
     export PROG_SPACE_SERVER_URL="192.168.1.34"
     export HEADLESS_CV=true
     export CV_PROGRAM_ID="1599"
-    export CAMERA_ID="1994"
+    export CV_CAMERA_ID="1994"
     cd src/programs
     go run 1601__frame-to-papers.go 0 &
     cd ../..

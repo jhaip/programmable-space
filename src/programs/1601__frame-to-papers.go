@@ -147,7 +147,7 @@ func main() {
 		MY_ID_STR = "1601"
 	}
 	CAMERA_ID_OVERRIDE := os.Getenv("CV_CAMERA_ID")
-	if CAMERA_ID != "" {
+	if CAMERA_ID_OVERRIDE != "" {
 		CAMERA_ID = CAMERA_ID_OVERRIDE
 	}
 	BASE_PATH := GetBasePath()
