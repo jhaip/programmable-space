@@ -145,6 +145,35 @@ function cmd() {
     love ./lua-bundle/lua-graphics.love 1993 &
     cd ..
     echo -e "booting"
+  elif [ "$1" == "deccam2020" ]
+  then
+    pkill -f "1601__frame-to-papers.go"
+    pkill -f "exe/1601__frame-to-papers"
+    pkill -f "lua-graphics.love"
+    export DISPLAY=:0
+    export PROG_SPACE_SERVER_URL="192.168.1.34"
+    export HEADLESS_CV=true
+    export CV_PROGRAM_ID="1599"
+    export CAMERA_ID="1994"
+    cd src/programs
+    go run 1601__frame-to-papers.go 0 &
+    cd ../..
+    cd src
+    rm lua-graphics.love
+    rm lua-bundle
+    mkdir -p lua-bundle
+    cp programs/graphics.lua lua-bundle/main.lua
+    cp helpers/helper.lua lua-bundle/helper.lua
+    cp helpers/matrix.lua lua-bundle/matrix.lua
+    cp helpers/json.lua lua-bundle/json.lua
+    cp helpers/zhelpers.lua lua-bundle/zhelpers.lua
+    cp files/Inconsolata-Regular.ttf lua-bundle/Inconsolata-Regular.ttf
+    cd lua-bundle
+    zip lua-graphics.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
+    cd ..
+    love ./lua-bundle/lua-graphics.love 1994 &
+    cd ..
+    echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
   then
     pkill -f "lua-graphics.love"

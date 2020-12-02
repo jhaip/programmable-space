@@ -31,6 +31,7 @@ const dotSize = 12
 const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
+var CAMERA_ID = "1"
 var webcamMutex sync.Mutex
 
 type Vec struct {
@@ -141,10 +142,18 @@ func initZeroMQ(MY_ID_STR string) *zmq.Socket {
 }
 
 func main() {
+	MY_ID_STR := os.Getenv("CV_PROGRAM_ID")
+	if MY_ID_STR == "" {
+		MY_ID_STR = "1601"
+	}
+	CAMERA_ID_OVERRIDE := os.Getenv("CV_CAMERA_ID")
+	if CAMERA_ID != "" {
+		CAMERA_ID = CAMERA_ID_OVERRIDE
+	}
 	BASE_PATH := GetBasePath()
 
 	/*** Set up logging ***/
-	LOG_PATH := BASE_PATH + "programs/logs/1601__dots-to-papers.log"
+	LOG_PATH := fmt.Sprintf("%sprograms/logs/%s__dots-to-papers.log", BASE_PATH, MY_ID_STR)
 	f, err := os.OpenFile(LOG_PATH, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
@@ -159,9 +168,6 @@ func main() {
 	if len(dotCodes8400) != 8400 {
 		panic("DID NOT GET 8400 DOT CODES")
 	}
-
-	MY_ID := 1601
-	MY_ID_STR := fmt.Sprintf("%04d", MY_ID)
 
 	client := initZeroMQ(MY_ID_STR)
 	defer client.Close()
@@ -872,7 +878,7 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache ma
 			[]string{"id", MY_ID_STR},
 			[]string{"id", "0"},
 			[]string{"text", "camera"},
-			[]string{"integer", "1"},
+			[]string{"integer", CAMERA_ID},
 			[]string{"text", "sees"},
 			[]string{"text", "paper"},
 			[]string{"integer", paper.Id},
@@ -910,7 +916,7 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache ma
 			[]string{"id", MY_ID_STR},
 			[]string{"id", "0"},
 			[]string{"text", "camera"},
-			[]string{"integer", "1"},
+			[]string{"integer", CAMERA_ID},
 			[]string{"text", "sees"},
 			[]string{"text", "corner"},
 			[]string{"integer", strconv.Itoa(corner.CornerId)},
@@ -974,7 +980,7 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 		[]string{"id", MY_ID_STR},
 		[]string{"id", "1"},
 		[]string{"text", "camera"},
-		[]string{"text", "1"},
+		[]string{"text", CAMERA_ID},
 		[]string{"text", "screenshot"},
 		[]string{"text", b64EncodedImage},
 	}})
