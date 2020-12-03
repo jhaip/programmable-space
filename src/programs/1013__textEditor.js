@@ -180,13 +180,7 @@ const render = () => {
   ill.text(origin[0], (origin[1] + (cursorPosition[1] - windowPosition[1]) * lineHeight), cursorLine);
   ill.fontcolor(255, 255, 255, 255)
   room.draw(ill)
-  room.draw(ill)
-  console.log("done rendering")
 }
-
-console.error("HEllo from text editor")
-console.error("my id")
-console.error(myId)
 
 room.on(
   `paper ${myId} is pointing at paper $targetId`,
