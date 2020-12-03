@@ -21,7 +21,8 @@ function runPaper(name) {
     if (name.includes('.py')) {
       languageProcess = 'python3'
     } else if (name.includes('.go')) {
-      languageProcess = 'go'
+      languageProcess = '/usr/local/go/bin/go' // why can't this just be "go"?
+      // maybe build here if needed and run the exec directly?
       runArgs = ['run', programSource]
     }
     const child = spawn(languageProcess, runArgs)
