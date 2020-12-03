@@ -93,7 +93,7 @@ func checkErr(err error) {
 func GetBasePath() string {
 	envBasePath := os.Getenv("DYNAMIC_ROOT")
 	if envBasePath != "" {
-		return envBasePath + "/src/programs/"
+		return envBasePath + "src/"
 	}
 	env := "HOME"
 	if runtime.GOOS == "windows" {

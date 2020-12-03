@@ -284,7 +284,7 @@ func initWishSubscription(client *zmq.Socket, MY_ID_STR string) string {
 func GetBasePath() string {
 	envBasePath := os.Getenv("DYNAMIC_ROOT")
 	if envBasePath != "" {
-		return envBasePath + "/src/programs/"
+		return envBasePath + "src/"
 	}
 	env := "HOME"
 	if runtime.GOOS == "windows" {
