@@ -156,15 +156,14 @@ func trimLeftChars(s string, n int) string {
 
 func get_wishes(client *zmq.Socket, MY_ID_STR string, subscription_id string) []PrintWishResult {
 	rawReply, err := client.RecvMessage(0)
-	reply := rawReply[0]
 	if err != nil {
 		log.Println("get wishes error:")
 		log.Println(err)
 		panic(err)
-	} else {
-		log.Println("reply:")
-		log.Println(reply)
 	}
+	reply := rawReply[0]
+	log.Println("reply:")
+	log.Println(reply)
 	msg_prefix := fmt.Sprintf("%s%s", MY_ID_STR, subscription_id)
 	val := trimLeftChars(reply, len(msg_prefix)+13)
 	json_val := make([]map[string][]string, 0)
@@ -233,10 +232,15 @@ func initZeroMQ(MY_ID_STR string) *zmq.Socket {
 	checkErr(zmqCreationErr)
 	setIdentityErr := client.SetIdentity(MY_ID_STR)
 	checkErr(setIdentityErr)
-	connectErr := client.Connect("tcp://localhost:5570")
+	rpc_url := os.Getenv("PROG_SPACE_SERVER_URL")
+	if rpc_url == "" {
+		rpc_url = "localhost"
+	}
+	connectErr := client.Connect("tcp://" + rpc_url + ":5570")
 	checkErr(connectErr)
 
-	init_ping_id := "aae54f21-d95f-48e7-a778-266a17274896"; // just a random ID
+	init_ping_id, err := newUUID()
+	checkErr(err)
 	client.SendMessage(fmt.Sprintf(".....PING%s%s", MY_ID_STR, init_ping_id))
 	// block until ping response received
 	_, recvErr := client.RecvMessage(0) 
