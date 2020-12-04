@@ -77,8 +77,6 @@ def sub_callback_graphics(results):
         for result in results:
             graphics_json = json.loads(result["graphics"])
             if len(graphics_json) > 0:
-                src = np.float32(
-                    [[0, 0], [PAPER_DISPLAY_WIDTH, 0], [0, PAPER_DISPLAY_HEIGHT], [PAPER_DISPLAY_WIDTH, PAPER_DISPLAY_HEIGHT]])
                 camera_id = result["cam"]
                 dst = np.float32([
                     project(camera_id, result["x1"], result["y1"]),
@@ -86,6 +84,11 @@ def sub_callback_graphics(results):
                     project(camera_id, result["x4"], result["y4"]),
                     project(camera_id, result["x3"], result["y3"]) # notice the order is not clock-wise
                 ])
+                dst_w = np.sqrt((dst[0][0]-dst[1][0])**2 + (dst[0][1]-dst[1][1])**2)
+                dst_h = np.sqrt((dst[0][0]-dst[2][0])**2 + (dst[0][1]-dst[2][1])**2)
+                adjusted_paper_width = PAPER_DISPLAY_HEIGHT * dst_w / dst_h
+                src = np.float32(
+                    [[0, 0], [adjusted_paper_width, 0], [0, PAPER_DISPLAY_HEIGHT], [adjusted_paper_width, PAPER_DISPLAY_HEIGHT]])
                 paper_proj_matrix = cv2.getPerspectiveTransform(
                     src, dst)
                 graphics_json.insert(0, {
