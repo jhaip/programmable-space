@@ -258,7 +258,14 @@ func main() {
 		}
 
 		log.Println("waiting for dots")
-		points, dotKeyPoints, dotError := getDots(deviceID, webcam, bdp, img)
+		webcamMutex.Lock()
+		if ok := webcam.Read(&img); !ok {
+			fmt.Printf("Device closed: %v\n", deviceID)
+			checkErr(errors.New("DEVICE_CLOSED"))
+		}
+		webcamMutex.Unlock()
+
+		points, dotKeyPoints, dotError := getDots(bdp, img)
 		log.Println("got dots")
 		checkErr(dotError)
 
@@ -792,14 +799,7 @@ func drainFrames(deviceID string, webcam *gocv.VideoCapture, img gocv.Mat) {
     }
 }
 
-func getDots(deviceID string, webcam *gocv.VideoCapture, bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint, error) {
-	webcamMutex.Lock()
-	if ok := webcam.Read(&img); !ok {
-		fmt.Printf("Device closed: %v\n", deviceID)
-		return nil, nil, errors.New("DEVICE_CLOSED")
-	}
-	webcamMutex.Unlock()
-
+func getDots(bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint, error) {
 	if img.Empty() {
 		return make([]Dot, 0), make([]gocv.KeyPoint, 0), nil
 	}
@@ -965,7 +965,7 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	checkErr(encodeErr)
 	// encode to base64
 	b64EncodedImage := base64.StdEncoding.EncodeToString(buf.Bytes())
-	fmt.Println("Len image %v\n", len(b64EncodedImage))
+	fmt.Printf("Len image %v\n", len(b64EncodedImage))
 	// fmt.Println(b64EncodedImage)
 	// end claim image as base64
 
