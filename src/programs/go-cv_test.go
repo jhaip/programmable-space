@@ -12,6 +12,7 @@ import (
 
 // go test go-cv_test.go 1601__frame-to-papers.go -count=1
 // SHOW_DEBUG_WINDOW=1 go test go-cv_test.go 1601__frame-to-papers.go -count=1
+// SHOW_DEBUG_WINDOW=1 go test go-cv_test.go 1601__frame-to-papers.go -count=1 -run TestImage12
 
 func imageTest(t *testing.T, imgName string) map[string]Paper {
 	showDebugWindowOs := os.Getenv("SHOW_DEBUG_WINDOW")
@@ -395,6 +396,29 @@ func TestCornerColorDetection(t *testing.T) {
 	checkCornerId(
 		[][3]int{{105, 87, 121}, {48, 22, 21}, {100, 86, 121}, {101, 90, 124}, {46, 25, 15}, {205, 32, 1}, {145, 130, 75}},
 		277, 3,
+		dotCodes8400, t,
+	)
+	
+	// wrong checks:
+	// R, G, B, D
+	// classified as 0330132 but should be 0330122
+	checkCornerId(
+		[][3]int{{177, 67, 39}, {53, 34, 12}, {57, 34, 15}, {177, 65, 35}, {121, 112, 57}, {87, 78, 67}, {90, 76, 70}},
+		277, 3, // 1675, 1 is wrong
+		dotCodes8400, t,
+	)
+
+	// classified as 2333301 but should be 2322301
+	checkCornerId(
+		[][3]int{{89, 75, 66}, {54, 29, 15}, {87, 75, 65}, {88, 80, 70}, {55, 30, 14}, {173, 65, 36}, {115, 111, 54}},
+		277, 3, // 57, 2 is wrong
+		dotCodes8400, t,
+	)
+
+	// classified as 1323330 but should be 1322330
+	checkCornerId(
+		[][3]int{{112, 110, 52}, {50, 31, 12}, {92, 74, 63}, {88, 75, 63}, {54, 27, 12}, {54, 29, 13}, {174, 66, 40}},
+		277, 3, // 2006, 1 is wrong
 		dotCodes8400, t,
 	)
 }
