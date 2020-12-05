@@ -736,7 +736,7 @@ func getGetPaperIdFromColors3(colors [][3]int, dotCodes8400 []string) (int, int,
 	for _, matchedColor := range matchedColors {
 		colorString += strconv.Itoa(matchedColor)
 	}
-	log.Printf("%v \n", colorString)
+	// log.Printf("%v \n", colorString)
 	colors8400Index := indexOf(colorString, dotCodes8400)
 	if colors8400Index > 0 {
 		paperId := colors8400Index % (8400 / 4)

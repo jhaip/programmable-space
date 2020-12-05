@@ -13,7 +13,7 @@ import (
 // go test go-cv_test.go 1601__frame-to-papers.go -count=1
 // SHOW_DEBUG_WINDOW=1 go test go-cv_test.go 1601__frame-to-papers.go -count=1
 
-func TestImage1(t *testing.T) {
+func imageTest(t *testing.T, imgName string) map[string]Paper {
 	showDebugWindowOs := os.Getenv("SHOW_DEBUG_WINDOW")
 	showDebugWindow := false
 	if showDebugWindowOs != "" {
@@ -23,7 +23,7 @@ func TestImage1(t *testing.T) {
 	BASE_PATH := GetBasePath()
 	dotCodes8400 := get8400(BASE_PATH + "files/dot-codes.txt")
 	if len(dotCodes8400) != 8400 {
-		panic("DID NOT GET 8400 DOT CODES")
+		t.Error("Could not load 8400 dot codes")
 	}
 
 	params := gocv.NewSimpleBlobDetectorParams()
@@ -38,11 +38,10 @@ func TestImage1(t *testing.T) {
 	defer bdp.Close()
 
 	// load img
-	imgPath := BASE_PATH + "files/test-paper-dots/2.jpg"
+	imgPath := BASE_PATH + "files/test-paper-dots/" + imgName
 	img := gocv.IMRead(imgPath, gocv.IMReadColor)
     if img.Empty() {
-        fmt.Printf("Could not read image %s\n", imgPath)
-        os.Exit(1)
+		t.Errorf("Could not read image %s\n", imgPath)
 	}
 
 	points, dotKeyPoints, dotError := getDots(bdp, img)
@@ -69,28 +68,13 @@ func TestImage1(t *testing.T) {
 	// log.Println(papers)
 	log.Println("papers", len(papers))
 
-	if len(papers) != 4 {
-		t.Error("Wrong number of papers detected", len(papers), 4)
-	}
-	seenPaperMap := make(map[string]bool)
+	seenPaperMap := make(map[string]Paper)
 	for _, seen_paper := range papers {
-		seenPaperMap[seen_paper.Id] = true
-	}
-	if _, ok := seenPaperMap["1986"]; !ok {
-		t.Error("Paper not detected", "1986")
-	}
-	if _, ok := seenPaperMap["1013"]; !ok {
-		t.Error("Paper not detected", "1013")
-	}
-	if _, ok := seenPaperMap["1567"]; !ok {
-		t.Error("Paper not detected", "1567")
-	}
-	if _, ok := seenPaperMap["277"]; !ok {
-		t.Error("Paper not detected", "277")
+		seenPaperMap[seen_paper.Id] = seen_paper
 	}
 
 	if !showDebugWindow {
-		return
+		return seenPaperMap
 	}
 
 	window := gocv.NewWindow("Tracking")
@@ -109,7 +93,6 @@ func TestImage1(t *testing.T) {
 		gocv.DrawKeyPoints(img, dotKeyPoints, &simpleKP, color.RGBA{0, 0, 255, 0}, gocv.DrawDefault)
 	}
 	for _, paper := range papers {
-		fmt.Printf("Showing paper! %v %v %v\n", paper.Corners[0].X, paper.Corners[0].Y, paper.Id);
 		gocv.Line(&simpleKP, image.Pt(paper.Corners[0].X, paper.Corners[0].Y), image.Pt(paper.Corners[1].X, paper.Corners[1].Y), color.RGBA{0, 255, 0, 0}, 2)
 		gocv.Line(&simpleKP, image.Pt(paper.Corners[1].X, paper.Corners[1].Y), image.Pt(paper.Corners[2].X, paper.Corners[2].Y), color.RGBA{0, 255, 0, 0}, 2)
 		gocv.Line(&simpleKP, image.Pt(paper.Corners[2].X, paper.Corners[2].Y), image.Pt(paper.Corners[3].X, paper.Corners[3].Y), color.RGBA{0, 255, 0, 0}, 2)
@@ -166,6 +149,152 @@ func TestImage1(t *testing.T) {
 	window.WaitKey(0)
 	windowColors.IMShow(colorsMat)
 	windowColors.WaitKey(0)
+
+	return seenPaperMap
+}
+
+// 1.jpg middle windows blows it out - hard test
+// 3.jpg very red. Hard
+// 7.jpg brightness too high and projection over dots - hard
+// 8.jpg blown out projection over dots - hard
+func TestImage2(t *testing.T) {
+	// 2.jpg balanced image
+	seenPaperMap := imageTest(t, "2.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImage5(t *testing.T) {
+	// 5.jpg brightness too high - good test
+	seenPaperMap := imageTest(t, "5.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImage6(t *testing.T) {
+	// 6.jpg brightness too low - good test
+	seenPaperMap := imageTest(t, "6.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImage9(t *testing.T) {
+	// 9.jpg dark - good test
+	seenPaperMap := imageTest(t, "9.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImage10(t *testing.T) {
+	// 10.jpg bright - good test
+	seenPaperMap := imageTest(t, "10.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImage11(t *testing.T) {
+	// 11.jpg color temp too warm - good but hard test *
+	seenPaperMap := imageTest(t, "11.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImage12(t *testing.T) {
+	// 12.jpg zoomed? - good but hard test *
+	seenPaperMap := imageTest(t, "12.jpg")
+	if len(seenPaperMap) != 4 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 4)
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
 }
 
 func checkCornerId(colors [][3]int, correctPaperId int, correctCornerId int, dotCodes8400 []string, t *testing.T) {
