@@ -10,9 +10,16 @@ import (
 	"gocv.io/x/gocv"
 )
 
-// go test go-cv_test.go 1601__frame-to-papers.go
+// go test go-cv_test.go 1601__frame-to-papers.go -count=1
+// SHOW_DEBUG_WINDOW=1 go test go-cv_test.go 1601__frame-to-papers.go -count=1
 
 func TestImage1(t *testing.T) {
+	showDebugWindowOs := os.Getenv("SHOW_DEBUG_WINDOW")
+	showDebugWindow := false
+	if showDebugWindowOs != "" {
+		showDebugWindow = true
+	}
+
 	BASE_PATH := GetBasePath()
 	dotCodes8400 := get8400(BASE_PATH + "files/dot-codes.txt")
 	if len(dotCodes8400) != 8400 {
@@ -61,6 +68,30 @@ func TestImage1(t *testing.T) {
 	papers := getPapersFromCorners(step4)
 	// log.Println(papers)
 	log.Println("papers", len(papers))
+
+	if len(papers) != 4 {
+		t.Error("Wrong number of papers detected", len(papers), 4)
+	}
+	seenPaperMap := make(map[string]bool)
+	for _, seen_paper := range papers {
+		seenPaperMap[seen_paper.Id] = true
+	}
+	if _, ok := seenPaperMap["1986"]; !ok {
+		t.Error("Paper not detected", "1986")
+	}
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["1567"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+
+	if !showDebugWindow {
+		return
+	}
 
 	window := gocv.NewWindow("Tracking")
 	defer window.Close()
