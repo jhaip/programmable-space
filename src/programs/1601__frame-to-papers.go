@@ -27,7 +27,7 @@ import (
 	zmq "github.com/pebbe/zmq4"
 )
 
-const dotSize = 12
+const dotSize = 15
 const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
@@ -510,7 +510,7 @@ func distanceSquared(p1 Vec, p2 Vec) float64 {
 func getWithin(points []Dot, ref Dot, i int, dist int) []int {
 	within := make([]int, 0)
 	for pi, point := range points {
-		if pi != i && distanceSquared(Vec{point.X, point.Y}, Vec{ref.X, ref.Y}) < float64(math.Pow(float64(2*dist), 2)) {
+		if pi != i && distanceSquared(Vec{point.X, point.Y}, Vec{ref.X, ref.Y}) < float64(math.Pow(float64(dist), 2)) {
 			within = append(within, pi)
 		}
 	}
@@ -522,7 +522,7 @@ func doStep1(points []Dot) []Dot {
 	step1 := make([]Dot, len(points))
 	for i, nodeData := range points {
 		step1[i] = nodeData
-		step1[i].Neighbors = getWithin(points, nodeData, i, dotSize)
+		step1[i].Neighbors = getWithin(points, nodeData, i, dotSize*2)
 	}
 	return step1
 }
@@ -686,51 +686,51 @@ func getGetPaperIdFromColors3(colors [][3]int, dotCodes8400 []string) (int, int,
 	}
 	matchedColors[idealColorsToDotIndex[2]] = 2
 	// group remaining 3 colors to closest other color
-	// for i, colorData := range colors {
-	// 	if i != idealColorsToDotIndex[0] && i != idealColorsToDotIndex[1] && i != idealColorsToDotIndex[2] && i != idealColorsToDotIndex[3] {
-	// 		min := 99999.0
-	// 		min_k := 0
-	// 		for k, matchedColorIndex := range idealColorsToDotIndex {
-	// 			d := getColorDistance(colorData, colors[matchedColorIndex])
-	// 			if d < min {
-	// 				min = d
-	// 				min_k = k
-	// 			}
-	// 		}
-	// 		matchedColors[i] = min_k
-	// 	}
-	// }
-	// Assign 3 remaining colors
-	darkLuminance := 0.2126*float64(colors[idealColorsToDotIndex[3]][0]) + 0.7152*float64(colors[idealColorsToDotIndex[3]][1]) + 0.0722*float64(colors[idealColorsToDotIndex[3]][2])
-	minNonDarkLuminance := 99999.0
-	for i := 0; i < 3; i++ {
-		nonDarkLuminance := 0.2126*float64(colors[idealColorsToDotIndex[i]][0]) + 0.7152*float64(colors[idealColorsToDotIndex[i]][1]) + 0.0722*float64(colors[idealColorsToDotIndex[i]][2])
-		if nonDarkLuminance < minNonDarkLuminance {
-			minNonDarkLuminance = nonDarkLuminance
-		}
-	}
-	luminanceThreshold := (darkLuminance + minNonDarkLuminance)/2.0
-	log.Printf("luminance -- dark: %f min color: %f difference: %f \n", darkLuminance, minNonDarkLuminance, minNonDarkLuminance-darkLuminance)
-
 	for i, colorData := range colors {
 		if i != idealColorsToDotIndex[0] && i != idealColorsToDotIndex[1] && i != idealColorsToDotIndex[2] && i != idealColorsToDotIndex[3] {
-			luminance := 0.2126*float64(colorData[0]) + 0.7152*float64(colorData[1]) + 0.0722*float64(colorData[2])
-			if luminance < luminanceThreshold {
-				matchedColors[i] = 3
-			} else {
-				min := 99999.0
-				min_k := 0
-				for k, matchedColorIndex := range idealColorsToDotIndex {
-					d := getColorDistance(colorData, colors[matchedColorIndex])
-					if d < min {
-						min = d
-						min_k = k
-					}
+			min := 99999.0
+			min_k := 0
+			for k, matchedColorIndex := range idealColorsToDotIndex {
+				d := getColorDistance(colorData, colors[matchedColorIndex])
+				if d < min {
+					min = d
+					min_k = k
 				}
-				matchedColors[i] = min_k
 			}
+			matchedColors[i] = min_k
 		}
 	}
+	// Assign 3 remaining colors
+	// darkLuminance := 0.2126*float64(colors[idealColorsToDotIndex[3]][0]) + 0.7152*float64(colors[idealColorsToDotIndex[3]][1]) + 0.0722*float64(colors[idealColorsToDotIndex[3]][2])
+	// minNonDarkLuminance := 99999.0
+	// for i := 0; i < 3; i++ {
+	// 	nonDarkLuminance := 0.2126*float64(colors[idealColorsToDotIndex[i]][0]) + 0.7152*float64(colors[idealColorsToDotIndex[i]][1]) + 0.0722*float64(colors[idealColorsToDotIndex[i]][2])
+	// 	if nonDarkLuminance < minNonDarkLuminance {
+	// 		minNonDarkLuminance = nonDarkLuminance
+	// 	}
+	// }
+	// luminanceThreshold := (darkLuminance + minNonDarkLuminance)/2.0
+	// log.Printf("luminance -- dark: %f min color: %f difference: %f \n", darkLuminance, minNonDarkLuminance, minNonDarkLuminance-darkLuminance)
+
+	// for i, colorData := range colors {
+	// 	if i != idealColorsToDotIndex[0] && i != idealColorsToDotIndex[1] && i != idealColorsToDotIndex[2] && i != idealColorsToDotIndex[3] {
+	// 		luminance := 0.2126*float64(colorData[0]) + 0.7152*float64(colorData[1]) + 0.0722*float64(colorData[2])
+	// 		if luminance < luminanceThreshold {
+	// 			matchedColors[i] = 3
+	// 		} else {
+	// 			min := 99999.0
+	// 			min_k := 0
+	// 			for k, matchedColorIndex := range idealColorsToDotIndex {
+	// 				d := getColorDistance(colorData, colors[matchedColorIndex])
+	// 				if d < min {
+	// 					min = d
+	// 					min_k = k
+	// 				}
+	// 			}
+	// 			matchedColors[i] = min_k
+	// 		}
+	// 	}
+	// }
 	// return results
 	var colorString string
 	for _, matchedColor := range matchedColors {
