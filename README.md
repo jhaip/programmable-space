@@ -322,6 +322,7 @@ Lua/Love2D:
   - `sudo luarocks install lua-llthreads2`
   - `sudo luarocks install lzmq`
 - `sudo luarocks install uuid`
+- `sudo luarocks install lua-cjson`
 
 Printing Papers:
 

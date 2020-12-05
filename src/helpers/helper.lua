@@ -1,6 +1,8 @@
 require "zhelpers"
 local zmq = require "lzmq"
-local json = require "json"
+-- local json = require "json"
+-- sudo luarocks install lua-cjson
+local json = require('cjson')
 -- sudo luarocks install uuid
 local socket = require("socket")  -- gettime() has higher precision than os.time()
 local uuid = require("uuid")
