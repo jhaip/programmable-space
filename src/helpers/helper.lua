@@ -77,7 +77,7 @@ function room.listen(blocking)
         flags = 1 -- zmq.NOBLOCK
     end
     local raw_msg = client:recv_multipart(flags)
-    print("received!")
+    -- print("received!")
     -- print(raw_msg)
     if raw_msg ~= nil then
         if #raw_msg > 0 then
