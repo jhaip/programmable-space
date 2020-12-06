@@ -48,7 +48,7 @@ end
 
 function parse_results(val)
     local results = {}
-    local decode_successful, json_val = pcall(json.decode(val))
+    local decode_successful, json_val = pcall(json.decode, val)
     if decode_successful == false then
         -- json_val will contain the json decode error message
         print("JSON DECODE FAILED:", val, json_val)
