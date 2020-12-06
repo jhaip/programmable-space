@@ -404,7 +404,7 @@ func TestCornerColorDetection(t *testing.T) {
 	// classified as 0330132 but should be 0330122
 	checkCornerId(
 		[][3]int{{177, 67, 39}, {53, 34, 12}, {57, 34, 15}, {177, 65, 35}, {121, 112, 57}, {87, 78, 67}, {90, 76, 70}},
-		277, 3, // 1675, 1 is wrong
+		277, 0, // 1675, 1 is wrong
 		dotCodes8400, t,
 	)
 
@@ -418,7 +418,7 @@ func TestCornerColorDetection(t *testing.T) {
 	// classified as 1323330 but should be 1322330
 	checkCornerId(
 		[][3]int{{112, 110, 52}, {50, 31, 12}, {92, 74, 63}, {88, 75, 63}, {54, 27, 12}, {54, 29, 13}, {174, 66, 40}},
-		277, 3, // 2006, 1 is wrong
+		277, 2, // 2006, 1 is wrong
 		dotCodes8400, t,
 	)
 }

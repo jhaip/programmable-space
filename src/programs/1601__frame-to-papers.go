@@ -23,7 +23,9 @@ import (
 	"time"
 
 	"gocv.io/x/gocv"
-	ciede2000 "github.com/mattn/go-ciede2000"
+	// ciede2000 "github.com/mattn/go-ciede2000"
+	chromath "github.com/jkl1337/go-chromath"
+    "github.com/jkl1337/go-chromath/deltae"
 	zmq "github.com/pebbe/zmq4"
 )
 
@@ -625,19 +627,34 @@ func indexOf(word string, data []string) int {
 func getColorDistance(a, b [3]int) float64 {
 	// return math.Abs(float64(a[0]-b[0])) + math.Abs(float64(a[1]-b[1])) + math.Abs(float64(a[2]-b[2]))
 	// using CIEDE2000 color diff is 5x slower than RGB diff (almost 2ms for one corner)
-	c1 := &color.RGBA{
-		uint8(a[0]),
-		uint8(a[1]),
-		uint8(a[2]),
-		255,
-	}
-	c2 := &color.RGBA{
-		uint8(b[0]),
-		uint8(b[1]),
-		uint8(b[2]),
-		255,
-	}
-	return ciede2000.Diff(c1, c2)
+	// c1 := &color.RGBA{
+	// 	uint8(a[0]),
+	// 	uint8(a[1]),
+	// 	uint8(a[2]),
+	// 	255,
+	// }
+	// c2 := &color.RGBA{
+	// 	uint8(b[0]),
+	// 	uint8(b[1]),
+	// 	uint8(b[2]),
+	// 	255,
+	// }
+	// de2000 := ciede2000.Diff(c1, c2)
+	// fmt.Printf("dist: %v %v : %v\n", a, b, d)
+	c1 := chromath.RGB{float64(a[0]), float64(a[1]), float64(a[2])}
+	c2 := chromath.RGB{float64(b[0]), float64(b[1]), float64(b[2])}
+	targetIlluminant := &chromath.IlluminantRefD65
+	rgb2xyz := chromath.NewRGBTransformer(&chromath.SpaceSRGB, &chromath.AdaptationBradford, targetIlluminant, &chromath.Scaler8bClamping, 1.0, nil)
+	// Can possibly make this rgb2xyz faster with:
+	// rgb2xyz := chromath.NewRGBTransformer(&chromath.SpaceSRGB, &chromath.AdaptationBradford, targetIlluminant, nil, 1.0, chromath.SRGBFastCompander.Init(&chromath.SpaceSRGB))
+	// also can we cache these transformers?
+	lab2xyz := chromath.NewLabTransformer(targetIlluminant)
+	c1xyz := rgb2xyz.Convert(c1)
+	c2xyz := rgb2xyz.Convert(c2)
+	c1lab := lab2xyz.Invert(c1xyz)
+	c2lab := lab2xyz.Invert(c2xyz)
+	de2000 := deltae.CIE2000(c1lab, c2lab, &deltae.KLChDefault)
+	return de2000
 }
 
 func getGetPaperIdFromColors3(colors [][3]int, dotCodes8400 []string) (int, int, string) {
