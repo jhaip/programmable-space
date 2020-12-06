@@ -7,6 +7,10 @@ const { room, myId, run, MY_ID_STR, getIdFromProcessName, getIdStringFromId } = 
 let nameToProcessIdCache = {};
 
 function runPaper(name) {
+  if (name === '390__initialProgramCode.js') {
+    console.error(`skipping running 390__initialProgramCode.js`)
+    return;
+  }
   console.error(`making ${name} be running!`)
   // kill any old processes that weren't correctly killed before
   pkill.full(`${name}`, function (err, validPid) {
@@ -54,11 +58,11 @@ function runPaper(name) {
 }
 
 function stopPaper(name, pid) {
-  console.error(`making ${name} with PID ${pid} NOT be running`)
   if (name === '390__initialProgramCode.js') {
     console.error(`skipping killing 390__initialProgramCode.js`)
     return;
   }
+  console.error(`making ${name} with PID ${pid} NOT be running`)
   try {
     pkill.full(`${name}`)
   } catch {
