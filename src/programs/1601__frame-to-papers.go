@@ -890,9 +890,9 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache ma
 		[]string{"postfix", ""},
 	}})
 	// $ camera $cameraId sees paper $id at TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $time
-	seenPaperIds := make([]string, 0)
+	// seenPaperIds := make([]string, 0)
 	for _, paper := range papers {
-		seenPaperIds = append(seenPaperIds, paper.Id)
+		// seenPaperIds = append(seenPaperIds, paper.Id)
 		batch_claims = append(batch_claims, BatchMessage{"claim", [][]string{
 			[]string{"id", MY_ID_STR},
 			[]string{"id", "0"},
@@ -971,7 +971,7 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache ma
 	}
 	log.Println("post send message!")
 	log.Println(s)
-	fmt.Printf("Seen papers: %v", seenPaperIds)
+	// fmt.Printf("Seen papers: %v", seenPaperIds)
 }
 
 func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
