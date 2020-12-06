@@ -781,11 +781,13 @@ func doStep4CornersWithIds(nodes []Dot, corners []Corner, dotCodes8400 []string)
 		newCorner := corner
 		rawColorsList := append(append(lineToColors(nodes, corner.sides[0], true), corner.Corner.Color), lineToColors(nodes, corner.sides[1], false)...)
 		paperId, cornerId, colorString := getGetPaperIdFromColors3(rawColorsList, dotCodes8400)
-		newCorner.PaperId = paperId
-		newCorner.CornerId = cornerId
-		newCorner.ColorString = colorString
-		newCorner.RawColorsList = rawColorsList
-		results = append(results, newCorner)
+		if paperId != -1 && cornerId != -1 {
+			newCorner.PaperId = paperId
+			newCorner.CornerId = cornerId
+			newCorner.ColorString = colorString
+			newCorner.RawColorsList = rawColorsList
+			results = append(results, newCorner)
+		}
 	}
 	return results
 }
