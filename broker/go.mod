@@ -7,7 +7,8 @@ require (
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/jung-kurt/gofpdf v1.5.2
 	github.com/kokardy/listing v0.0.0-20140516154625-795534c33c5a
-	github.com/mattn/go-ciede2000 v0.0.0-20170301095244-782e8c62fec3
+	// github.com/mattn/go-ciede2000 v0.0.0-20170301095244-782e8c62fec3
+	github.com/jkl1337/go-chromath v0.0.0-20140428033135-240283655afd
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pebbe/zmq4 v1.0.0
