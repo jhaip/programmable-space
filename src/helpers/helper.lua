@@ -47,8 +47,13 @@ function room.on(query_strings, callback)
 end
 
 function parse_results(val)
-    local json_val = json.decode(val)
     local results = {}
+    local decode_successful, json_val = pcall(json.decode(val))
+    if decode_successful == false then
+        -- json_val will contain the json decode error message
+        print("JSON DECODE FAILED:", val, json_val)
+        return results
+    end
     for i = 1, #json_val do
         -- print(json_val[i])
         local result = json_val[i]
