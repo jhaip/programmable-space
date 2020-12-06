@@ -55,11 +55,16 @@ function love.load(args)
         graphics_cache = {}
         graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
         for i = 1, #results do
-            local parsedGraphics = json.decode(results[i].graphics)
-            for g = 1, #parsedGraphics do
-                graphics_cache[#graphics_cache + 1] = parsedGraphics[g]
+            local decode_successful, parsedGraphics = pcall(json.decode, results[i].graphics)
+            if decode_successful == false then
+                -- parsedGraphics will contain the json decode error message
+                print("JSON DECODE FAILED:", results[i].graphics, parsedGraphics)
+            else
+                for g = 1, #parsedGraphics do
+                    graphics_cache[#graphics_cache + 1] = parsedGraphics[g]
+                end
+                graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
             end
-            graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
         end
     end)
 
