@@ -1,6 +1,6 @@
 const { room, myId, MY_ID_STR } = require('../helpers/helper')(__filename);
 
-let fontSize = 18;
+let fontSize = 28;
 const origin = [0, 0]
 let cursorPosition = [0, 0]
 let currentWidth = 1;
@@ -202,8 +202,10 @@ room.on(
         currentTargetId = targetId;
         currentSourceCode = sourceCode;
       }
-      curentWidth = myWidth;
-      currentHeight = myHeight;
+      // curentWidth = myWidth;
+      // currentHeight = myHeight;
+      currentHeight = 1080; // hardcoded canvas height comes from #430
+      curentWidth = 1080 * myWidth / myHeight;
       render();
     })
     if (!results || results.length === 0) {
