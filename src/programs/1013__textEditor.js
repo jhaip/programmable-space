@@ -1,6 +1,6 @@
 const { room, myId, MY_ID_STR } = require('../helpers/helper')(__filename);
 
-let fontSize = 28;
+let fontSize = 32;
 const origin = [0, 0]
 let cursorPosition = [0, 0]
 let currentWidth = 1;
@@ -204,8 +204,10 @@ room.on(
       }
       // curentWidth = myWidth;
       // currentHeight = myHeight;
-      currentHeight = 1080; // hardcoded canvas height comes from #430
-      curentWidth = 1080 * myWidth / myHeight;
+      let marginToNotProjectOnPaperDots = 100;
+      // hardcoded canvas height of 1080 comes from #430
+      currentHeight = 1080 - marginToNotProjectOnPaperDots;
+      curentWidth = (1080 * myWidth / myHeight) - marginToNotProjectOnPaperDots;
       render();
     })
     if (!results || results.length === 0) {
