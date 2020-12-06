@@ -55,6 +55,10 @@ function runPaper(name) {
 
 function stopPaper(name, pid) {
   console.error(`making ${name} with PID ${pid} NOT be running`)
+  if (name === '390__initialProgramCode.js') {
+    console.error(`skipping killing 390__initialProgramCode.js`)
+    return;
+  }
   try {
     pkill.full(`${name}`)
   } catch {
