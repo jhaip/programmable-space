@@ -385,6 +385,7 @@ function cmd() {
     echo -e "done running 2"
     cd src/programs
     /usr/local/go/bin/go run 1382__print-paper.go &
+    /usr/local/go/bin/go run 1606__frame-to-papers-boot.go &
     cd ../..
     # sudo /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/1193__bluefruitProxy.js &
     # ngrok http -subdomain=progspacemasterlist 3013 > /dev/null &

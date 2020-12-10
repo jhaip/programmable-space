@@ -20,7 +20,7 @@ const child = execFile(
         console.log('stdout', stdout);
     });
 
-room.assert('wish 1606 would be running')
+// room.assert('wish 1606 would be running') // removed until #1900 can run go programs
 const w = 1280;
 const h = 720;
 const o = 200;
