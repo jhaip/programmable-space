@@ -5,6 +5,7 @@ github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd h1:qMd81Ts1T
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/jkl1337/go-chromath v0.0.0-20140428033135-240283655afd/go.mod h1:UNcxP8iShHB0njm/QF7z+UiYNPoTUnfSWExJCxM8Q/I=
 github.com/jung-kurt/gofpdf v1.0.0/go.mod h1:7Id9E/uU8ce6rXgefFLlgrJj/GYY22cpxn+r32jIOes=
 github.com/jung-kurt/gofpdf v1.5.2/go.mod h1:oIiEpiXAwTUssrFUGgVj4SO17oiCYsfnTjeQZz/amnM=
 github.com/kokardy/listing v0.0.0-20140516154625-795534c33c5a/go.mod h1:iB9s/klbiORiQRilAbNzvuysIT69zjaVp8PiU97lqmw=
