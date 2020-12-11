@@ -152,6 +152,7 @@ func main() {
 
 	client := initZeroMQ(MY_ID_STR)
 	defer client.Close()
+	fmt.Println("done init")
 
 	// create simple blob detector with parameters
 	params := gocv.NewSimpleBlobDetectorParams()
@@ -168,6 +169,8 @@ func main() {
 	// prepare image matrix
 	img := gocv.IMRead(BASE_PATH + "files/boot-papers.jpg", gocv.IMReadColor)
 	defer img.Close()
+	fmt.Println("read img")
+	fmt.Println(img.Empty())
 
 	points, dotKeyPoints, dotError := getDots(bdp, img)
 	checkErr(dotError)
@@ -178,6 +181,8 @@ func main() {
 	papers := getPapersFromCorners(step4)
 	log.Println(papers)
 
+	fmt.Println("claim papers")
+	fmt.Println(papers)
 	claimPapersRunning(client, MY_ID_STR, papers)
 
 	// draw the keypoints on the webcam image

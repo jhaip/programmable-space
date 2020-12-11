@@ -1,6 +1,6 @@
 const { room, myId, run } = require('../helpers/helper')(__filename);
 
-const delay = Math.floor(1000/10);
+const delay = Math.floor(1000/5);
 const WIDTH = 900;
 const HEIGHT = 500;
 let t = 0;

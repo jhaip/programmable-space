@@ -1,5 +1,5 @@
 data = []
-size = 20
+size = 21
 
 when measured latency $h ms at $:
     data.push(h)

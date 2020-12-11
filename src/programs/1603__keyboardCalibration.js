@@ -1,7 +1,7 @@
 const { room, myId } = require('../helpers/helper')(__filename);
 
 room.cleanup();
-
+var CAM_ID = 1994;
 var IMG = undefined;
 var CURRENT_CORNER = 0;
 var CAM_WIDTH = 1920;
@@ -34,12 +34,12 @@ function move(dx, dy) {
     CALIBRATION[CURRENT_CORNER][0] += dx;
     CALIBRATION[CURRENT_CORNER][1] += dy;
     const C = CALIBRATION;
-    room.retractAll(`camera 1 has projector calibration TL ($, $) TR ($, $) BR ($, $) BL ($, $) @ $`)
-    room.assertForOtherSource("0", `camera 1 has projector calibration TL ( ${C[0][0]}, ${C[0][1]} ) TR ( ${C[1][0]}, ${C[1][1]} ) BR ( ${C[2][0]}, ${C[2][1]} ) BL ( ${C[3][0]}, ${C[3][1]} ) @ ${Math.floor((new Date()).getTime() / 1000)}`);
+    room.retractAll(`camera ${CAM_ID} has projector calibration TL ($, $) TR ($, $) BR ($, $) BL ($, $) @ $`)
+    room.assertForOtherSource("0", `camera ${CAM_ID} has projector calibration TL ( ${C[0][0]}, ${C[0][1]} ) TR ( ${C[1][0]}, ${C[1][1]} ) BR ( ${C[2][0]}, ${C[2][1]} ) BL ( ${C[3][0]}, ${C[3][1]} ) @ ${Math.floor((new Date()).getTime() / 1000)}`);
     draw();
 }
 
-room.on(`camera 1 has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $`, results => {
+room.on(`camera ${CAM_ID} has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $`, results => {
     if (results && results.length > 0) {
         results.forEach(({ x1, y1, x2, y2, x3, y3, x4, y4 }) => {
             newCalibration = [[+x1, +y1], [+x2, +y2], [+x3, +y3], [+x4, +y4]];
@@ -51,7 +51,7 @@ room.on(`camera 1 has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3,
     }
 })
 
-room.on(`camera $ screenshot $imageBase64`, results => {
+room.on(`camera "${CAM_ID}" screenshot $imageBase64`, results => {
     if (results && results.length > 0) {
         IMG = results[0].imageBase64;
         draw();
