@@ -62,6 +62,9 @@ function stopPaper(name, pid) {
     console.error(`skipping killing 390__initialProgramCode.js`)
     return;
   }
+  if (name.indexOf(".go") !== -1) {
+    name = name.replace(".go", "")
+  }
   console.error(`making ${name} with PID ${pid} NOT be running`)
   try {
     pkill.full(`${name}`)
