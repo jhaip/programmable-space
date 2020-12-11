@@ -12,77 +12,6 @@ def my_prehook():
         ["id", get_my_id_str()],
         ["postfix", ""],
     ]})
-    batch_claims.append({"type": "claim", "fact": [
-        ["id", get_my_id_str()],
-        ["id", "0"],
-        ["text", "camera"],
-        ["integer", "1"],
-        ["text", "has"],
-        ["text", "projector"],
-        ["text", "calibration"],
-        ["text", "TL"],
-        ["text", "("],
-        ["integer", "0"],
-        ["text", ","],
-        ["integer", "0"],
-        ["text", ")"],
-        ["text", "TR"],
-        ["text", "("],
-        ["integer", "1920"],
-        ["text", ","],
-        ["integer", "0"],
-        ["text", ")"],
-        ["text", "BR"],
-        ["text", "("],
-        ["integer", "1920"],
-        ["text", ","],
-        ["integer", "1080"],
-        ["text", ")"],
-        ["text", "BL"],
-        ["text", "("],
-        ["integer", "0"],
-        ["text", ","],
-        ["integer", "1080"],
-        ["text", ")"],
-        ["text", "@"],
-        ["integer", str(int(round(time.time() * 1000)))],
-    ]})
-    batch_claims.append({"type": "claim", "fact": [
-        ["id", get_my_id_str()],
-        ["id", "0"],
-        ["text", "camera"],
-        ["integer", "1"],
-        ["text", "sees"],
-        ["text", "paper"],
-        ["integer", str(int(get_my_id_str()))],
-        ["text", "at"],
-        ["text", "TL"],
-        ["text", "("],
-        ["integer", "500"],
-        ["text", ","],
-        ["integer", "500"],
-        ["text", ")"],
-        ["text", "TR"],
-        ["text", "("],
-        ["integer", "900"],
-        ["text", ","],
-        ["integer", "500"],
-        ["text", ")"],
-        ["text", "BR"],
-        ["text", "("],
-        ["integer", "900"],
-        ["text", ","],
-        ["integer", "800"],
-        ["text", ")"],
-        ["text", "BL"],
-        ["text", "("],
-        ["integer", "500"],
-        ["text", ","],
-        ["integer", "800"],
-        ["text", ")"],
-        ["text", "@"],
-        ["integer", str(int(round(time.time() * 1000)))],
-    ]})
     ill = Illumination()
     ill.push()
     ill.fill("red")
@@ -116,9 +45,7 @@ def my_prehook():
     ill.rotate(math.pi / 2.0)
     ill.line(0, 0, 200, 0)
     ill.pop()
-    batch_claims.append(ill.to_batch_claim(get_my_id_str(), "0", "global"))
     batch_claims.append(ill.to_batch_claim(get_my_id_str(), "0"))
     batch(batch_claims)
-    # batch([batch_claims[0]])
 
 init(__file__)
