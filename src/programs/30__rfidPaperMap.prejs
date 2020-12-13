@@ -1,84 +1,27 @@
-claim paper 2000 has RFID "f26a0c2e"
-claim paper 2001 has RFID "f238222e"
-claim paper 2002 has RFID "80616ea3"
-claim paper 2003 has RFID "d07911a3"
-claim paper 2004 has RFID "91b4d108"
-claim paper 2005 has RFID "53825027"
-claim paper 2006 has RFID "10af78a3"
-claim paper 2007 has RFID "7341a727"
-claim paper 2008 has RFID "2574c72d"
-claim paper 2009 has RFID "b680cc21"
-claim paper 2010 has RFID "737e9c27"
-claim paper 2011 has RFID "4221cd24"
-claim paper 2012 has RFID "e2c66d2e"
-claim paper 2013 has RFID "f2a6e72e"
-claim paper 2014 has RFID "e5c6da5e"
-claim paper 2015 has RFID "350cda5e"
-claim paper 2016 has RFID "f5aad15e"
-claim paper 2017 has RFID "a5a7da5e"
-claim paper 2018 has RFID "452bd15e"
-claim paper 2019 has RFID "0511cf5e"
-claim paper 2020 has RFID "b5a3d85e"
-claim paper 2021 has RFID "952bda5e"
-claim paper 2022 has RFID "85efd85e"
-claim paper 2023 has RFID "b5dfd85e"
-claim paper 2024 has RFID "fb04cc53"
-claim paper 2025 has RFID "bb109f52"
-claim paper 2026 has RFID "7bdec553"
-claim paper 2027 has RFID "cb99a352"
-claim paper 2028 has RFID "5bdaa752"
-claim paper 2029 has RFID "6b0cce53"
-claim paper 2030 has RFID "cb6ca552"
-claim paper 2031 has RFID "bbbfb152"
-claim paper 2033 has RFID "eb67cb53"
-claim paper 2034 has RFID "3b02d253"
-claim paper 2035 has RFID "7b92cd53"
-claim paper 2036 has RFID "ab79ab52"
-claim paper 2037 has RFID "e5f3da49"
-claim paper 2038 has RFID "a51e79e9"
-claim paper 2039 has RFID "75f972e9"
-claim paper 2040 has RFID "b568b6e9"
-claim paper 2041 has RFID "5b20b152"
-claim paper 2042 has RFID "1bfab052"
-claim paper 2043 has RFID "fbbfac52"
-claim paper 2044 has RFID "0be0b152"
-claim paper 5 has RFID "d01ff625"
-claim paper 1100 has RFID "e21eef27"
-claim paper 1013 has RFID "7bdbe359"
-claim paper 1910 has RFID "eadcb212"
-claim paper 1911 has RFID "fa71b012"
-claim paper 1912 has RFID "99a89884"
-claim paper 1913 has RFID "3ae8b512"
-claim paper 1914 has RFID "6a0d0f11"
-claim paper 1915 has RFID "6af2bf12"
-claim paper 1916 has RFID "3ac0b812"
-claim paper 1917 has RFID "ca7ab612"
-claim paper 1918 has RFID "2574c72d"
-claim paper 1919 has RFID "59d920bd"
-claim paper 1920 has RFID "699434b2"
-claim paper 285 has RFID "c9d31fbd"
-claim paper 1803 has RFID "cbf49574"
-claim paper 284 has RFID "ebd61674"
-claim paper 283 has RFID "e5c9674a"
-claim paper 281 has RFID "6bb61f75"
-claim paper 287 has RFID "f5b19049"
-claim paper 286 has RFID "b97513bd"
-claim paper 430 has RFID "b53de74a"
-claim paper 620 has RFID "55b0e94a"
-claim paper 1603 has RFID "45f7ec4a"
-claim paper 1101 has RFID "45825fe9"
-claim paper 1977 has RFID "55cb56e9"
-claim paper 1978 has RFID "f5b78ae9"
-claim paper 1979 has RFID "755c9de9"
-claim paper 1980 has RFID "e56257e9"
-claim paper 1981 has RFID "05f07de9"
-claim paper 1982 has RFID "b59571e9"
-claim paper 1983 has RFID "b52de23b"
-claim paper 1984 has RFID "055f784a"
-claim paper 1985 has RFID "4595ee4a"
-claim paper 1986 has RFID "45eb5fe9"
-claim paper 1987 has RFID "e56956e9"
-claim paper 1988 has RFID "459761e9"
-claim paper 1970 has RFID "45d9ea3b"
-claim paper 1969 has RFID "c531f53b"
-claim paper 1968 has RFID "05cbff3b"
+const rfidMap = {
+"f26a0c2e": 2000, "f238222e": 2001, "80616ea3": 2002, "d07911a3": 2003,
+"91b4d108": 2004, "53825027": 2005, "10af78a3": 2006, "7341a727": 2007,
+"2574c72d": 2008, "b680cc21": 2009, "737e9c27": 2010, "4221cd24": 2011,
+"e2c66d2e": 2012, "f2a6e72e": 2013, "e5c6da5e": 2014, "350cda5e": 2015,
+"f5aad15e": 2016, "a5a7da5e": 2017, "452bd15e": 2018, "0511cf5e": 2019,
+"b5a3d85e": 2020, "952bda5e": 2021, "85efd85e": 2022, "b5dfd85e": 2023,
+"fb04cc53": 2024, "bb109f52": 2025, "7bdec553": 2026, "cb99a352": 2027,
+"5bdaa752": 2028, "6b0cce53": 2029, "cb6ca552": 2030, "bbbfb152": 2031,
+"eb67cb53": 2033, "3b02d253": 2034, "7b92cd53": 2035, "ab79ab52": 2036,
+"e5f3da49": 2037, "a51e79e9": 2038, "75f972e9": 2039, "b568b6e9": 2040,
+"5b20b152": 2041, "1bfab052": 2042, "fbbfac52": 2043, "0be0b152": 2044,
+"d01ff625": 5,    "e21eef27": 1100, "7bdbe359": 1013, "eadcb212": 1910,
+"fa71b012": 1911, "99a89884": 1912, "3ae8b512": 1913, "6a0d0f11": 1914,
+"6af2bf12": 1915, "3ac0b812": 1916, "ca7ab612": 1917, "2574c72d": 1918,
+"59d920bd": 1919, "699434b2": 1920, "c9d31fbd": 285, "cbf49574": 1803,
+"ebd61674": 284,  "e5c9674a": 283,  "6bb61f75": 281,  "f5b19049": 287,
+"b97513bd": 286,  "b53de74a": 430,  "55b0e94a": 620,  "45f7ec4a": 1603,
+"45825fe9": 1101, "55cb56e9": 1977, "f5b78ae9": 1978, "755c9de9": 1979,
+"e56257e9": 1980, "05f07de9": 1981, "b59571e9": 1982, "b52de23b": 1983,
+"055f784a": 1984, "353ffe3b": 1985, "45eb5fe9": 1986, "e56956e9": 1987,
+"459761e9": 1988, "45d9ea3b": 1970, "c531f53b": 1969, "05cbff3b": 1968,
+};
+
+for (const rfidId in rfidMap) {
+    claim paper ${rfidMap[rfidId]} has RFID "${rfidId}"
+}
