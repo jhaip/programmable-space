@@ -8,6 +8,7 @@ import base64
 
 @subscription(["$ $ when camera sees frame $frame @ $t"])
 def sub_callback(results):
+    logging.error("GOT RESULTS")
     if not results:
         return
     result = results[0]
