@@ -31,7 +31,7 @@ def sub_callback(results):
         ["postfix", ""],
     ]})
     ill = Illumination()
-    ill.image(0, 0, 768, 432, png_as_text)
+    ill.image(0, 0, 384, 216, png_as_text)
     ill.fontsize(100)
     ill.fontcolor(255, 0, 0)
     ill.text(0, 0, "{}".format(time.time()))
