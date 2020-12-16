@@ -23,10 +23,13 @@ time.sleep(2)
 init(__file__, skipListening=True)
 
 while True:
+    start = time.time()
     image = capture.read()
+    logging.error("Time to capture: {}".format(time.time() - start))
     resized = cv2.resize(image, (768, 432), interpolation=cv2.INTER_NEAREST)
     retval, buffer = cv2.imencode('.jpg', resized)
     jpg_as_text = base64.b64encode(buffer)
+    logging.error("Time to capture + b64 encode: {}".format(time.time() - start))
     currentTimeMs = int(round(time.time() * 1000))
     claims = [
         {"type": "retract", "fact": [["id", get_my_id_str()], ["id", "0"], ["postfix", ""]]}
@@ -42,6 +45,7 @@ while True:
         ["integer", str(currentTimeMs)]
     ]})
     batch(claims)
+    logging.error("Time to capture and claim: {}".format(time.time() - start))
     if DEBUG:
         cv2.imshow("Original", image)
         logging.info(jpg_as_text)
