@@ -6,10 +6,8 @@ import cv2
 import cv2.aruco as aruco
 import base64
 
-@subscription(["$ $ when camera sees frame $frame @ $t"])
+@subscription(["$ $ camera sees frame $frame @ $t"])
 def sub_callback(results):
-    logging.error("GOT RESULTS")
-    logging.error(results)
     if not results:
         return
     result = results[0]
