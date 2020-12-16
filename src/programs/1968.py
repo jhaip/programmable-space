@@ -5,11 +5,13 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import base64
+import time
 
 @subscription(["$ $ camera sees frame $frame @ $t"])
 def sub_callback(results):
     if not results:
         return
+    start = time.time()
     result = results[0]
     frameb64 = result["frame"]
     frame_bytes = base64.b64decode(frameb64)
@@ -32,5 +34,6 @@ def sub_callback(results):
     ill.image(0, 0, 768, 432, png_as_text)
     batch_claims.append(ill.to_batch_claim(get_my_id_str(), "0"))
     batch(batch_claims)
+    logging.error("Time to fully proccess and claim: {}".format(time.time() - start))
 
 init(__file__)
