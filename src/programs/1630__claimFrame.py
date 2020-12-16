@@ -26,7 +26,7 @@ while True:
     start = time.time()
     image = capture.read()
     logging.error("Time to capture: {}".format(time.time() - start))
-    resized = cv2.resize(image, (768, 432), interpolation=cv2.INTER_NEAREST)
+    resized = cv2.resize(image, (384, 216), interpolation=cv2.INTER_NEAREST)
     retval, buffer = cv2.imencode('.jpg', resized)
     jpg_as_text = base64.b64encode(buffer)
     logging.error("Time to capture + b64 encode: {}".format(time.time() - start))
