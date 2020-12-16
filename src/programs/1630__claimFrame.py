@@ -15,6 +15,7 @@ DEBUG = False
 capture = WebcamVideoStream(src=0)
 # capture.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
 # capture.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
+
 # time.sleep(2)
 capture.start()
 time.sleep(2)
@@ -23,7 +24,7 @@ init(__file__, skipListening=True)
 
 while True:
     image = capture.read()
-    resized = cv2.resize(image, (192, 108), interpolation=cv2.INTER_NEAREST)
+    resized = cv2.resize(image, (768, 432), interpolation=cv2.INTER_NEAREST)
     retval, buffer = cv2.imencode('.jpg', resized)
     jpg_as_text = base64.b64encode(buffer)
     currentTimeMs = int(round(time.time() * 1000))
