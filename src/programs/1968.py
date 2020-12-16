@@ -38,6 +38,6 @@ def sub_callback(results):
     batch_claims.append(ill.to_batch_claim(get_my_id_str(), "0"))
     batch(batch_claims)
     logging.error("Time to fully proccess and claim: {}".format(time.time() - start))
-    logging.error("Lag from message send: {} --- {}".format(time.time() - result["t"]/1000, time.time())
+    logging.error("Lag from message send: {} --- {}".format(time.time() - result["t"]/1000, time.time()))
 
 init(__file__)
