@@ -22,7 +22,7 @@ def sub_callback(results):
         gray, aruco_dict, parameters=arucoParameters)
     frame = aruco.drawDetectedMarkers(frame, corners)
     retval, buffer = cv2.imencode('.png', frame)
-    png_as_text = base64.b64encode(buffer)
+    png_as_text = base64.b64encode(buffer).decode('utf-8')
     batch_claims = []
     batch_claims.append({"type": "retract", "fact": [
         ["id", get_my_id_str()],
