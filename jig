@@ -181,7 +181,8 @@ function cmd() {
     pkill -f "lua-graphics.love"
     sudo modprobe v4l2loopback devices=2 exclusive_caps=1,1 video_nr=5,6 card_label="Webcam Copy 1","Webcam Copy 2"
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1280,height=720,pixelformat=MPEG
-    sudo ffmpeg -f video4linux2 -i /dev/video0 -codec copy -f v4l2 /dev/video5 -codec copy -f v4l2 /dev/video6
+    sudo ffmpeg -f video4linux2 -i /dev/video0 -codec copy -f v4l2 /dev/video5 -codec copy -f v4l2 /dev/video6 &
+    sleep 1
     export DISPLAY=:1
     export PROG_SPACE_SERVER_URL="192.168.1.34"
     export HEADLESS_CV=true
