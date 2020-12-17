@@ -13,7 +13,7 @@ import cv2.aruco as aruco
 # CAM_HEIGHT = 1080
 DEBUG = False
 
-capture = WebcamVideoStream(src=0)
+capture = WebcamVideoStream(src=6)
 # capture.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
 # capture.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
 
