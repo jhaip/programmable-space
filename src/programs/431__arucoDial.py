@@ -85,14 +85,6 @@ def sub_callback_graphics(results):
             ]
             if camera_id in projection_matrixes:
                 projection_matrix = projection_matrixes[camera_id]
-            graphics_json.insert(0, {
-                "type": "transform",
-                "options": [
-                    projection_matrix[0][0], projection_matrix[0][1], projection_matrix[0][2],
-                    projection_matrix[1][0], projection_matrix[1][1], projection_matrix[1][2],
-                    projection_matrix[2][0], projection_matrix[2][1], projection_matrix[2][2],
-                ]
-            })
             dst = np.float32([
                 project(camera_id, result["x1"], result["y1"]),
                 project(camera_id, result["x2"], result["y2"]),
@@ -105,6 +97,11 @@ def sub_callback_graphics(results):
             cx = int((dst[0][0] + dst[1][0] + dst[2][0] + dst[3][0]) / 4)
             cy = int((dst[0][1] + dst[1][1] + dst[2][1] + dst[3][1]) / 4)
             ill = Illumination()
+            ill.set_transform(
+                projection_matrix[0][0], projection_matrix[0][1], projection_matrix[0][2],
+                projection_matrix[1][0], projection_matrix[1][1], projection_matrix[1][2],
+                projection_matrix[2][0], projection_matrix[2][1], projection_matrix[2][2],
+            )
             ill.ellipse(cx, cy, diameter, int(diameter))
             claims.append(ill.to_batch_claim(get_my_id_str(), "1", target=result["displayid"]))
     batch(claims)
