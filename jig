@@ -179,6 +179,7 @@ function cmd() {
     pkill -f "1601__frame-to-papers.go"
     pkill -f "exe/1601__frame-to-papers"
     pkill -f "lua-graphics.love"
+    pkill -f "ffmpeg"
     sudo modprobe v4l2loopback devices=2 exclusive_caps=1,1 video_nr=5,6 card_label="Webcam Copy 1","Webcam Copy 2"
     v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
     sudo ffmpeg -f video4linux2 -i /dev/video0 -codec copy -f v4l2 /dev/video5 -codec copy -f v4l2 /dev/video6 &
@@ -190,8 +191,23 @@ function cmd() {
     export CV_CAMERA_ID="1994"
     cd src/programs
     go run 1601__frame-to-papers.go 5 &
-    python3 1631__arucoTagCv.py
+    python3 1631__arucoTagCv.py &
     cd ../..
+    cd src
+    rm lua-graphics.love
+    rm lua-bundle
+    mkdir -p lua-bundle
+    cp programs/graphics.lua lua-bundle/main.lua
+    cp helpers/helper.lua lua-bundle/helper.lua
+    cp helpers/matrix.lua lua-bundle/matrix.lua
+    cp helpers/json.lua lua-bundle/json.lua
+    cp helpers/zhelpers.lua lua-bundle/zhelpers.lua
+    cp files/Inconsolata-Regular.ttf lua-bundle/Inconsolata-Regular.ttf
+    cd lua-bundle
+    zip lua-graphics.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
+    cd ..
+    love ./lua-bundle/lua-graphics.love 1994 &
+    cd ..
     echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
   then
