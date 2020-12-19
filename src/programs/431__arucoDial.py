@@ -93,10 +93,6 @@ def sub_callback_graphics(results):
                 # notice the order is not clock-wise
                 project(camera_id, result["x3"], result["y3"])
             ])
-            # diameter = np.sqrt((dst[0][0]-dst[3][0])**2 +
-            #                 (dst[0][1]-dst[3][1])**2)
-            # cx = int((dst[0][0] + dst[1][0] + dst[2][0] + dst[3][0]) / 4)
-            # cy = int((dst[0][1] + dst[1][1] + dst[2][1] + dst[3][1]) / 4)
             diameter = np.sqrt((result["x1"]-result["x3"])**2 +
                                (result["y1"]-result["y3"])**2) * 2
             cx = int((result["x1"] + result["x2"] + result["x3"] + result["x4"]) / 4)
