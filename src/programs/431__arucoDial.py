@@ -96,17 +96,20 @@ def sub_callback_graphics(results):
             #                 (dst[0][1]-dst[3][1])**2)
             # cx = int((dst[0][0] + dst[1][0] + dst[2][0] + dst[3][0]) / 4)
             # cy = int((dst[0][1] + dst[1][1] + dst[2][1] + dst[3][1]) / 4)
-            cx = int((result["x1"] + result["x2"] + result["x3"] + result["x4"]) / 4)
-            cy = int((result["y1"] + result["y2"] + result["y3"] + result["y4"]) / 4)
             diameter = np.sqrt((result["x1"]-result["x3"])**2 +
                                (result["y1"]-result["y3"])**2)
+            cx = int((result["x1"] + result["x2"] + result["x3"] + result["x4"]) / 4)
+            cy = int((result["y1"] + result["y2"] + result["y3"] + result["y4"]) / 4)
             ill = Illumination()
             ill.set_transform(
                 projection_matrix[0][0], projection_matrix[0][1], projection_matrix[0][2],
                 projection_matrix[1][0], projection_matrix[1][1], projection_matrix[1][2],
                 projection_matrix[2][0], projection_matrix[2][1], projection_matrix[2][2],
             )
-            ill.ellipse(cx, cy, diameter, int(diameter))
+            ill.nofill()
+            ill.stroke(255, 0, 0)
+            ill.strokewidth(5)
+            ill.ellipse(int(cx-diameter/2), int(cy-diameter/2), diameter, int(diameter))
             claims.append(ill.to_batch_claim(get_my_id_str(), "1", target=result["displayid"]))
     batch(claims)
 
