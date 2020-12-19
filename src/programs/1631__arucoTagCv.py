@@ -9,21 +9,18 @@ import logging
 import base64
 import cv2.aruco as aruco
 
-# CAM_WIDTH = 1920
-# CAM_HEIGHT = 1080
 DEBUG = False
-
+last_screenshot_claimed = time.time()
 capture = WebcamVideoStream(src=6)
-# capture.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
-# capture.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
-
-# time.sleep(2)
 capture.start()
 time.sleep(2)
 
 init(__file__, skipListening=True)
 
 while True:
+    claims = [
+        {"type": "retract", "fact": [["id", get_my_id_str()], ["id", "0"], ["postfix", ""]]}
+    ]
     start = time.time()
     frame = capture.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -31,27 +28,46 @@ while True:
     arucoParameters = aruco.DetectorParameters_create()
     corners, ids, rejectedImgPoints = aruco.detectMarkers(
         gray, aruco_dict, parameters=arucoParameters)
-    debugFrame = aruco.drawDetectedMarkers(frame, corners)
-    resized = cv2.resize(debugFrame, (192, 108),
-                         interpolation=cv2.INTER_NEAREST)
-    retval, buffer = cv2.imencode('.jpg', resized)
-    jpg_as_text = base64.b64encode(buffer)
-    currentTimeMs = int(round(time.time() * 1000))
-    claims = [
-        {"type": "retract", "fact": [["id", get_my_id_str()], ["id", "0"], ["postfix", ""]]}
-    ]
-    claims.append({"type": "claim", "fact": [
-        ["id", get_my_id_str()],
-        ["id", "0"],
-        ["text", "aruco"],
-        ["text", "sees"],
-        ["text", str(jpg_as_text, "utf-8")],
-        ["text", "@"],
-        ["integer", str(currentTimeMs)]
-    ]})
+    for i, tag_corners in enumerate(corners):
+        claims.append({"type": "claim", "fact": [
+            ["id", get_my_id_str()],
+            ["id", "0"],
+            ["text", "aruco"],
+            ["text", "sees"],
+            ["text", "tag"],
+            ["text", str(ids[i])],
+            ["text", "at"],
+            ["integer", str(tag_corners[0][0])],
+            ["integer", str(tag_corners[0][1])],
+            ["integer", str(tag_corners[1][0])],
+            ["integer", str(tag_corners[1][1])],
+            ["integer", str(tag_corners[2][0])],
+            ["integer", str(tag_corners[2][1])],
+            ["integer", str(tag_corners[3][0])],
+            ["integer", str(tag_corners[3][1])],
+            ["text", "@"],
+            ["integer", str(currentTimeMs)]
+        ]})
+    if time.time() - last_screenshot_claimed > 1: # seconds
+        last_screenshot_claimed = time.time()
+        debugFrame = aruco.drawDetectedMarkers(frame, corners)
+        resized = cv2.resize(debugFrame, (192, 108),
+                            interpolation=cv2.INTER_NEAREST)
+        retval, buffer = cv2.imencode('.jpg', resized)
+        jpg_as_text = base64.b64encode(buffer)
+        currentTimeMs = int(round(time.time() * 1000))
+        claims.append({"type": "claim", "fact": [
+            ["id", get_my_id_str()],
+            ["id", "0"],
+            ["text", "aruco"],
+            ["text", "sees"],
+            ["text", str(jpg_as_text, "utf-8")],
+            ["text", "@"],
+            ["integer", str(currentTimeMs)]
+        ]})
     batch(claims)
     logging.error("Time to capture and claim: {}".format(time.time() - start))
     if DEBUG:
         cv2.imshow("Original", image)
         logging.info(jpg_as_text)
-    time.sleep(1.0)
+    time.sleep(0.2)
