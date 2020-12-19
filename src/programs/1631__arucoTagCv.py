@@ -31,7 +31,8 @@ while True:
         gray, aruco_dict, parameters=arucoParameters)
     currentTimeMs = int(round(time.time() * 1000))
     if len(ids) > 0:
-        for i, tag_corners in enumerate(corners[0]):
+        for i, _tag_corners in enumerate(corners):
+            tag_corners = _tag_corners[0]
             claims.append({"type": "claim", "fact": [
                 ["id", get_my_id_str()],
                 ["id", "0"],
@@ -39,7 +40,7 @@ while True:
                 ["integer", str(CAMERA_ID)],
                 ["text", "sees"],
                 ["text", "aruco"],
-                ["text", str(ids[i])],
+                ["text", str(ids[i][0])],
                 ["text", "at"],
                 ["integer", str(tag_corners[0][0])],
                 ["integer", str(tag_corners[0][1])],
