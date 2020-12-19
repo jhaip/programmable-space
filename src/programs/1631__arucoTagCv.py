@@ -9,6 +9,7 @@ import logging
 import base64
 import cv2.aruco as aruco
 
+CAMERA_ID = 1994
 DEBUG = False
 last_screenshot_claimed = time.time()
 capture = WebcamVideoStream(src=6)
@@ -32,9 +33,10 @@ while True:
         claims.append({"type": "claim", "fact": [
             ["id", get_my_id_str()],
             ["id", "0"],
-            ["text", "aruco"],
+            ["text", "camera"],
+            ["integer", str(CAMERA_ID)],
             ["text", "sees"],
-            ["text", "tag"],
+            ["text", "aruco"],
             ["text", str(ids[i])],
             ["text", "at"],
             ["integer", str(tag_corners[0][0])],
@@ -59,6 +61,8 @@ while True:
         claims.append({"type": "claim", "fact": [
             ["id", get_my_id_str()],
             ["id", "0"],
+            ["text", "camera"],
+            ["integer", str(CAMERA_ID)],
             ["text", "aruco"],
             ["text", "sees"],
             ["text", str(jpg_as_text, "utf-8")],
