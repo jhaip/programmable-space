@@ -29,29 +29,28 @@ while True:
     arucoParameters = aruco.DetectorParameters_create()
     corners, ids, rejectedImgPoints = aruco.detectMarkers(
         gray, aruco_dict, parameters=arucoParameters)
-    print(corners)
-    logging.error(corners)
-    # for i, tag_corners in enumerate(corners):
-    #     claims.append({"type": "claim", "fact": [
-    #         ["id", get_my_id_str()],
-    #         ["id", "0"],
-    #         ["text", "camera"],
-    #         ["integer", str(CAMERA_ID)],
-    #         ["text", "sees"],
-    #         ["text", "aruco"],
-    #         ["text", str(ids[i])],
-    #         ["text", "at"],
-    #         ["integer", str(tag_corners[0][0])],
-    #         ["integer", str(tag_corners[0][1])],
-    #         ["integer", str(tag_corners[1][0])],
-    #         ["integer", str(tag_corners[1][1])],
-    #         ["integer", str(tag_corners[2][0])],
-    #         ["integer", str(tag_corners[2][1])],
-    #         ["integer", str(tag_corners[3][0])],
-    #         ["integer", str(tag_corners[3][1])],
-    #         ["text", "@"],
-    #         ["integer", str(currentTimeMs)]
-    #     ]})
+    if len(ids) > 0:
+        for i, tag_corners in enumerate(corners[0]):
+            claims.append({"type": "claim", "fact": [
+                ["id", get_my_id_str()],
+                ["id", "0"],
+                ["text", "camera"],
+                ["integer", str(CAMERA_ID)],
+                ["text", "sees"],
+                ["text", "aruco"],
+                ["text", str(ids[i])],
+                ["text", "at"],
+                ["integer", str(tag_corners[0][0])],
+                ["integer", str(tag_corners[0][1])],
+                ["integer", str(tag_corners[1][0])],
+                ["integer", str(tag_corners[1][1])],
+                ["integer", str(tag_corners[2][0])],
+                ["integer", str(tag_corners[2][1])],
+                ["integer", str(tag_corners[3][0])],
+                ["integer", str(tag_corners[3][1])],
+                ["text", "@"],
+                ["integer", str(currentTimeMs)]
+            ]})
     if time.time() - last_screenshot_claimed > 1: # seconds
         last_screenshot_claimed = time.time()
         debugFrame = aruco.drawDetectedMarkers(frame, corners)
