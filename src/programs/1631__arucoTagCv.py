@@ -29,6 +29,7 @@ while True:
     arucoParameters = aruco.DetectorParameters_create()
     corners, ids, rejectedImgPoints = aruco.detectMarkers(
         gray, aruco_dict, parameters=arucoParameters)
+    currentTimeMs = int(round(time.time() * 1000))
     if len(ids) > 0:
         for i, tag_corners in enumerate(corners[0]):
             claims.append({"type": "claim", "fact": [
@@ -58,7 +59,6 @@ while True:
                             interpolation=cv2.INTER_NEAREST)
         retval, buffer = cv2.imencode('.jpg', resized)
         jpg_as_text = base64.b64encode(buffer)
-        currentTimeMs = int(round(time.time() * 1000))
         claims.append({"type": "claim", "fact": [
             ["id", get_my_id_str()],
             ["id", "0"],
