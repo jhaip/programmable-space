@@ -30,7 +30,7 @@ while True:
     corners, ids, rejectedImgPoints = aruco.detectMarkers(
         gray, aruco_dict, parameters=arucoParameters)
     currentTimeMs = int(round(time.time() * 1000))
-    if len(ids) > 0:
+    if ids is not None and len(ids) > 0:
         for i, _tag_corners in enumerate(corners):
             tag_corners = _tag_corners[0]
             claims.append({"type": "claim", "fact": [
