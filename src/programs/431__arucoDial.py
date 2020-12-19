@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import logging
 import json
+import math
 
 projector_calibrations = {}
 projection_matrixes = {}
@@ -97,9 +98,10 @@ def sub_callback_graphics(results):
             # cx = int((dst[0][0] + dst[1][0] + dst[2][0] + dst[3][0]) / 4)
             # cy = int((dst[0][1] + dst[1][1] + dst[2][1] + dst[3][1]) / 4)
             diameter = np.sqrt((result["x1"]-result["x3"])**2 +
-                               (result["y1"]-result["y3"])**2)
+                               (result["y1"]-result["y3"])**2) * 2
             cx = int((result["x1"] + result["x2"] + result["x3"] + result["x4"]) / 4)
             cy = int((result["y1"] + result["y2"] + result["y3"] + result["y4"]) / 4)
+            angle = math.atan2(int(result["y1"] - result["y2"]), int(result["x1"] - result["x2"]))
             ill = Illumination()
             ill.set_transform(
                 projection_matrix[0][0], projection_matrix[0][1], projection_matrix[0][2],
@@ -110,7 +112,23 @@ def sub_callback_graphics(results):
             ill.stroke(255, 0, 0)
             ill.strokewidth(5)
             ill.ellipse(int(cx-diameter/2), int(cy-diameter/2), diameter, int(diameter))
+            ill.stroke(0, 255, 0)
+            ill.line(
+                cx + diameter * 0.5 * math.cos(angle),
+                cy + diameter * 0.5 * math.sin(angle),
+                cx + diameter * 0.5 * math.cos(angle) * 1.2,
+                cy + diameter * 0.5 * math.sin(angle) * 1.2,
+            )
             claims.append(ill.to_batch_claim(get_my_id_str(), "1", target=result["displayid"]))
+            claims.append({"type": "claim", "fact": [
+                ["id", get_my_id_str()],
+                ["id", "1"],
+                ["text", "aruco"],
+                ["integer", str(result["tagId"])],
+                ["text", "has"],
+                ["text", "value"],
+                ["float", str(angle)],
+            ]})
     batch(claims)
 
 
