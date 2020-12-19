@@ -105,7 +105,7 @@ def sub_callback_graphics(results):
             cx = int((dst[0][0] + dst[1][0] + dst[2][0] + dst[3][0]) / 4)
             cy = int((dst[0][1] + dst[1][1] + dst[2][1] + dst[3][1]) / 4)
             ill = Illumination()
-            ill.ellipse(cx, cy, diameter, int(diameter*2))
+            ill.ellipse(cx, cy, diameter, int(diameter))
             claims.append(ill.to_batch_claim(get_my_id_str(), "1", target=result["displayid"]))
     batch(claims)
 
