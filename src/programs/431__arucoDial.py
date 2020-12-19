@@ -83,7 +83,7 @@ def sub_callback_graphics(results):
                 [0, 1, 0],
                 [0, 0, 1],
             ]
-            if calibration_id in projection_matrixes:
+            if camera_id in projection_matrixes:
                 projection_matrix = projection_matrixes[camera_id]
             graphics_json.insert(0, {
                 "type": "transform",
