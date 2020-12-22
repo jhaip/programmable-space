@@ -441,16 +441,15 @@ func projectMissingCorner(orderedCorners []PaperCorner, missingCornerId int) Pap
 }
 
 func getPapersFromCorners(corners []Corner, img gocv.Mat) []Paper {
-	papersMap := make(map[string][]PaperCorner)
+	papersMap := make(map[string]map[int]PaperCorner)
 	for _, corner := range corners {
 		cornerIdStr := strconv.Itoa(corner.PaperId)
 		_, idInMap := papersMap[cornerIdStr]
 		cornerDotVec := PaperCorner{corner.Corner.X, corner.Corner.Y, corner.CornerId}
-		if idInMap {
-			papersMap[cornerIdStr] = append(papersMap[cornerIdStr], cornerDotVec)
-		} else {
-			papersMap[cornerIdStr] = []PaperCorner{cornerDotVec}
+		if !idInMap {
+			papersMap[cornerIdStr] = make(map[int]PaperCorner)
 		}
+		papersMap[cornerIdStr][corner.CornerId] = cornerDotVec
 	}
 	// log.Println(papersMap)
 	papers := make([]Paper, 0)
@@ -458,13 +457,9 @@ func getPapersFromCorners(corners []Corner, img gocv.Mat) []Paper {
 		if len(papersMap[id]) < 3 {
 			continue
 		}
-		const TOP_LEFT = 0
-		const TOP_RIGHT = 1
-		const BOTTOM_RIGHT = 2
-		const BOTTOM_LEFT = 3
 		orderedCorners := make([]PaperCorner, 4) // [tl, tr, br, bl]
-		for _, corner := range papersMap[id] {
-			orderedCorners[corner.CornerId] = corner
+		for cornerId, corner := range papersMap[id] {
+			orderedCorners[cornerId] = corner
 		}
 		if len(papersMap[id]) == 3 {
 			// Identify the missing one then use the other three points to guess
@@ -474,7 +469,7 @@ func getPapersFromCorners(corners []Corner, img gocv.Mat) []Paper {
 				if orderedCorners[i] == NIL_CORNER {
 					orderedCorners[i] = projectMissingCorner(orderedCorners, i)
 					if (orderedCorners[i].X < 10 && orderedCorners[i].Y < 10) {
-						log.Println("projected a corner")
+						log.Println("projected a corner", orderedCorners, id, papersMap[id])
 						gocv.IMWrite("bad-projection.jpg", img)
 					}
 				}
