@@ -33,7 +33,7 @@ func imageTest(t *testing.T, imgName string) map[string]Paper {
 	params.SetFilterByCircularity(true)
 	params.SetMinCircularity(0.5)
 	params.SetFilterByArea(true)
-	params.SetMinArea(9)
+	params.SetMinArea(50) // 7x7 square equivalent
 	params.SetFilterByInertia(false)
 	bdp := gocv.NewSimpleBlobDetectorWithParams(params)
 	defer bdp.Close()
@@ -65,7 +65,7 @@ func imageTest(t *testing.T, imgName string) map[string]Paper {
 	log.Println("step4", len(step4))
 	// claimCorners(client, step4)
 	// printCorners(step4)
-	papers := getPapersFromCorners(step4)
+	papers := getPapersFromCorners(step4, img)
 	// log.Println(papers)
 	log.Println("papers", len(papers))
 
@@ -295,6 +295,30 @@ func TestImage12(t *testing.T) {
 	}
 	if _, ok := seenPaperMap["277"]; !ok {
 		t.Error("Paper not detected", "277")
+	}
+}
+
+func TestImageBadProjection(t *testing.T) {
+	// 12.jpg zoomed? - good but hard test *
+	seenPaperMap := imageTest(t, "bad-projection.jpg")
+	if len(seenPaperMap) != 5 {
+		t.Error("Wrong number of papers detected", len(seenPaperMap), 5)
+	}
+	
+	if _, ok := seenPaperMap["1013"]; !ok {
+		t.Error("Paper not detected", "1013")
+	}
+	if _, ok := seenPaperMap["431"]; !ok {
+		t.Error("Paper not detected", "1567")
+	}
+	if _, ok := seenPaperMap["277"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+	if _, ok := seenPaperMap["609"]; !ok {
+		t.Error("Paper not detected", "277")
+	}
+	if _, ok := seenPaperMap["1635"]; !ok {
+		t.Error("Paper not detected", "1986")
 	}
 }
 

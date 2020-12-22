@@ -205,7 +205,7 @@ func main() {
 	params.SetFilterByCircularity(true)
 	params.SetMinCircularity(0.5)
 	params.SetFilterByArea(true)
-	params.SetMinArea(9)
+	params.SetMinArea(50)
 	params.SetFilterByInertia(false)
 	bdp := gocv.NewSimpleBlobDetectorWithParams(params)
 	defer bdp.Close()
