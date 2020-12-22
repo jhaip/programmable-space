@@ -288,7 +288,7 @@ func main() {
 		log.Println("step4", len(step4))
 		// claimCorners(client, step4)
 		// printCorners(step4)
-		papers := getPapersFromCorners(step4)
+		papers := getPapersFromCorners(step4, img)
 		// log.Println(papers)
 		log.Println("papers", len(papers))
 
@@ -440,7 +440,7 @@ func projectMissingCorner(orderedCorners []PaperCorner, missingCornerId int) Pap
 	}
 }
 
-func getPapersFromCorners(corners []Corner) []Paper {
+func getPapersFromCorners(corners []Corner, img gocv.Mat) []Paper {
 	papersMap := make(map[string][]PaperCorner)
 	for _, corner := range corners {
 		cornerIdStr := strconv.Itoa(corner.PaperId)
@@ -473,6 +473,10 @@ func getPapersFromCorners(corners []Corner) []Paper {
 			for i := 0; i < 4; i++ {
 				if orderedCorners[i] == NIL_CORNER {
 					orderedCorners[i] = projectMissingCorner(orderedCorners, i)
+					if (orderedCorners[i].X < 10 && orderedCorners[i].Y < 10) {
+						log.Println("projected a corner")
+						gocv.IMWrite("bad-projection.jpg", img)
+					}
 				}
 			}
 			log.Println("FILLED IN A MISSING CORNER", id)
