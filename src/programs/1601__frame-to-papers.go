@@ -468,7 +468,7 @@ func getPapersFromCorners(corners []Corner, img gocv.Mat) []Paper {
 			for i := 0; i < 4; i++ {
 				if orderedCorners[i] == NIL_CORNER {
 					orderedCorners[i] = projectMissingCorner(orderedCorners, i)
-					if (orderedCorners[i].X < 10 && orderedCorners[i].Y < 10) {
+					if (orderedCorners[i].X < 0 || orderedCorners[i].Y < 0 || orderedCorners[i].X > 1920 || orderedCorners[i].Y > 1080) {
 						log.Println("projected a corner", orderedCorners, id, papersMap[id])
 						gocv.IMWrite("bad-projection.jpg", img)
 					}
