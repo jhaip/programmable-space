@@ -80,7 +80,7 @@ function love.load(args)
         -- Unload videos not being used
         for videoFilename in pairs(video_cache) do
             if referenced_videos[videoFilename] == nil then
-                video_cache[videoFilename]::release()
+                video_cache[videoFilename]:release()
                 video_cache[videoFilename] = nil
             end
         end
