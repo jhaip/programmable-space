@@ -265,7 +265,14 @@ function love.draw()
         elseif g.type == "video" then
             local video = nil
             if video_cache[opt.filename] == nil then
-                local status, res = pcall(love.graphics.newVideo, opt.filename)
+                local function myerrorhandler( err )
+                    print("Video load error: ", err)
+                    return false
+                end
+                local function pcallfun()
+                    return love.graphics.newVideo(opt.filename)
+                end
+                local status, err, res = xpcall(pcallfun, myerrorhandler)
                 if status == true then
                     video = res
                     video = love.graphics.newVideo( opt.filename )
