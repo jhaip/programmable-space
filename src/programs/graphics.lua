@@ -50,6 +50,10 @@ function love.load(args)
         print("Set MY_ID_STR to:")
         print(MY_ID_STR)
     end
+
+    room.prehook(function()
+        room.claim({{ type="death", fact={{"id", MY_ID_STR}} }})
+    end)
     
     room.on({"$ $ draw graphics $graphics on " .. MY_ID_STR}, function(results)
         graphics_cache = {}
