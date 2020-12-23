@@ -71,7 +71,7 @@ function love.load(args)
                 for g = 1, #parsedGraphics do
                     graphics_cache[#graphics_cache + 1] = parsedGraphics[g]
                     if parsedGraphics[g].type == "video" then
-                        referenced_videos[parsedGraphics[g].filename] = true
+                        referenced_videos[parsedGraphics[g].options.filename] = true
                     end
                 end
                 graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
