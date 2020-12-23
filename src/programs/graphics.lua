@@ -77,11 +77,13 @@ function love.load(args)
                 graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
             end
         end
-        -- Unload videos not being used
         for videoFilename in pairs(video_cache) do
             if referenced_videos[videoFilename] == nil then
-                video_cache[videoFilename]:release()
-                video_cache[videoFilename] = nil
+                -- Unload video:
+                -- video_cache[videoFilename]:release()
+                -- video_cache[videoFilename] = nil
+                -- Seek to beginning of video so its ready for the next play
+                video_cache[videoFilename]:rewind()
             end
         end
     end)
