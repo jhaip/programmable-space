@@ -86,6 +86,7 @@ class Illumination {
     // point format: [[x1, y1], [x2, y2], ...]
     polygon(points) { this.add("polygon", points) }
     image(x, y, w, h, base64image) { this.add("image", { "x": x, "y": y, "w": w, "h": h, "bitmap_image_base64": base64image }) }
+    video(x, y, w, h, filename) { this.add("video", { "x": x, "y": y, "w": w, "h": h, "filename": filename }) }
     // color format: string, [r, g, b], or [r, g, b, a]
     fill(...color) { this.addColorType("fill", color) }
     stroke(...color) { this.addColorType("stroke", color) }

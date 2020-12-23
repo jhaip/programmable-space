@@ -17,6 +17,9 @@ font_cache = {} -- TODO: limit size of font cache to prevent memory issues
 image_cache = {}
 image_cache_len = 0
 MAX_IMAGE_CACHE_LEN = 10 -- decoded base64 images are cached, but we don't want to store them forever
+video_cache = {}
+video_cache_len = 0
+MAX_VIDEO_CACHE_LEN = 5
 is_first_update = true
 
 local colors = {
@@ -177,7 +180,7 @@ function love.draw()
         elseif g.type == "fill" then
             is_fill_on = true
             if type(opt) == "string" then
-                if colors[opt] ~= nill then
+                if colors[opt] ~= nil then
                     fill_color = colors[opt]
                 end
             elseif #opt == 3 then
@@ -188,7 +191,7 @@ function love.draw()
         elseif g.type == "stroke" then
             is_stroke_on = true
             if type(opt) == "string" then
-                if colors[opt] ~= nill then
+                if colors[opt] ~= nil then
                     stroke_color = colors[opt]
                 end
             elseif #opt == 3 then
@@ -259,6 +262,34 @@ function love.draw()
             sy = tonumber(opt.h) / image:getHeight()
             love.graphics.draw(image, tonumber(opt.x), tonumber(opt.y), 0, sx, sy)
             love.graphics.setColor(r, g, b, a) -- reset back to saved color
+        elseif g.type == "video" then
+            local video = nil
+            if video_cache[opt.filename] == nil then
+                local status, res = pcall(love.graphics.newVideo, opt.filename)
+                if status == true then
+                    video = res
+                    video = love.graphics.newVideo( opt.filename )
+                    if video_cache_len > MAX_VIDEO_CACHE_LEN then
+                        video_cache = {}
+                        video_cache_len = 0
+                    end
+                    video_cache[opt.filename] = video
+                    video_cache_len = video_cache_len + 1
+                    video:play()
+                else
+                    print("UNABLE TO LOAD VIDEO AT ", opt.filename)
+                end
+            else
+                video = video_cache[opt.filename]
+            end
+            if video ~= nil then
+                r, g, b, a = love.graphics.getColor() -- save current color
+                love.graphics.setColor(1, 1, 1, 1)
+                sx = tonumber(opt.w) / image:getWidth()
+                sy = tonumber(opt.h) / image:getHeight()
+                love.graphics.draw(video, tonumber(opt.x), tonumber(opt.y), 0, sx, sy)
+                love.graphics.setColor(r, g, b, a) -- reset back to saved color
+            end
         end
     end
 end
