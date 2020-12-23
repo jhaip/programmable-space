@@ -229,9 +229,10 @@ function cmd() {
     cp helpers/json.lua lua-bundle/json.lua
     cp helpers/zhelpers.lua lua-bundle/zhelpers.lua
     cp files/Inconsolata-Regular.ttf lua-bundle/Inconsolata-Regular.ttf
-    cp files/big_buck_bunny_480p_stereo.ogg lua-bundle/big_buck_bunny_480p_stereo.ogg
+    # cp files/big_buck_bunny_480p_stereo.ogg lua-bundle/big_buck_bunny_480p_stereo.ogg
     cd lua-bundle
-    zip lua-graphics.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf big_buck_bunny_480p_stereo.ogg
+    # zip lua-graphics.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf big_buck_bunny_480p_stereo.ogg
+    zip lua-graphics.love main.lua helper.lua matrix.lua json.lua zhelpers.lua Inconsolata-Regular.ttf
     cd ..
     love ./lua-bundle/lua-graphics.love 1999
     cd ..
