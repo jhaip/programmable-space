@@ -61,6 +61,7 @@ function love.load(args)
     room.on({"$ $ draw graphics $graphics on " .. MY_ID_STR}, function(results)
         graphics_cache = {}
         graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
+        referenced_videos = {}
         for i = 1, #results do
             local decode_successful, parsedGraphics = pcall(json.decode, results[i].graphics)
             if decode_successful == false then
@@ -69,8 +70,18 @@ function love.load(args)
             else
                 for g = 1, #parsedGraphics do
                     graphics_cache[#graphics_cache + 1] = parsedGraphics[g]
+                    if parsedGraphics[g].type == "video" then
+                        referenced_videos[parsedGraphics[g].filename] = true
+                    end
                 end
                 graphics_cache[#graphics_cache + 1] = {type="__RESET__"}
+            end
+        end
+        -- Unload videos not being used
+        for videoFilename in pairs(video_cache) do
+            if referenced_videos[videoFilename] == nil then
+                video_cache[videoFilename]::release()
+                video_cache[videoFilename] = nil
             end
         end
     end)
