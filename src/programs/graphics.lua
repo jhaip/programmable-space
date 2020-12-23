@@ -292,8 +292,8 @@ function love.draw()
             if video ~= nil then
                 r, g, b, a = love.graphics.getColor() -- save current color
                 love.graphics.setColor(1, 1, 1, 1)
-                sx = tonumber(opt.w) / image:getWidth()
-                sy = tonumber(opt.h) / image:getHeight()
+                sx = tonumber(opt.w) / video:getWidth()
+                sy = tonumber(opt.h) / video:getHeight()
                 love.graphics.draw(video, tonumber(opt.x), tonumber(opt.y), 0, sx, sy)
                 love.graphics.setColor(r, g, b, a) -- reset back to saved color
             end
