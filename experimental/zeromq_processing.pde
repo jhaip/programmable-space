@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage;
 import java.util.Base64;
 import javax.imageio.ImageIO;
 
+import processing.video.*;
+
 interface SubscriptionCallback {
   public void parseResults(JSONArray results);
 }
@@ -25,6 +27,7 @@ boolean server_listening = false;
 Map<String, SubscriptionCallback> subscription_ids = new HashMap<String, SubscriptionCallback>();
 JSONArray graphicsCache = new JSONArray();
 PFont mono;
+Map<String, Movie> movies_cache = new HashMap<String, Movie>();
 
 Map<String, int[]> colorsMap = new HashMap<String, int[]>();
 
@@ -39,6 +42,10 @@ PImage DecodePImageFromBase64(String i_Image64) throws IOException {
    result = new PImage(convertedImg);
  
    return result;
+}
+
+void movieEvent(Movie m) {
+  m.read();
 }
 
 void subscribe(String[] subscriptionQueryParts, SubscriptionCallback callback) {
@@ -133,6 +140,8 @@ void settings() {
   
   cleanupMyOldStuff();
   
+  final PApplet _thisApp = this;
+  
   //subscribe(new String[]{"$ $ measured latency $lag ms at $"}, new SubscriptionCallback() {
   subscribe(new String[]{"$ $ draw graphics $graphics on 1999"}, new SubscriptionCallback() {
     public void parseResults(JSONArray results) {
@@ -142,6 +151,7 @@ void settings() {
       resetGraphics.setString("type", "__RESET__");
       graphicsCache = new JSONArray();
       graphicsCache.append(resetGraphics);
+      Map<String, Boolean> referencedVideos = new HashMap<String, Boolean>();
       for (int i = 0; i < results.size(); i += 1) {
         //println("Potential graphics:");
         //println(results.getJSONObject(i).getJSONArray("graphics").getString(1));
@@ -149,9 +159,29 @@ void settings() {
         if (parsedGraphics != null) {
           for (int j = 0; j < parsedGraphics.size(); j += 1) {
             graphicsCache.append(parsedGraphics.getJSONObject(j));
+            if (parsedGraphics.getJSONObject(j).getString("type").equals("video")) {
+              //println("detected video");
+              referencedVideos.put(parsedGraphics.getJSONObject(j).getJSONObject("options").getString("filename"), true);
+            }
           }
           graphicsCache.append(resetGraphics);
         }
+      }
+      // stop all videos not currently being shown
+      for (Map.Entry<String, Movie> entry : movies_cache.entrySet()) {
+        if (!referencedVideos.containsKey(entry.getKey())) {
+          println(String.format("stopping video %s", entry.getKey()));
+          entry.getValue().stop();
+        }
+      }
+      // load and play new videos
+      for (String referencedVideoFilename : referencedVideos.keySet()) {
+        if (!movies_cache.containsKey(referencedVideoFilename)) {
+          movies_cache.put(referencedVideoFilename, new Movie(_thisApp, referencedVideoFilename));
+          println(String.format("loaded video %s", referencedVideoFilename));
+        }
+        println(String.format("looping video %s", referencedVideoFilename));
+        movies_cache.get(referencedVideoFilename).loop();
       }
     }
   });
@@ -269,8 +299,10 @@ void draw() {
       catch (IOException e) { println("Error: " + e); }
     } else if (opt_type.equals("video")) {
       JSONObject opt = g.getJSONObject("options");
-      //scale(opt.getFloat("x"), opt.getFloat("y"));
-      // TODO
+      String videoFilename = opt.getString("filename");
+      if (movies_cache.containsKey(videoFilename)) {
+        image(movies_cache.get(videoFilename), opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+      }
     } else {
       print(g);
     }
