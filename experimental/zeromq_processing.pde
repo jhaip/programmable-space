@@ -4,6 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 import java.io.DataOutputStream;
+import java.io.ByteArrayInputStream;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.util.Base64;
+import javax.imageio.ImageIO;
 
 interface SubscriptionCallback {
   public void parseResults(JSONArray results);
@@ -21,6 +27,19 @@ JSONArray graphicsCache = new JSONArray();
 PFont mono;
 
 Map<String, int[]> colorsMap = new HashMap<String, int[]>();
+
+PImage DecodePImageFromBase64(String i_Image64) throws IOException {
+   PImage result = null;
+   byte[] decodedBytes = Base64.getDecoder().decode(i_Image64);
+ 
+   ByteArrayInputStream in = new ByteArrayInputStream(decodedBytes);
+   BufferedImage bImageFromConvert = ImageIO.read(in);
+   BufferedImage convertedImg = new BufferedImage(bImageFromConvert.getWidth(),     bImageFromConvert.getHeight(), BufferedImage.TYPE_INT_ARGB);
+   convertedImg.getGraphics().drawImage(bImageFromConvert, 0, 0, null);
+   result = new PImage(convertedImg);
+ 
+   return result;
+}
 
 void subscribe(String[] subscriptionQueryParts, SubscriptionCallback callback) {
   String sub_id = UUID.randomUUID().toString();
@@ -59,7 +78,7 @@ void cleanupMyOldStuff() {
 }
 
 void listen() {
-  ZMsg inMsg = ZMsg.recvMsg(client, true);
+  ZMsg inMsg = ZMsg.recvMsg(client, false);
   //println("inMsg:");
   //println(inMsg.dump());
   //OutputStream os = createOutput(String.format("zmq_save_%s.txt", UUID.randomUUID().toString()));
@@ -158,12 +177,25 @@ void draw() {
       textAlign(LEFT, TOP);
       textFont(mono);
       textSize(72);
+      ellipseMode(CENTER);
+      resetMatrix();
     } else if (opt_type.equals("rectangle")) {
       JSONObject opt = g.getJSONObject("options");
       rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
-// ellipse
-// line
-// polygon
+    } else if (opt_type.equals("ellipse")) {
+      JSONObject opt = g.getJSONObject("options");
+      ellipse(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+    } else if (opt_type.equals("line")) {
+      JSONArray opt = g.getJSONArray("options");
+      line(opt.getFloat(0), opt.getFloat(1), opt.getFloat(2), opt.getFloat(3));
+    } else if (opt_type.equals("polygon")) {
+      JSONArray opt = g.getJSONArray("options");
+      beginShape();
+      for (int q = 0; q < opt.size(); q += 1) {
+        JSONArray pt = opt.getJSONArray(q);
+        vertex(pt.getFloat(0), pt.getFloat(1));
+      }
+      endShape();
     } else if (opt_type.equals("text")) {
       JSONObject opt = g.getJSONObject("options");
       text(opt.getString("text"), opt.getFloat("x"), opt.getFloat("y"));
@@ -207,14 +239,38 @@ void draw() {
     } else if (opt_type.equals("fontsize")) {
       int opt_font_size = g.getInt("options");
       textSize(opt_font_size);
-// push
-// pop
-// translate
-// rotate
-// scale
-// transform
-// image
-// video
+    } else if (opt_type.equals("push")) {
+      push();
+    } else if (opt_type.equals("pop")) {
+      pop();
+    } else if (opt_type.equals("translate")) {
+      JSONObject opt = g.getJSONObject("options");
+      translate(opt.getFloat("x"), opt.getFloat("y"));
+    } else if (opt_type.equals("rotate")) {
+      float val = g.getFloat("options");
+      rotate(val);
+    } else if (opt_type.equals("scale")) {
+      JSONObject opt = g.getJSONObject("options");
+      scale(opt.getFloat("x"), opt.getFloat("y"));
+    } else if (opt_type.equals("transform")) {
+      JSONArray opt = g.getJSONArray("options");
+      // warnining from Processing.org:
+      // "This is very slow because it will try to calculate the inverse of the transform, so avoid it whenever possible"
+      applyMatrix(opt.getFloat(0), opt.getFloat(1), opt.getFloat(2), 0,
+                  opt.getFloat(3), opt.getFloat(4), opt.getFloat(5), 0,
+                  opt.getFloat(6), opt.getFloat(7), opt.getFloat(8), 0,
+                  0,               0,               0,               1.0);
+    } else if (opt_type.equals("image")) {
+      JSONObject opt = g.getJSONObject("options");
+      try {
+        PImage img = DecodePImageFromBase64(opt.getString("bitmap_image_base64"));
+        image(img, opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+      }
+      catch (IOException e) { println("Error: " + e); }
+    } else if (opt_type.equals("video")) {
+      JSONObject opt = g.getJSONObject("options");
+      //scale(opt.getFloat("x"), opt.getFloat("y"));
+      // TODO
     } else {
       print(g);
     }
