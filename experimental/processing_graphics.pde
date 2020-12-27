@@ -35,6 +35,8 @@ Map<String, int[]> sourcePosition = new HashMap<String, int[]>();
 Map<String, JSONArray> sourceGraphics = new HashMap<String, JSONArray>();
 Map<String, PGraphics> sourcePGraphics = new HashMap<String, PGraphics>();
 
+PGraphics uncalibratedScene;
+
 PImage DecodePImageFromBase64(String i_Image64) throws IOException {
    PImage result = null;
    byte[] decodedBytes = Base64.getDecoder().decode(i_Image64);
@@ -129,7 +131,7 @@ void settings() {
   colorsMap.put("purple", new int[]{128, 0, 128});
   colorsMap.put("cyan", new int[]{0, 255, 255});
   colorsMap.put("orange", new int[]{255, 165, 0});
-  size(1280, 600, P3D);
+  size(1280, 600, P2D);
   String init_ping_id = UUID.randomUUID().toString();
   ZMQ.Context context = ZMQ.context(1);
   client = context.socket(ZMQ.DEALER);
@@ -139,7 +141,7 @@ void settings() {
   outMsg.add(new ZFrame(String.format(".....PING%s%s", MY_ID_STR, init_ping_id)));
   outMsg.send(client);
   ZMsg inMsg = ZMsg.recvMsg(client, true);
-  println(inMsg);
+  //println(inMsg);
   server_listening = true;
   
   cleanupMyOldStuff();
@@ -151,17 +153,14 @@ void settings() {
     public void parseResults(JSONArray results) {
       //println("Got new results:");
       //println(results);
-      JSONObject resetGraphics = new JSONObject();
-      resetGraphics.setString("type", "__RESET__");
       graphicsCache = new JSONArray();
-      graphicsCache.append(resetGraphics);
       Map<String, Boolean> referencedVideos = new HashMap<String, Boolean>();
       sourceGraphics = new HashMap<String, JSONArray>();
       // TODO: we could not clear the PGraphics ever time if that is more efficient
       //sourcePGraphics = new HashMap<String, PGraphics>();
       for (int i = 0; i < results.size(); i += 1) {
-        println("Potential graphics:");
-        println(results.getJSONObject(i).getJSONArray("graphics").getString(1));
+        //println("Potential graphics:");
+        //println(results.getJSONObject(i).getJSONArray("graphics").getString(1));
         JSONArray parsedGraphics = JSONArray.parse(results.getJSONObject(i).getJSONArray("graphics").getString(1));
         String source = results.getJSONObject(i).getJSONArray("source").getString(1);
         JSONArray newSourceGraphics = new JSONArray();
@@ -173,16 +172,15 @@ void settings() {
               referencedVideos.put(parsedGraphics.getJSONObject(j).getJSONObject("options").getString("filename"), true);
             }
           }
-          // TODO: a reset probably isn't needed because things are already divided by source
-          newSourceGraphics.append(resetGraphics);
         }
         if (!sourcePGraphics.containsKey(source)) {
-          sourcePGraphics.put(source, createGraphics(1280, 600, P3D)); // TODO: should a different canvas size be used?
+          sourcePGraphics.put(source, createGraphics(1280, 600, P2D)); // TODO: should a different canvas size be used?
+          //sourcePGraphics.get(source).noSmooth();
         }
         sourceGraphics.put(source, newSourceGraphics);
       }
-      println("NEW SOURCE GRAPHICS:");
-      println(sourceGraphics);
+      //println("NEW SOURCE GRAPHICS:");
+      //println(sourceGraphics);
       // stop all videos not currently being shown
       for (Map.Entry<String, Movie> entry : movies_cache.entrySet()) {
         if (!referencedVideos.containsKey(entry.getKey())) {
@@ -208,56 +206,77 @@ void settings() {
  
 void setup() {
   mono = createFont("Inconsolata-Regular.ttf", 32);
+  noSmooth();
+  hint(DISABLE_TEXTURE_MIPMAPS);
+  ((PGraphicsOpenGL)g).textureSampling(3);
+  uncalibratedScene = createGraphics(1280, 600, P2D); 
 }
  
 void draw() {
   listen();
-  background(0);
+  background(0, 0, 0, 0);
   // TODO: matrix transform world to match calibration
   textureMode(NORMAL);
-  println(sourceGraphics);
+  //println(sourceGraphics);
+  
+  uncalibratedScene.beginDraw();
+  uncalibratedScene.background(0, 0, 0, 0);
+  uncalibratedScene.textureMode(NORMAL);
   for (Map.Entry<String, JSONArray> entry : sourceGraphics.entrySet()) {
     String source = entry.getKey();
-    println(source);
-    println(sourcePGraphics.keySet());
     PGraphics pg = drawSource(sourcePGraphics.get(source), entry.getValue());
-    beginShape();
-    texture(pg);
+    uncalibratedScene.beginShape();
+    uncalibratedScene.texture(pg.get());
     // TODO: offset horizontals to match the real aspect ratio of the paper
     if (sourcePosition.containsKey(source)) {
       int[] sp = sourcePosition.get(source);
-      vertex(sp[0], sp[1], 0, 0);
-      vertex(sp[2], sp[3], 1, 0);
-      vertex(sp[4], sp[5], 1, 1);
-      vertex(sp[6], sp[7], 0, 1);
+      uncalibratedScene.vertex(sp[0], sp[1], 0, 0);
+      uncalibratedScene.vertex(sp[2], sp[3], 1, 0);
+      uncalibratedScene.vertex(sp[4], sp[5], 1, 1);
+      uncalibratedScene.vertex(sp[6], sp[7], 0, 1);
     } else {
-      println("using default");
-      vertex(0, 0, 0, 0);
-      vertex(1280, 0, 1, 0);
-      vertex(1280, 600, 1, 1);
-      vertex(0, 600, 0, 1);
+      uncalibratedScene.vertex(0, 0, 0, 0);
+      uncalibratedScene.vertex(1280, 0, 1, 0);
+      uncalibratedScene.vertex(1280, 600, 1, 1);
+      uncalibratedScene.vertex(0, 600, 0, 1);
     }
-    endShape();
+    uncalibratedScene.endShape();
   }
+  uncalibratedScene.endDraw();
+  
+  beginShape();
+  texture(uncalibratedScene.get());
+  // TODO: change these coordiantes to the project calibration if present:
+  if (true) {
+    vertex(100, 100, 0, 0);
+    vertex(1000, 50, 1, 0);
+    vertex(1280, 600, 1, 1);
+    vertex(0, 500, 0, 1);
+  } else {
+    vertex(0, 0, 0, 0);
+    vertex(1280, 0, 1, 0);
+    vertex(1280, 600, 1, 1);
+    vertex(0, 600, 0, 1);
+  }
+  endShape();
 }
 
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
   pg.beginDraw();
-  pg.background(0);
+  pg.background(0, 0, 0, 0);
+  pg.fill(255);
+  pg.stroke(255);
+  pg.strokeWeight(1);
+  pg.textAlign(LEFT, TOP);
+  pg.textFont(mono);
+  pg.textSize(72);
+  pg.ellipseMode(CENTER);
+  //pg.resetMatrix();
   for (int i = 0; i < graphicsCache.size(); i += 1) {
     JSONObject g = graphicsCache.getJSONObject(i);
     String opt_type = g.getString("type");
-    if (opt_type.equals("__RESET__")) {
-      pg.fill(255);
-      pg.stroke(255);
-      pg.strokeWeight(1);
-      pg.textAlign(LEFT, TOP);
-      pg.textFont(mono);
-      pg.textSize(72);
-      pg.ellipseMode(CENTER);
-      pg.resetMatrix();
-    } else if (opt_type.equals("rectangle")) {
+    if (opt_type.equals("rectangle")) {
       JSONObject opt = g.getJSONObject("options");
       pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
     } else if (opt_type.equals("ellipse")) {
