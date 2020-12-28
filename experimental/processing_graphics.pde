@@ -1,5 +1,3 @@
-import org.zeromq.ZMQ;
-import java.util.UUID;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
@@ -10,117 +8,32 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.util.Base64;
 import javax.imageio.ImageIO;
-
 import processing.video.*;
 
-interface SubscriptionCallback {
-  public void parseResults(JSONArray results);
-}
-
-int source_len = 4;
-int SUBSCRIPTION_ID_LEN = UUID.randomUUID().toString().length();
-int server_send_time_len = 13;
-ZMQ.Socket subscriber;
-ZMQ.Socket client;
-String MY_ID_STR = "9001";
-boolean server_listening = false;
-Map<String, SubscriptionCallback> subscription_ids = new HashMap<String, SubscriptionCallback>();
 JSONArray graphicsCache = new JSONArray();
 PFont mono;
 Map<String, Movie> movies_cache = new HashMap<String, Movie>();
-
 Map<String, int[]> colorsMap = new HashMap<String, int[]>();
-
 Map<String, int[]> sourcePosition = new HashMap<String, int[]>();
 Map<String, JSONArray> sourceGraphics = new HashMap<String, JSONArray>();
 Map<String, PGraphics> sourcePGraphics = new HashMap<String, PGraphics>();
-
 PGraphics uncalibratedScene;
-
 QuadGrid qgrid;
+Room room;
 
 PImage DecodePImageFromBase64(String i_Image64) throws IOException {
    PImage result = null;
    byte[] decodedBytes = Base64.getDecoder().decode(i_Image64);
- 
    ByteArrayInputStream in = new ByteArrayInputStream(decodedBytes);
    BufferedImage bImageFromConvert = ImageIO.read(in);
    BufferedImage convertedImg = new BufferedImage(bImageFromConvert.getWidth(),     bImageFromConvert.getHeight(), BufferedImage.TYPE_INT_ARGB);
    convertedImg.getGraphics().drawImage(bImageFromConvert, 0, 0, null);
    result = new PImage(convertedImg);
- 
    return result;
 }
 
 void movieEvent(Movie m) {
   m.read();
-}
-
-void subscribe(String[] subscriptionQueryParts, SubscriptionCallback callback) {
-  String sub_id = UUID.randomUUID().toString();
-  println(String.format("New sub ID: %s", sub_id));
-  JSONObject query = new JSONObject();
-  query.setString("id", sub_id);
-  JSONArray values = new JSONArray();
-  for (int i=0; i < subscriptionQueryParts.length; i+=1) {
-    values.setString(i, subscriptionQueryParts[i]);
-  }
-  query.setJSONArray("facts", values);
-  
-  subscription_ids.put(sub_id, callback);
-  
-  ZMsg outMsg = new ZMsg();
-  outMsg.add(new ZFrame(String.format("SUBSCRIBE%s%s", MY_ID_STR, query)));
-  outMsg.send(client);
-}
-
-void cleanupMyOldStuff() {
-  // [{"type": "death", "fact": [["id", MY_ID_STR]]}]
-  JSONArray batch_messages = new JSONArray();
-  JSONObject obj = new JSONObject();
-  obj.setString("type", "death");
-  JSONArray factArr = new JSONArray();
-  JSONArray factPart1 = new JSONArray();
-  factPart1.setString(0, "id");
-  factPart1.setString(1, MY_ID_STR);
-  factArr.setJSONArray(0, factPart1);
-  obj.setJSONArray("fact", factArr);
-  batch_messages.setJSONObject(0, obj);
-
-  ZMsg outMsg = new ZMsg();
-  outMsg.add(new ZFrame(String.format("....BATCH%s%s", MY_ID_STR, batch_messages)));
-  outMsg.send(client);
-}
-
-void listen() {
-  ZMsg inMsg = ZMsg.recvMsg(client, false);
-  //println("inMsg:");
-  //println(inMsg.dump());
-  //OutputStream os = createOutput(String.format("zmq_save_%s.txt", UUID.randomUUID().toString()));
-  //DataOutputStream dos = new DataOutputStream(os);
-  //try {
-  //  ZMsg.save(inMsg, dos);
-  //  dos.close();
-  //  println("closed");
-  //}
-  //catch (IOException e) { println("Error: " + e); }
-  if (inMsg != null) {
-    for (ZFrame f : inMsg) {
-      String rawValue = f.getString(ZMQ.CHARSET);
-      //println(rawValue);
-      String id = rawValue.substring(source_len, source_len + SUBSCRIPTION_ID_LEN);
-      String val = rawValue.substring(source_len + SUBSCRIPTION_ID_LEN + server_send_time_len);
-      //println(id);
-      //println(val);
-      if (subscription_ids.containsKey(id)) {
-        SubscriptionCallback callback = subscription_ids.get(id);
-        callback.parseResults(JSONArray.parse(val));
-      } else {
-        println(String.format("UNRECOGNIZED ID: %s", id));
-        println(subscription_ids);
-      }
-    }
-  }
 }
  
 void settings() {
@@ -134,24 +47,11 @@ void settings() {
   colorsMap.put("cyan", new int[]{0, 255, 255});
   colorsMap.put("orange", new int[]{255, 165, 0});
   size(1280, 600, P3D);
-  String init_ping_id = UUID.randomUUID().toString();
-  ZMQ.Context context = ZMQ.context(1);
-  client = context.socket(ZMQ.DEALER);
-  client.setIdentity(MY_ID_STR.getBytes(ZMQ.CHARSET));
-  client.connect("tcp://192.168.1.34:5570");
-  ZMsg outMsg = new ZMsg();
-  outMsg.add(new ZFrame(String.format(".....PING%s%s", MY_ID_STR, init_ping_id)));
-  outMsg.send(client);
-  ZMsg inMsg = ZMsg.recvMsg(client, true);
-  //println(inMsg);
-  server_listening = true;
-  
-  cleanupMyOldStuff();
+  room = new Room("9001");
   
   final PApplet _thisApp = this;
-  
-  //subscribe(new String[]{"$ $ measured latency $lag ms at $"}, new SubscriptionCallback() {
-  subscribe(new String[]{"$source $ draw graphics $graphics on 1999"}, new SubscriptionCallback() {
+
+  room.subscribe(new String[]{"$source $ draw graphics $graphics on 1999"}, new Room.SubscriptionCallback() {
     public void parseResults(JSONArray results) {
       //println("Got new results:");
       //println(results);
@@ -203,8 +103,6 @@ void settings() {
       }
     }
   });
-  
-  listen();
 }
  
  
@@ -217,7 +115,7 @@ void setup() {
 }
  
 void draw() {
-  listen();
+  room.listen();
   background(0, 0, 0);
   //textureMode(NORMAL);
   //println(sourceGraphics);
