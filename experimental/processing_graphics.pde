@@ -37,6 +37,8 @@ Map<String, PGraphics> sourcePGraphics = new HashMap<String, PGraphics>();
 
 PGraphics uncalibratedScene;
 
+QuadGrid qgrid;
+
 PImage DecodePImageFromBase64(String i_Image64) throws IOException {
    PImage result = null;
    byte[] decodedBytes = Base64.getDecoder().decode(i_Image64);
@@ -131,7 +133,7 @@ void settings() {
   colorsMap.put("purple", new int[]{128, 0, 128});
   colorsMap.put("cyan", new int[]{0, 255, 255});
   colorsMap.put("orange", new int[]{255, 165, 0});
-  size(1280, 600, P2D);
+  size(1280, 600, P3D);
   String init_ping_id = UUID.randomUUID().toString();
   ZMQ.Context context = ZMQ.context(1);
   client = context.socket(ZMQ.DEALER);
@@ -149,7 +151,7 @@ void settings() {
   final PApplet _thisApp = this;
   
   //subscribe(new String[]{"$ $ measured latency $lag ms at $"}, new SubscriptionCallback() {
-  subscribe(new String[]{"$source $ draw graphics $graphics on 1999"}, new SubscriptionCallback() {
+  subscribe(new String[]{"$source $ draw graphics $graphics on $"}, new SubscriptionCallback() {
     public void parseResults(JSONArray results) {
       //println("Got new results:");
       //println(results);
@@ -174,7 +176,7 @@ void settings() {
           }
         }
         if (!sourcePGraphics.containsKey(source)) {
-          sourcePGraphics.put(source, createGraphics(1280, 600, P2D)); // TODO: should a different canvas size be used?
+          sourcePGraphics.put(source, createGraphics(1280, 600, P3D)); // TODO: should a different canvas size be used?
           //sourcePGraphics.get(source).noSmooth();
         }
         sourceGraphics.put(source, newSourceGraphics);
@@ -206,27 +208,27 @@ void settings() {
  
 void setup() {
   mono = createFont("Inconsolata-Regular.ttf", 32);
-  noSmooth();
-  hint(DISABLE_TEXTURE_MIPMAPS);
-  ((PGraphicsOpenGL)g).textureSampling(3);
-  uncalibratedScene = createGraphics(1280, 600, P2D); 
+  //noSmooth();
+  //hint(DISABLE_TEXTURE_MIPMAPS);
+  //((PGraphicsOpenGL)g).textureSampling(3);
+  uncalibratedScene = createGraphics(1280, 600, P3D); 
 }
  
 void draw() {
   listen();
-  background(0, 0, 0, 0);
-  // TODO: matrix transform world to match calibration
-  textureMode(NORMAL);
+  background(0, 0, 0);
+  //textureMode(NORMAL);
   //println(sourceGraphics);
   
   uncalibratedScene.beginDraw();
-  uncalibratedScene.background(0, 0, 0, 0);
+  uncalibratedScene.blendMode(BLEND);
+  uncalibratedScene.background(0, 0, 0);
   uncalibratedScene.textureMode(NORMAL);
   for (Map.Entry<String, JSONArray> entry : sourceGraphics.entrySet()) {
     String source = entry.getKey();
     PGraphics pg = drawSource(sourcePGraphics.get(source), entry.getValue());
     uncalibratedScene.beginShape();
-    uncalibratedScene.texture(pg.get());
+    uncalibratedScene.texture(pg);
     // TODO: offset horizontals to match the real aspect ratio of the paper
     if (sourcePosition.containsKey(source)) {
       int[] sp = sourcePosition.get(source);
@@ -243,22 +245,9 @@ void draw() {
     uncalibratedScene.endShape();
   }
   uncalibratedScene.endDraw();
-  
-  beginShape();
-  texture(uncalibratedScene.get());
-  // TODO: change these coordiantes to the project calibration if present:
-  if (true) {
-    vertex(100, 100, 0, 0);
-    vertex(1000, 50, 1, 0);
-    vertex(1280, 600, 1, 1);
-    vertex(0, 500, 0, 1);
-  } else {
-    vertex(0, 0, 0, 0);
-    vertex(1280, 0, 1, 0);
-    vertex(1280, 600, 1, 1);
-    vertex(0, 600, 0, 1);
-  }
-  endShape();
+  qgrid = new QuadGrid(uncalibratedScene, 10, 10);
+  qgrid.setCorners(100, 100, 1000, 50, 1280, 600, 0, 500);
+  qgrid.drawGrid(this);
 }
 
 
