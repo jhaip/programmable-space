@@ -151,7 +151,7 @@ void settings() {
   final PApplet _thisApp = this;
   
   //subscribe(new String[]{"$ $ measured latency $lag ms at $"}, new SubscriptionCallback() {
-  subscribe(new String[]{"$source $ draw graphics $graphics on $"}, new SubscriptionCallback() {
+  subscribe(new String[]{"$source $ draw graphics $graphics on 1999"}, new SubscriptionCallback() {
     public void parseResults(JSONArray results) {
       //println("Got new results:");
       //println(results);
@@ -167,19 +167,21 @@ void settings() {
         String source = results.getJSONObject(i).getJSONArray("source").getString(1);
         JSONArray newSourceGraphics = new JSONArray();
         if (parsedGraphics != null) {
+          if (!sourcePGraphics.containsKey(source)) {
+            sourcePGraphics.put(source, createGraphics(1280, 600, P3D)); // TODO: should a different canvas size be used?
+          }
+          if (!sourceGraphics.containsKey(source)) {
+            sourceGraphics.put(source, new JSONArray());
+          }
           for (int j = 0; j < parsedGraphics.size(); j += 1) {
             newSourceGraphics.append(parsedGraphics.getJSONObject(j));
+            sourceGraphics.get(source).append(parsedGraphics.getJSONObject(j));
             if (parsedGraphics.getJSONObject(j).getString("type").equals("video")) {
               //println("detected video");
               referencedVideos.put(parsedGraphics.getJSONObject(j).getJSONObject("options").getString("filename"), true);
             }
           }
         }
-        if (!sourcePGraphics.containsKey(source)) {
-          sourcePGraphics.put(source, createGraphics(1280, 600, P3D)); // TODO: should a different canvas size be used?
-          //sourcePGraphics.get(source).noSmooth();
-        }
-        sourceGraphics.put(source, newSourceGraphics);
       }
       //println("NEW SOURCE GRAPHICS:");
       //println(sourceGraphics);
