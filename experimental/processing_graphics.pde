@@ -210,6 +210,7 @@ void draw() {
     String source = entry.getKey();
     // uncalibratedScene.pushMatrix();
     PGraphics pg = drawSource(sourcePGraphics.get(source), entry.getValue());
+    /*
     uncalibratedScene.beginShape();
     uncalibratedScene.texture(pg);
     // TODO: offset horizontals to match the real aspect ratio of the paper
@@ -226,7 +227,7 @@ void draw() {
       uncalibratedScene.vertex(0, height, 0, 1);
     }
     uncalibratedScene.endShape();
-    /*
+    */
     qgrid = new QuadGrid(pg, 10, 10); // second and third parameters are the v and h resolutions
     if (sourcePosition.containsKey(source)) {
       int[] sp = sourcePosition.get(source);
@@ -241,7 +242,7 @@ void draw() {
                        0, height);
     }
     qgrid.drawGridPGraphics(uncalibratedScene, this);
-    */
+    
     // uncalibratedScene.popMatrix();
   }
   uncalibratedScene.endDraw();
@@ -262,7 +263,7 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
   pg.background(0, 0, 0, 0);
   pg.fill(255);
   pg.stroke(255);
-  pg.strokeWeight(1);
+  pg.strokeWeight(5);
   pg.textAlign(LEFT, TOP);
   pg.textFont(mono);
   pg.textSize(72);
@@ -279,7 +280,7 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       }
       pg.fill(255);
       pg.stroke(255);
-      pg.strokeWeight(1);
+      pg.strokeWeight(5);
       pg.textAlign(LEFT, TOP);
       pg.textFont(mono);
       pg.textSize(72);
@@ -388,9 +389,6 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       println(g);
     }
   }
-  pg.noFill();
-  pg.stroke(255, 0, 0);
-  pg.rect(0, 0, 1920, 1080);
   pg.pop();
   pg.endDraw();
   return pg;
