@@ -28,7 +28,7 @@ public final class Room {
     ZMQ.Context context = ZMQ.context(1);
     client = context.socket(ZMQ.DEALER);
     client.setIdentity(MY_ID_STR.getBytes(ZMQ.CHARSET));
-    String serverURL= "localhost";
+    String serverURL= "192.168.1.34"; // "localhost";
     String serverURLoverride = System.getenv("PROG_SPACE_SERVER_URL");
     if (serverURLoverride != null) {
       serverURL = serverURLoverride;
@@ -78,7 +78,7 @@ public final class Room {
     outMsg.send(client);
   }
   
-  public void listen() {
+  public boolean listen() {
     ZMsg inMsg = ZMsg.recvMsg(client, false);
     if (inMsg != null) {
       for (ZFrame f : inMsg) {
@@ -93,6 +93,8 @@ public final class Room {
           System.out.println(subscription_ids);
         }
       }
+      return true;
     }
+    return false;
   }
 }
