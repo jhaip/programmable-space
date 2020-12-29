@@ -56,12 +56,15 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
     JSONObject result = results.getJSONObject(i);
     JSONArray parsedGraphics = JSONArray.parse(result.getJSONArray("graphics").getString(1));
     String source = result.getJSONArray("programNumber").getString(1);
+    JSONObject resetGraphics = new JSONObject();
+    resetGraphics.setString("type", "__RESET__");
     if (parsedGraphics != null) {
       if (!sourcePGraphics.containsKey(source)) {
         sourcePGraphics.put(source, createGraphics(sourceCanvasWidth, sourceCanvasHeight, P3D)); // TODO: should a different canvas size be used?
       }
       if (!sourceGraphics.containsKey(source)) {
         sourceGraphics.put(source, new JSONArray());
+        sourceGraphics.get(source).append(resetGraphics);
       }
       // only paper detection subscription passes the coordiantes of the paper
       // otherwise, fall back to using the full screen size
@@ -86,6 +89,7 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
           referencedVideos.put(parsedGraphics.getJSONObject(j).getJSONObject("options").getString("filename"), true);
         }
       }
+      sourceGraphics.get(source).append(resetGraphics);
     }
   }
   // stop all videos not currently being shown
@@ -189,23 +193,27 @@ void setup() {
  
 void draw() {
   // TODO: listen multiple times to drain queue
-  room.listen();
+  boolean recv = room.listen();
+  int recvCount = 1;
+  while (recv) {
+    println(String.format("recv'd more than 1: %s", recvCount));
+    recvCount += 1;
+    recv = room.listen();
+  }
   background(0, 0, 0);  
   uncalibratedScene.beginDraw();
   //uncalibratedScene.blendMode(BLEND);
   uncalibratedScene.background(0, 0, 0);
   uncalibratedScene.textureMode(NORMAL);
   //println(sourceGraphics);
-  println("--");
   for (Map.Entry<String, JSONArray> entry : sourceGraphics.entrySet()) {
     String source = entry.getKey();
-    uncalibratedScene.pushMatrix();
+    // uncalibratedScene.pushMatrix();
     PGraphics pg = drawSource(sourcePGraphics.get(source), entry.getValue());
-    /*
     uncalibratedScene.beginShape();
     uncalibratedScene.texture(pg);
     // TODO: offset horizontals to match the real aspect ratio of the paper
-    if (sourcePosition.containsKey(source) && false) {
+    if (sourcePosition.containsKey(source)) {
       int[] sp = sourcePosition.get(source);
       uncalibratedScene.vertex(sp[0], sp[1], 0, 0);
       uncalibratedScene.vertex(sp[2], sp[3], 1, 0);
@@ -218,7 +226,7 @@ void draw() {
       uncalibratedScene.vertex(0, height, 0, 1);
     }
     uncalibratedScene.endShape();
-    */
+    /*
     qgrid = new QuadGrid(pg, 10, 10); // second and third parameters are the v and h resolutions
     if (sourcePosition.containsKey(source)) {
       int[] sp = sourcePosition.get(source);
@@ -233,7 +241,8 @@ void draw() {
                        0, height);
     }
     qgrid.drawGridPGraphics(uncalibratedScene, this);
-    uncalibratedScene.popMatrix();
+    */
+    // uncalibratedScene.popMatrix();
   }
   uncalibratedScene.endDraw();
   //qgrid = new QuadGrid(uncalibratedScene, 10, 10); // second and third parameters are the v and h resolutions
@@ -243,11 +252,13 @@ void draw() {
   //                 PROJECTOR_CALIBRATION[6], PROJECTOR_CALIBRATION[7]);
   //qgrid.drawGrid(this);
   image(uncalibratedScene, 0, 0);
+  fill(255, 255, 0);
+  text(frameRate, 50, 50);
 }
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
   pg.beginDraw();
-  pg.pushMatrix();
+  pg.push();
   pg.background(0, 0, 0, 0);
   pg.fill(255);
   pg.stroke(255);
@@ -255,12 +266,25 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
   pg.textAlign(LEFT, TOP);
   pg.textFont(mono);
   pg.textSize(72);
-  pg.ellipseMode(CENTER);
+  pg.ellipseMode(CORNER);
   //pg.resetMatrix();
+  boolean transformInUse = false;
   for (int i = 0; i < graphicsCache.size(); i += 1) {
     JSONObject g = graphicsCache.getJSONObject(i);
     String opt_type = g.getString("type");
-    if (opt_type.equals("rectangle")) {
+    if (opt_type.equals("__RESET__")) {
+      if (transformInUse) {
+        pg.popMatrix();
+        transformInUse = false;
+      }
+      pg.fill(255);
+      pg.stroke(255);
+      pg.strokeWeight(1);
+      pg.textAlign(LEFT, TOP);
+      pg.textFont(mono);
+      pg.textSize(72);
+      pg.ellipseMode(CORNER);
+    } else if (opt_type.equals("rectangle")) {
       JSONObject opt = g.getJSONObject("options");
       pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
     } else if (opt_type.equals("ellipse")) {
@@ -337,10 +361,16 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       JSONArray opt = g.getJSONArray("options");
       // warnining from Processing.org:
       // "This is very slow because it will try to calculate the inverse of the transform, so avoid it whenever possible"
-      pg.applyMatrix(opt.getFloat(0), opt.getFloat(1), 0, opt.getFloat(2),
-                     opt.getFloat(3), opt.getFloat(4), 0, opt.getFloat(5),
-                     0,               0,               1.0,             0,
-                     opt.getFloat(6), opt.getFloat(7), 0,               1.0);
+      if (transformInUse == false) {
+        transformInUse = true;
+        pg.pushMatrix();
+        pg.applyMatrix(opt.getFloat(0), opt.getFloat(1), 0, opt.getFloat(2),
+                       opt.getFloat(3), opt.getFloat(4), 0, opt.getFloat(5),
+                       0,               0,               1.0,             0,
+                       opt.getFloat(6), opt.getFloat(7), 0,               1.0);
+        //pg.printMatrix();
+      }
+      
     } else if (opt_type.equals("image")) {
       JSONObject opt = g.getJSONObject("options");
       try {
@@ -355,13 +385,13 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
         pg.image(movies_cache.get(videoFilename), opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
       }
     } else {
-      print(g);
+      println(g);
     }
   }
   pg.noFill();
   pg.stroke(255, 0, 0);
   pg.rect(0, 0, 1920, 1080);
-  pg.popMatrix();
+  pg.pop();
   pg.endDraw();
   return pg;
 }
