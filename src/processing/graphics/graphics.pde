@@ -24,7 +24,7 @@ final int sourceCanvasWidth = 1920;
 final int sourceCanvasHeight = 1080;
 int[] DEFAULT_PROJECTOR_CALIBRATION;
 int[] PROJECTOR_CALIBRATION;
-String myId = "1994";
+String myId;
 
 PImage DecodePImageFromBase64(String i_Image64) throws IOException {
    PImage result = null;
@@ -105,12 +105,20 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
       movies_cache.put(referencedVideoFilename, new Movie(thisApp, referencedVideoFilename));
       println(String.format("loaded video %s", referencedVideoFilename));
     }
-    println(String.format("looping video %s", referencedVideoFilename));
+    //println(String.format("looping video %s", referencedVideoFilename));
     movies_cache.get(referencedVideoFilename).loop();
   }
 }
  
 void settings() {
+  myId = "9001";
+  if (args != null) {
+    println(args);
+    if (args.length == 1) {
+      myId = args[0];
+    }
+  }
+  println(myId);
   colorsMap.put("white", new int[]{255, 255, 255});
   colorsMap.put("red", new int[]{255, 0, 0});
   colorsMap.put("green", new int[]{0, 255, 0});
@@ -122,7 +130,7 @@ void settings() {
   colorsMap.put("orange", new int[]{255, 165, 0});
   fullScreen(P3D);
   // size(1280, 600, P3D);
-  room = new Room("9001");
+  room = new Room(myId);
   
   final PApplet _thisApp = this;
   
@@ -196,7 +204,7 @@ void draw() {
   boolean recv = room.listen();
   int recvCount = 1;
   while (recv) {
-    println(String.format("recv'd more than 1: %s", recvCount));
+    //println(String.format("recv'd more than 1: %s", recvCount));
     recvCount += 1;
     recv = room.listen();
   }
