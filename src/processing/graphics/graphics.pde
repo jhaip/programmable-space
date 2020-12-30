@@ -10,9 +10,21 @@ import java.util.Base64;
 import javax.imageio.ImageIO;
 import processing.video.*;
 
+class MaybeMovie {
+  public Movie movie;
+  public boolean loaded;
+  public MaybeMovie(Movie movie) {
+    this.movie = movie;
+    this.loaded = true;
+  }
+  public MaybeMovie() {
+    this.loaded = false;
+  }
+}
+
 JSONArray graphicsCache = new JSONArray();
 PFont mono;
-Map<String, Movie> movies_cache = new HashMap<String, Movie>();
+Map<String, MaybeMovie> movies_cache = new HashMap<String, MaybeMovie>();
 Map<String, int[]> colorsMap = new HashMap<String, int[]>();
 Map<String, int[]> sourcePosition = new HashMap<String, int[]>();
 Map<String, JSONArray> sourceGraphics = new HashMap<String, JSONArray>();
@@ -93,25 +105,42 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
     }
   }
   // stop all videos not currently being shown
-  for (Map.Entry<String, Movie> entry : movies_cache.entrySet()) {
+  for (Map.Entry<String, MaybeMovie> entry : movies_cache.entrySet()) {
     if (!referencedVideos.containsKey(entry.getKey())) {
-      println(String.format("stopping video %s", entry.getKey()));
-      entry.getValue().stop();
+      if (entry.getValue().loaded) {
+        println(String.format("stopping video %s", entry.getKey()));
+        entry.getValue().movie.stop();
+      }
     }
   }
   // load and play new videos
   for (String referencedVideoFilename : referencedVideos.keySet()) {
-    if (!movies_cache.containsKey(referencedVideoFilename)) {
-      movies_cache.put(referencedVideoFilename, new Movie(thisApp, referencedVideoFilename));
-      println(String.format("loaded video %s", referencedVideoFilename));
+    boolean hadError = false;
+    try {
+      if (!movies_cache.containsKey(referencedVideoFilename)) {
+        File tempFile = new File(referencedVideoFilename);
+        if (tempFile.exists()) {
+          Movie newMovie = new Movie(thisApp, referencedVideoFilename);
+          movies_cache.put(referencedVideoFilename, new MaybeMovie(newMovie));
+          println(String.format("loaded video %s", referencedVideoFilename));
+        } else {
+          println(String.format("file does not exist: %s", referencedVideoFilename));
+          movies_cache.put(referencedVideoFilename, new MaybeMovie());
+        }
+      }
+      //println(String.format("looping video %s", referencedVideoFilename));
+      if (movies_cache.get(referencedVideoFilename).loaded) {
+        movies_cache.get(referencedVideoFilename).movie.loop();
+      }
+    } catch (Exception e) {
+      println(String.format("error loading video %s", referencedVideoFilename));
+      movies_cache.put(referencedVideoFilename, new MaybeMovie());
     }
-    //println(String.format("looping video %s", referencedVideoFilename));
-    movies_cache.get(referencedVideoFilename).loop();
   }
 }
  
 void settings() {
-  myId = "9001";
+  myId = "1999";
   if (args != null) {
     println(args);
     if (args.length == 1) {
@@ -128,8 +157,8 @@ void settings() {
   colorsMap.put("purple", new int[]{128, 0, 128});
   colorsMap.put("cyan", new int[]{0, 255, 255});
   colorsMap.put("orange", new int[]{255, 165, 0});
-  fullScreen(P3D);
-  // size(1280, 600, P3D);
+  //fullScreen(P3D);
+   size(1280, 600, P3D);
   room = new Room(myId);
   
   final PApplet _thisApp = this;
@@ -391,7 +420,14 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       JSONObject opt = g.getJSONObject("options");
       String videoFilename = opt.getString("filename");
       if (movies_cache.containsKey(videoFilename)) {
-        pg.image(movies_cache.get(videoFilename), opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+        if (movies_cache.get(videoFilename) != null && movies_cache.get(videoFilename).loaded) {
+          pg.image(movies_cache.get(videoFilename).movie, opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+        } else {
+          pg.push();
+          pg.fill(255, 0, 0);
+          pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+          pg.pop();
+        }
       }
     } else {
       println(g);
