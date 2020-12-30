@@ -236,7 +236,7 @@ function cmd() {
     go run 1601__frame-to-papers.go 5 &
     python3 1631__arucoTagCv.py &
     cd ../..
-    /home/jacob/processing-3.5.4/processing-java --output=/tmp/processing/ --sketch=/home/jacob/zeromq_test --force --run
+    /home/jacob/processing-3.5.4/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --run &
     echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
   then
