@@ -421,7 +421,14 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       String videoFilename = opt.getString("filename");
       if (movies_cache.containsKey(videoFilename)) {
         if (movies_cache.get(videoFilename) != null && movies_cache.get(videoFilename).loaded) {
-          pg.image(movies_cache.get(videoFilename).movie, opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+          try {
+            pg.image(movies_cache.get(videoFilename).movie, opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+          } catch (Exception e) {
+            pg.push();
+            pg.fill(255, 255, 0);
+            pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+            pg.pop();            
+          }
         } else {
           pg.push();
           pg.fill(255, 0, 0);
