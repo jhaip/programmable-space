@@ -6,6 +6,6 @@ b64_img_str = '/9j/4AAQSkZJRgABAQEAYABgAAD/4QCKRXhpZgAATU0AKgAAAAgABVEAAAQAAAAIA
 room.cleanup()
 let ill = room.newIllumination()
 ill.image(0, 0, 599, 599, b64_img_str)
-room.draw(ill)
+room.draw(ill, "1999")
 
 run();

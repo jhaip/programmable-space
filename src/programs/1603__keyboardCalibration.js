@@ -1,7 +1,7 @@
 const { room, myId } = require('../helpers/helper')(__filename);
 
 room.cleanup();
-var CAM_ID = 1994;
+var CAM_ID = "1994";
 var IMG = undefined;
 var CURRENT_CORNER = 0;
 var CAM_WIDTH = 1920;

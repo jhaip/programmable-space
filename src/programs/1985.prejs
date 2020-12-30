@@ -1,2 +1,29 @@
+let fs = require('fs');
+let path = require('path');
+let p = n => path.join(__dirname, '..', 'files', n)
+let lastFrame = null;
 
-claim wish 498 would be running
+when camera sees frame $frame @ $t:
+lastFrame = frame;
+room.cleanup()
+let ill = room.newIllumination()
+ill.scale(5, 5)
+ill.image(0, 0, 192, 108, frame)
+room.draw(ill);
+end
+
+when time is $t:
+let offset = t % (60*5); // 5 min
+if (offset === 0 && !!lastFrame) {
+  fs.writeFile(p(`timelapse1985_${t}`), lastFrame, err => {
+    if (err) return console.log(err);
+    console.log("saved timelapse photo");
+  });
+  room.cleanup()
+  let ill = room.newIllumination()
+  ill.fontcolor(0, 255, 0);
+  ill.fontsize(200)
+  ill.text(0, 0, "SAVED")
+  room.draw(ill);
+}
+end

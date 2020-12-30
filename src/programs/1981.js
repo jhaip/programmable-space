@@ -1,11 +1,12 @@
 const { room, myId, run } = require('../helpers/helper')(__filename);
 
-// xhen camera sees frame $frame @ $:
-room.on(`camera $ screenshot $frame`,
+room.on(`aruco sees $frame @ $t`,
         results => {
   room.subscriptionPrefix(1);
   if (!!results && results.length > 0) {
-    results.forEach(({ frame }) => {
+    results.forEach(({ frame, t }) => {
+// xhen camera sees frame $frame @ $:
+// xhen camera "1994" screenshot $frame by $source:
 let ill = room.newIllumination()
 ill.fontsize(30)
 ill.scale(5, 5)

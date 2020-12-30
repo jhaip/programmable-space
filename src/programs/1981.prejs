@@ -1,5 +1,6 @@
+when aruco sees $frame @ $t:
 // xhen camera sees frame $frame @ $:
-when camera $ screenshot $frame:
+// xhen camera "1994" screenshot $frame by $source:
 let ill = room.newIllumination()
 ill.fontsize(30)
 ill.scale(5, 5)

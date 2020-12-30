@@ -13,7 +13,7 @@ ill.rect(OFFSET-S, OFFSET-S, S, S);
 ill.rect(W-OFFSET-S, OFFSET-S, S, S);
 ill.rect(W-OFFSET-S, H-OFFSET-S, S, S);
 ill.rect(OFFSET-S, H-OFFSET-S, S, S);
-room.draw(ill, "1993")
+room.draw(ill)
 
 
 
