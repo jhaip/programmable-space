@@ -157,8 +157,8 @@ void settings() {
   colorsMap.put("purple", new int[]{128, 0, 128});
   colorsMap.put("cyan", new int[]{0, 255, 255});
   colorsMap.put("orange", new int[]{255, 165, 0});
-  //fullScreen(P3D);
-   size(1280, 600, P3D);
+  fullScreen(P3D);
+  //size(1280, 600, P3D);
   room = new Room(myId);
   
   final PApplet _thisApp = this;
