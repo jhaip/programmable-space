@@ -217,6 +217,7 @@ function cmd() {
   then
     pkill -f "1601__frame-to-papers.go"
     pkill -f "exe/1601__frame-to-papers"
+    pkill -f "1631__arucoTagCv.py"
     pkill -f "processing/graphics"
     pkill -f "ffmpeg"
     sudo modprobe v4l2loopback devices=2 exclusive_caps=1,1 video_nr=5,6 card_label="Webcam Copy 1","Webcam Copy 2"
@@ -240,6 +241,7 @@ function cmd() {
     echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
   then
+    pkill -f "650__keyboard"
     pkill -f "processing/graphics"
     export DISPLAY=:0
     export PROG_SPACE_SERVER_URL="192.168.1.34"
