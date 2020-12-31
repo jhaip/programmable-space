@@ -231,10 +231,10 @@ void setup() {
 void draw() {
   // TODO: listen multiple times to drain queue
   boolean recv = room.listen();
-  int recvCount = 1;
+  int recvCount = 0;
   while (recv) {
-    //println(String.format("recv'd more than 1: %s", recvCount));
     recvCount += 1;
+    //println(String.format("recv'd more than 1: %s", recvCount));
     recv = room.listen();
   }
   background(0, 0, 0);  
@@ -291,7 +291,8 @@ void draw() {
   //qgrid.drawGrid(this);
   image(uncalibratedScene, 0, 0);
   fill(255, 255, 0);
-  text(frameRate, 50, 50);
+  text(frameRate, 25, 25);
+  text(recvCount, 25, 50);
 }
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
