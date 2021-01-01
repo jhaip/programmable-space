@@ -226,18 +226,18 @@ void setup() {
    DEFAULT_PROJECTOR_CALIBRATION = new int[]{0, 0, width, 0, width, height, 0, height};
   //DEFAULT_PROJECTOR_CALIBRATION = new int[]{453, 140, 1670, 160, 1646, 889, 443, 858};
   PROJECTOR_CALIBRATION = DEFAULT_PROJECTOR_CALIBRATION;
-  
-  thread("listenLoop");
-}
-
-void listenLoop() {
-  while (true) {
-    room.listen(true);
-  }
 }
  
 void draw() {
   long start = System.currentTimeMillis();
+  boolean recv = room.listen();	
+  int recvCount = 0;	
+  while (recv) {	
+    recvCount += 1;	
+    //println(String.format("recv'd more than 1: %s", recvCount));	
+    recv = room.listen();	
+  }
+  long listenTime = System.currentTimeMillis() - start;
   background(0, 0, 0);
   uncalibratedScene.beginDraw();
   //uncalibratedScene.blendMode(BLEND);
@@ -294,9 +294,11 @@ void draw() {
   image(uncalibratedScene, 0, 0);
   fill(255, 255, 0);
   text(frameRate, 25, 25);
+  text(recvCount, 25, 50);
   long finalTime = System.currentTimeMillis() - start;
-  text(drawPapersTime, 25, 75);
-  text(finalTime, 25, 100);
+  text(listenTime, 25, 75);
+  text(drawPapersTime, 25, 100);
+  text(finalTime, 25, 125);
 }
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
