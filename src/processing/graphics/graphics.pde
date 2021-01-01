@@ -229,7 +229,7 @@ void setup() {
 }
  
 void draw() {
-  // TODO: listen multiple times to drain queue
+  long start = System.currentTimeMillis();
   boolean recv = room.listen();
   int recvCount = 0;
   while (recv) {
@@ -237,7 +237,8 @@ void draw() {
     //println(String.format("recv'd more than 1: %s", recvCount));
     recv = room.listen();
   }
-  background(0, 0, 0);  
+  background(0, 0, 0);
+  long listenTime = System.currentTimeMillis() - start;
   uncalibratedScene.beginDraw();
   //uncalibratedScene.blendMode(BLEND);
   uncalibratedScene.background(0, 0, 0);
@@ -283,6 +284,7 @@ void draw() {
     // uncalibratedScene.popMatrix();
   }
   uncalibratedScene.endDraw();
+  long drawPapersTime = System.currentTimeMillis() - start;
   //qgrid = new QuadGrid(uncalibratedScene, 10, 10); // second and third parameters are the v and h resolutions
   //qgrid.setCorners(PROJECTOR_CALIBRATION[0], PROJECTOR_CALIBRATION[1],
   //                 PROJECTOR_CALIBRATION[2], PROJECTOR_CALIBRATION[3],
@@ -293,6 +295,10 @@ void draw() {
   fill(255, 255, 0);
   text(frameRate, 25, 25);
   text(recvCount, 25, 50);
+  long finalTime = System.currentTimeMillis() - start;
+  text(listenTime, 25, 75);
+  text(drawPapersTime, 25, 100);
+  text(finalTime, 25, 125);
 }
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
