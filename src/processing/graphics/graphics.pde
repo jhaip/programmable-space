@@ -72,7 +72,7 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
     resetGraphics.setString("type", "__RESET__");
     if (parsedGraphics != null) {
       if (!sourcePGraphics.containsKey(source)) {
-        sourcePGraphics.put(source, createGraphics(sourceCanvasWidth, sourceCanvasHeight, P3D)); // TODO: should a different canvas size be used?
+        sourcePGraphics.put(source, thisApp.createGraphics(sourceCanvasWidth, sourceCanvasHeight, P3D)); // TODO: should a different canvas size be used?
       }
       if (!sourceGraphics.containsKey(source)) {
         sourceGraphics.put(source, new JSONArray());
@@ -215,8 +215,6 @@ void settings() {
       parseUpdatedGraphics(_thisApp, results);
     }
   });
-
-    thread("listenLoop");
 }
  
 void setup() {
@@ -228,6 +226,8 @@ void setup() {
    DEFAULT_PROJECTOR_CALIBRATION = new int[]{0, 0, width, 0, width, height, 0, height};
   //DEFAULT_PROJECTOR_CALIBRATION = new int[]{453, 140, 1670, 160, 1646, 889, 443, 858};
   PROJECTOR_CALIBRATION = DEFAULT_PROJECTOR_CALIBRATION;
+  
+  thread("listenLoop");
 }
 
 void listenLoop() {
