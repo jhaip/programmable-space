@@ -78,8 +78,8 @@ public final class Room {
     outMsg.send(client);
   }
   
-  public boolean listen() {
-    ZMsg inMsg = ZMsg.recvMsg(client, false);
+  public boolean listen(boolean blockWaitForMessage) {
+    ZMsg inMsg = ZMsg.recvMsg(client, blockWaitForMessage);
     if (inMsg != null) {
       for (ZFrame f : inMsg) {
         String rawValue = f.getString(ZMQ.CHARSET);

@@ -215,6 +215,8 @@ void settings() {
       parseUpdatedGraphics(_thisApp, results);
     }
   });
+
+    thread("listenLoop");
 }
  
 void setup() {
@@ -227,18 +229,16 @@ void setup() {
   //DEFAULT_PROJECTOR_CALIBRATION = new int[]{453, 140, 1670, 160, 1646, 889, 443, 858};
   PROJECTOR_CALIBRATION = DEFAULT_PROJECTOR_CALIBRATION;
 }
+
+void listenLoop() {
+  while (true) {
+    room.listen(true);
+  }
+}
  
 void draw() {
   long start = System.currentTimeMillis();
-  boolean recv = room.listen();
-  int recvCount = 0;
-  while (recv) {
-    recvCount += 1;
-    //println(String.format("recv'd more than 1: %s", recvCount));
-    recv = room.listen();
-  }
   background(0, 0, 0);
-  long listenTime = System.currentTimeMillis() - start;
   uncalibratedScene.beginDraw();
   //uncalibratedScene.blendMode(BLEND);
   uncalibratedScene.background(0, 0, 0);
@@ -294,11 +294,9 @@ void draw() {
   image(uncalibratedScene, 0, 0);
   fill(255, 255, 0);
   text(frameRate, 25, 25);
-  text(recvCount, 25, 50);
   long finalTime = System.currentTimeMillis() - start;
-  text(listenTime, 25, 75);
-  text(drawPapersTime, 25, 100);
-  text(finalTime, 25, 125);
+  text(drawPapersTime, 25, 75);
+  text(finalTime, 25, 100);
 }
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
