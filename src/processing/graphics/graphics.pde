@@ -230,12 +230,12 @@ void setup() {
  
 void draw() {
   long start = System.currentTimeMillis();
-  boolean recv = room.listen();	
+  boolean recv = room.listen(false);	
   int recvCount = 0;	
   while (recv) {	
     recvCount += 1;	
     //println(String.format("recv'd more than 1: %s", recvCount));	
-    recv = room.listen();	
+    recv = room.listen(false);	
   }
   long listenTime = System.currentTimeMillis() - start;
   background(0, 0, 0);
