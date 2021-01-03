@@ -10,6 +10,12 @@ import java.util.Base64;
 import javax.imageio.ImageIO;
 import processing.video.*;
 
+import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.nio.file.Paths;
+
 class MaybeMovie {
   public Movie movie;
   public boolean loaded;
@@ -19,6 +25,54 @@ class MaybeMovie {
   }
   public MaybeMovie() {
     this.loaded = false;
+  }
+}
+
+boolean getIsUrl(String filenameOrURL) {
+  return filenameOrURL.contains("://");
+}
+
+String getNormalizedFilename(String filenameOrURL) {
+  if (filenameOrURL.contains("://")) {
+    try {
+      return Paths.get(new URI(filenameOrURL).getPath()).getFileName().toString();
+    } catch(Exception e) {
+      return "error-filename";
+    }
+  }
+  return filenameOrURL;
+}
+
+class VideoDownloader implements Runnable {
+  PApplet papp;
+  String url;
+  String filename;
+
+  public VideoDownloader(PApplet papp, String url) {
+    this.papp = papp;
+    this.url = url;
+    this.filename = getNormalizedFilename(url);
+  }
+
+  public void run() {
+    try {
+      String filePath = papp.dataPath(filename);
+      File tempFile = new File(filePath);
+      if (!tempFile.exists()) {
+        System.out.println("loading file");
+        boolean success = papp.saveStream( filePath, url );
+        System.out.println(success);
+        if (!success) {
+          return;
+        }
+      }
+      Movie newMovie = new Movie(papp, filePath);
+      newMovie.loop();   
+      movies_cache.put(url, new MaybeMovie(newMovie));
+      System.out.println(String.format("done loading video %s", url));
+    } catch(Exception e) {
+      System.out.println(String.format("could not encode url %s", url));
+    }
   }
 }
 
@@ -108,7 +162,7 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
   for (Map.Entry<String, MaybeMovie> entry : movies_cache.entrySet()) {
     if (!referencedVideos.containsKey(entry.getKey())) {
       if (entry.getValue().loaded) {
-        println(String.format("stopping video %s", entry.getKey()));
+        //println(String.format("stopping video %s", entry.getKey()));
         entry.getValue().movie.stop();
       }
     }
@@ -118,14 +172,20 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
     boolean hadError = false;
     try {
       if (!movies_cache.containsKey(referencedVideoFilename)) {
-        File tempFile = new File(referencedVideoFilename);
+        String normalizedFilename = getNormalizedFilename(referencedVideoFilename);
+        File tempFile = new File(normalizedFilename);
         if (tempFile.exists()) {
-          Movie newMovie = new Movie(thisApp, referencedVideoFilename);
+          Movie newMovie = new Movie(thisApp, normalizedFilename);
           movies_cache.put(referencedVideoFilename, new MaybeMovie(newMovie));
-          println(String.format("loaded video %s", referencedVideoFilename));
+          println(String.format("loaded video %s %s", referencedVideoFilename, normalizedFilename));
         } else {
-          println(String.format("file does not exist: %s", referencedVideoFilename));
+          println(String.format("file does not exist: %s %s", referencedVideoFilename, normalizedFilename));
           movies_cache.put(referencedVideoFilename, new MaybeMovie());
+          if (getIsUrl(referencedVideoFilename)) {
+            println("started thread to download movie");
+            Thread t = new Thread(new VideoDownloader(thisApp, referencedVideoFilename));
+            t.start();
+          }
         }
       }
       //println(String.format("looping video %s", referencedVideoFilename));
