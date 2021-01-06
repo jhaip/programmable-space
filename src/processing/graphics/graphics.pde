@@ -76,9 +76,31 @@ class VideoDownloader implements Runnable {
   }
 }
 
+class ImageDownloader implements Runnable {
+  PApplet papp;
+  String url;
+
+  public ImageDownloader(PApplet papp, String url) {
+    this.papp = papp;
+    this.url = url;
+  }
+
+  public void run() {
+    try {
+      System.out.println(String.format("start loading image %s", url));
+      PImage img = loadImage(url);
+      images_cache.put(url, img);
+      System.out.println(String.format("done loading image %s", url));
+    } catch(Exception e) {
+      System.out.println(String.format("error loading image %s", url));
+    }
+  }
+}
+
 JSONArray graphicsCache = new JSONArray();
 PFont mono;
 Map<String, MaybeMovie> movies_cache = new HashMap<String, MaybeMovie>();
+Map<String, PImage> images_cache = new HashMap<String, PImage>();
 Map<String, int[]> colorsMap = new HashMap<String, int[]>();
 Map<String, int[]> sourcePosition = new HashMap<String, int[]>();
 Map<String, JSONArray> sourceGraphics = new HashMap<String, JSONArray>();
@@ -112,6 +134,7 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
   //println(results);
   graphicsCache = new JSONArray();
   Map<String, Boolean> referencedVideos = new HashMap<String, Boolean>();
+  Map<String, Boolean> referencedImages = new HashMap<String, Boolean>();
   sourceGraphics = new HashMap<String, JSONArray>();
   sourcePosition = new HashMap<String, int[]>();
   // TODO: we could not clear the PGraphics ever time if that is more efficient
@@ -150,14 +173,35 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
       }
       for (int j = 0; j < parsedGraphics.size(); j += 1) {
         sourceGraphics.get(source).append(parsedGraphics.getJSONObject(j));
-        if (parsedGraphics.getJSONObject(j).getString("type").equals("video")) {
+        String graphicType = parsedGraphics.getJSONObject(j).getString("type");
+        if (graphicType.equals("video")) {
           //println("detected video");
           referencedVideos.put(parsedGraphics.getJSONObject(j).getJSONObject("options").getString("filename"), true);
+        } else if (graphicType.equals("image")) {
+          referencedImages.put(parsedGraphics.getJSONObject(j).getJSONObject("options").getString("bitmap_image_base64"), true);
         }
       }
       sourceGraphics.get(source).append(resetGraphics);
     }
   }
+  // load images
+  for (String referencedImageStr : referencedImages.keySet()) {
+    if (!images_cache.containsKey(referencedImageStr)) {
+      if (getIsUrl(referencedImageStr)) {
+        images_cache.put(referencedImageStr, null);
+        Thread t = new Thread(new ImageDownloader(thisApp, referencedImageStr));
+        t.start();
+      } else {
+        try {
+          images_cache.put(referencedImageStr, DecodePImageFromBase64(referencedImageStr));
+        } catch (Exception e) {
+          println(String.format("error decoding image base64 %s", referencedImageStr));
+          movies_cache.put(referencedImageStr, null);
+        }
+      }
+    }
+  }
+  // TODO: clear image_cache if it gets too big.
   // stop all videos not currently being shown
   for (Map.Entry<String, MaybeMovie> entry : movies_cache.entrySet()) {
     if (!referencedVideos.containsKey(entry.getKey())) {
@@ -478,11 +522,17 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       
     } else if (opt_type.equals("image")) {
       JSONObject opt = g.getJSONObject("options");
-      try {
-        PImage img = DecodePImageFromBase64(opt.getString("bitmap_image_base64"));
-        pg.image(img, opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+      String imageStr = opt.getString("bitmap_image_base64");
+      if (images_cache.containsKey(imageStr)) {
+        if (images_cache.get(imageStr) != null) {
+          pg.image(images_cache.get(imageStr), opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+        } else {
+          pg.push();
+          pg.fill(255, 0, 255);
+          pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
+          pg.pop();
+        }
       }
-      catch (IOException e) { println("Error: " + e); }
     } else if (opt_type.equals("video")) {
       JSONObject opt = g.getJSONObject("options");
       String videoFilename = opt.getString("filename");
@@ -494,7 +544,7 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
             pg.push();
             pg.fill(255, 255, 0);
             pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
-            pg.pop();            
+            pg.pop();      
           }
         } else {
           pg.push();
