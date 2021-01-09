@@ -88,7 +88,13 @@ class ImageDownloader implements Runnable {
   public void run() {
     try {
       System.out.println(String.format("start loading image %s", url));
-      PImage img = loadImage(url);
+      String imgExt = "png";
+      if (url.toLowerCase().contains(".gif")) {
+        imgExt = "gif";
+      } else if (url.toLowerCase().contains(".jpg") || url.toLowerCase().contains(".jpeg")) {
+        imgExt = "jpg";
+      }
+      PImage img = loadImage(url, imgExt);
       images_cache.put(url, img);
       System.out.println(String.format("done loading image %s", url));
     } catch(Exception e) {
