@@ -81,7 +81,7 @@ function render() {
       new RegExp(String.fromCharCode(9787), 'g'),
       String.fromCharCode(34)
     ) : "nothing selected";
-    myCodeMirror.setValue($editor.value);
+  myCodeMirror.setValue($editor.value);
 }
 
 function toggleMenu() {
@@ -113,7 +113,7 @@ function save(evt) {
     body: JSON.stringify({
       'currentTargetId': db[selected].id,
       'currentTargetName': db[selected].name,
-      'currentSourceCode': document.getElementById('editor').value,
+      'currentSourceCode': myCodeMirror.getValue(),
     })
   }).then(response => console.log(response));
 }
@@ -143,7 +143,7 @@ function newProgram(evt) {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       'currentTargetName': db[selected].name,
-      'currentSourceCode': document.getElementById('editor').value,
+      'currentSourceCode': myCodeMirror.getValue(),
     })
   }).then(response => console.log(response));
 }
