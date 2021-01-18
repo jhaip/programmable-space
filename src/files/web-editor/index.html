@@ -154,7 +154,7 @@ async function fetchData() {
     const response = await fetch('/status')
     const myJson = await response.json();
     db = myJson.programs.sort((a,b) =>
-      a.name.split("__")[0] < b.name.split("__")[0] ? -1 : 1);
+      +a.name.split("__")[0] < +b.name.split("__")[0] ? -1 : 1);
     render();
   } catch (error) {
     console.error(error);
