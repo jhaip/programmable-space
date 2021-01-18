@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Web editor</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.1/codemirror.min.css">
     <style>
 body {
   display: flex;
@@ -25,7 +26,8 @@ body {
 }
 .rightside {
   flex: 1;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .menu {
   background-color: #CCF;
@@ -34,7 +36,7 @@ body {
   margin: 10px;
   line-height: 30px;
 }
-textarea {
+textarea, .CodeMirror {
   width: 100%;
   height: 100%;
   font-family: monospace;
@@ -57,17 +59,20 @@ textarea {
     <div class="rightside">
       <div class="menu">
         <a href="#" onclick="toggleMenu();">Toggle Menu</a>
-        <a href="#" onclick="changeFontSize(5);">Bigger</a>
-        <a href="#" onclick="changeFontSize(-5);">Smaller</a>
+        <a href="#" onclick="changeFontSize(5);">(+)</a>
+        <a href="#" onclick="changeFontSize(-5);">(-)</a>
+        <a href="#" onclick="newProgram();">New</a>
         <a href="#" onclick="print();">Print</a>
         <a href="#" onclick="save();">Save</a>
       </div>
       <textarea id="editor" placeholder="// code"></textarea>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.1/codemirror.min.js"></script>
     <script>
 var db = []; // {name: "X", id: "id", code: "code"}
 var selected = 0;
 const isSelectedValid = () => selected >= 0 && selected < db.length
+var fontSize = 20;
 
 function render() {
   let $sidebar = document.getElementById('sidebar');
@@ -77,6 +82,7 @@ function render() {
       new RegExp(String.fromCharCode(9787), 'g'),
       String.fromCharCode(34)
     ) : "nothing selected";
+    myCodeMirror.setValue($editor.value);
 }
 
 function toggleMenu() {
@@ -90,8 +96,11 @@ function selectProgram(i) {
 }
 
 function changeFontSize(v) {
+  fontSize += v;
   var elem = document.getElementById('editor');
-  elem.style.fontSize = `${+elem.style.fontSize.replace("px", "") + v}px`;
+  elem.style.fontSize = `${fontSize}px`;
+  myCodeMirror.getWrapperElement().style.fontSize = `${fontSize}px`;
+  myCodeMirror.refresh();
 }
 
 function save(evt) {
@@ -101,9 +110,7 @@ function save(evt) {
   }
   fetch(`/save`, {
     method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       'currentTargetId': db[selected].id,
       'currentTargetName': db[selected].name,
@@ -119,12 +126,25 @@ function print(evt) {
   }
   fetch(`/print`, {
     method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       'currentTargetId': db[selected].id,
       'currentTargetName': db[selected].name,
+    })
+  }).then(response => console.log(response));
+}
+
+function newProgram(evt) {
+  if (!isSelectedValid()) {
+    alert("selection invalid, cannot save");
+    return;
+  }
+  fetch(`/new`, {
+    method: 'post',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      'currentTargetName': db[selected].name,
+      'currentSourceCode': document.getElementById('editor').value,
     })
   }).then(response => console.log(response));
 }
@@ -133,15 +153,20 @@ async function fetchData() {
   try {
     const response = await fetch('/status')
     const myJson = await response.json();
-    db = myJson.programs;
+    db = myJson.programs.sort((a,b) => a.name < b.name ? -1 : 1);
     render();
   } catch (error) {
     console.error(error);
   }
 }
 
+var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('editor'), {
+  lineNumbers: true,
+  gutter: true,
+  lineWrapping: true
+});
 render();
-changeFontSize(20);
+changeFontSize(0);
 fetchData();
     </script>
   </body>
