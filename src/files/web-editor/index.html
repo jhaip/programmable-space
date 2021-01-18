@@ -64,7 +64,6 @@ textarea {
       </div>
       <textarea id="editor" placeholder="// code"></textarea>
     </div>
-    <script src="/script.js" defer></script>
     <script>
 var db = []; // {name: "X", id: "id", code: "code"}
 var selected = 0;
@@ -130,7 +129,7 @@ function print(evt) {
   }).then(response => console.log(response));
 }
 
-function fetchData() {
+async function fetchData() {
   try {
     const response = await fetch('/status')
     const myJson = await response.json();
