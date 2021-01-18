@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web editor</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+body {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+#sidebar {
+  background-color: #EEE;
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: scroll;
+}
+.rightside {
+  flex: 1;
+  overflow: hidden;
+}
+.menu {
+  background-color: #CCF;
+}
+.menu a {
+  margin: 10px;
+  line-height: 30px;
+}
+textarea {
+  width: 100%;
+  height: 100%;
+  font-family: monospace;
+}
+.prog-link {
+  padding: 10px;
+  border-bottom: 1px solid #CCC
+}
+.prog-link:hover {
+  border-left: 3px solid black;
+  cursor: pointer;
+}
+.prog-link--selected {
+  background-color: #BFB;
+}
+    </style>
+  </head>  
+  <body>
+    <div id="sidebar"></div>
+    <div class="rightside">
+      <div class="menu">
+        <a href="#" onclick="toggleMenu();">Toggle Menu</a>
+        <a href="#" onclick="changeFontSize(5);">Bigger</a>
+        <a href="#" onclick="changeFontSize(-5);">Smaller</a>
+        <a href="#" onclick="print();">Print</a>
+        <a href="#" onclick="save();">Save</a>
+      </div>
+      <textarea id="editor" placeholder="// code"></textarea>
+    </div>
+    <script src="/script.js" defer></script>
+    <script>
+var db = []; // {name: "X", id: "id", code: "code"}
+var selected = 0;
+const isSelectedValid = () => selected >= 0 && selected < db.length
+
+function render() {
+  let $sidebar = document.getElementById('sidebar');
+  $sidebar.innerHTML = db.map((v, i) => `<a class="prog-link ${(i === selected) ? "prog-link--selected" : ""}" onclick="selectProgram(${i})">${v.name}</a>`).join("");
+  let $editor = document.getElementById('editor');
+  $editor.value = isSelectedValid() ? db[selected].code.replace(
+      new RegExp(String.fromCharCode(9787), 'g'),
+      String.fromCharCode(34)
+    ) : "nothing selected";
+}
+
+function toggleMenu() {
+  var elem = document.getElementById('sidebar');
+  elem.style.display = (elem.style.display === "none") ? "flex" : "none";
+}
+
+function selectProgram(i) {
+  selected = i;
+  render();
+}
+
+function changeFontSize(v) {
+  var elem = document.getElementById('editor');
+  elem.style.fontSize = `${+elem.style.fontSize.replace("px", "") + v}px`;
+}
+
+function save(evt) {
+  if (!isSelectedValid()) {
+    alert("selection invalid, cannot save");
+    return;
+  }
+  fetch(`/save`, {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      'currentTargetId': db[selected].id,
+      'currentTargetName': db[selected].name,
+      'currentSourceCode': document.getElementById('editor').value,
+    })
+  }).then(response => console.log(response));
+}
+
+function print(evt) {
+  if (!isSelectedValid()) {
+    alert("selection invalid, cannot save");
+    return;
+  }
+  fetch(`/print`, {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      'currentTargetId': db[selected].id,
+      'currentTargetName': db[selected].name,
+    })
+  }).then(response => console.log(response));
+}
+
+function fetchData() {
+  try {
+    const response = await fetch('/status')
+    const myJson = await response.json();
+    db = myJson.programs;
+    render();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+render();
+changeFontSize(20);
+fetchData();
+    </script>
+  </body>
+</html>
