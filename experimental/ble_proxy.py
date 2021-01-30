@@ -1,38 +1,9 @@
-from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
+# from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
 import time
 
-class ScanDelegate(DefaultDelegate):
-    def __init__(self):
-        DefaultDelegate.__init__(self)
-
-    def handleDiscovery(self, dev, isNewDev, isNewData):
-        if isNewDev:
-            print("Discovered device", dev.addr)
-            adtype, desc, value = dev.getScanData()
-            if desc == "Complete Local Name" and "CIRCUITPY" in value:
-                print("FOUND CIRCUIT PY!!")
-        elif isNewData:
-            print("Received new data from", dev.addr)
-
-scanner = Scanner().withDelegate(ScanDelegate())
-devices = scanner.scan(2.0)
-
-foundcpy = None
-foundcpy_type = None
-for dev in devices:
-    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-    for (adtype, desc, value) in dev.getScanData():
-        print("  %s = %s" % (desc, value))
-        if desc == "Complete Local Name" and "CIRCUITPY" in value:
-            foundcpy = dev.addr
-            foundcpy_type = dev.addrType
-
-print("Found py?")
-print(foundcpy)
-
-if foundcpy:
-    dev = Peripheral(foundcpy, addrType=foundcpy_type)
+def connect(addr, addrType):
+    dev = Peripheral(addr, addrType)
     print("Connected!")
     # print(dev.getServices())
     css = dev.getCharacteristics()
@@ -55,7 +26,27 @@ if foundcpy:
             print(notify_cs.read())
             time.sleep(0.05)
 
-init(__file__)
+class ScanDelegate(DefaultDelegate):
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+
+    def handleDiscovery(self, dev, isNewDev, isNewData):
+        if isNewDev:
+            print("Discovered device", dev.addr)
+            desc = dev.getDescription(9)
+            print(desc)
+            value = dev.getValueText(9)
+            print(value)
+            if desc == "Complete Local Name" and value is not None and "CIRCUITPY" in value:
+                print("FOUND CIRCUIT PY!!")
+                connect(dev.addr, dev.addrType)
+        elif isNewData:
+            print("Received new data from", dev.addr)
+
+scanner = Scanner().withDelegate(ScanDelegate())
+devices = scanner.scan(2.0)
+
+# init(__file__)
 
 # Loops:
 # 1. Subscription listen loop
