@@ -1,8 +1,9 @@
 # from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
+import threading
 import time
 
-def connect(addr, addrType):
+def thread_connect(addr, addrType):
     dev = Peripheral(addr, addrType)
     print("Connected!")
     # print(dev.getServices())
@@ -39,7 +40,8 @@ class ScanDelegate(DefaultDelegate):
             print(value)
             if desc == "Complete Local Name" and value is not None and "CIRCUITPY" in value:
                 print("FOUND CIRCUIT PY!!")
-                connect(dev.addr, dev.addrType)
+                t = threading.Thread(target=thread_connect, args=(dev.addr, dev.addrType,))
+                t.start()
         elif isNewData:
             print("Received new data from", dev.addr)
 
