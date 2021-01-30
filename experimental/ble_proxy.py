@@ -1,3 +1,4 @@
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
 import time
 
@@ -17,7 +18,7 @@ devices = scanner.scan(2.0)
 foundcpy = None
 foundcpy_type = None
 for dev in devices:
-    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi$
+    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
     for (adtype, desc, value) in dev.getScanData():
         print("  %s = %s" % (desc, value))
         if desc == "Complete Local Name" and "CIRCUITPY" in value:
@@ -50,3 +51,10 @@ if foundcpy:
         while True:
             print(notify_cs.read())
             time.sleep(0.05)
+
+init(__file__)
+
+# Loops:
+# 1. Subscription listen loop
+# 2. Poll BLE devices
+# 4. Listen for messages from connected BLE devices
