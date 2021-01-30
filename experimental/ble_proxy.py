@@ -3,6 +3,12 @@ from bluepy.btle import Scanner, DefaultDelegate, Peripheral
 import threading
 import time
 
+def thread_listen(notify_cs):
+    print("listening to read...")
+    while True:
+        print(notify_cs.read())
+        time.sleep(0.05)
+
 def thread_connect(addr, addrType):
     print("attempting connect to {}".format(addr))
     dev = Peripheral(addr, addrType)
@@ -23,10 +29,13 @@ def thread_connect(addr, addrType):
         print("writing something so connection stays alive")
         write_cs.write(b"hey")
     if notify_cs:
-        print("listening to read...")
-        while True:
-            print(notify_cs.read())
-            time.sleep(0.05)
+        t = threading.Thread(target=thread_listen, args=(notify_cs,))
+        t.setDaemon(True)
+        t.start()
+        # print("listening to read...")
+        # while True:
+        #     print(notify_cs.read())
+        #     time.sleep(0.05)
 
 threads = []
 
@@ -41,7 +50,7 @@ class ScanDelegate(DefaultDelegate):
             print(desc)
             value = dev.getValueText(9)
             print(value)
-            if desc == "Complete Local Name" and value is not None and "CIRCUITPY" in value:
+            if (desc == "Complete Local Name" and value is not None and "CIRCUITPY" in value) or dev.addr = "e5:59:80:c5:bc:4d":
                 print("FOUND CIRCUIT PY!!")
                 t = threading.Thread(target=thread_connect, args=(dev.addr, dev.addrType,))
                 t.setDaemon(True)
@@ -54,6 +63,9 @@ devices = scanner.scan(2.0)
 
 for t in threads:
     t.start()
+    t.join()
+
+time.sleep(10)
 
 # init(__file__)
 
