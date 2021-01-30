@@ -4,6 +4,7 @@ import threading
 import time
 
 def thread_connect(addr, addrType):
+    print("attempting connect to {}".format(addr))
     dev = Peripheral(addr, addrType)
     print("Connected!")
     # print(dev.getServices())
@@ -27,6 +28,8 @@ def thread_connect(addr, addrType):
             print(notify_cs.read())
             time.sleep(0.05)
 
+threads = []
+
 class ScanDelegate(DefaultDelegate):
     def __init__(self):
         DefaultDelegate.__init__(self)
@@ -41,12 +44,16 @@ class ScanDelegate(DefaultDelegate):
             if desc == "Complete Local Name" and value is not None and "CIRCUITPY" in value:
                 print("FOUND CIRCUIT PY!!")
                 t = threading.Thread(target=thread_connect, args=(dev.addr, dev.addrType,))
-                t.start()
+                t.setDaemon(True)
+                threads.append(t)
         elif isNewData:
             print("Received new data from", dev.addr)
 
 scanner = Scanner().withDelegate(ScanDelegate())
 devices = scanner.scan(2.0)
+
+for t in threads:
+    t.start()
 
 # init(__file__)
 
