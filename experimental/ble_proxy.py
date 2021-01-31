@@ -1,22 +1,27 @@
-# from helper import init, claim, retract, prehook, subscription, subscribe, batch, get_my_id_str
+# from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
-import threading
 import time
+import threading, queue
 
-class BLEDevice:
-    def __init__(self):
-        self.device_name = "TODO"
+ble_activity_lock = threading.Lock()
+connected_ble_devices = {}
 
-    def make_ble_sub_callback(ble_device, sub_id):
-        def callback(results):
-            print(results)
-            # Forward results to BLE device
-            write_cs.write(results)
-        return callback
-
-    def thread_listen(notify_cs, write_cs):
+class BLEDevice(Thread):
+    def __init__(self, room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock):
+        Thread.__init__(self)
+        print("Created BLE Device: {}".format(addr))
+        self.room_batch_queue = room_batch_queue
+        self.room_sub_update_queue = room_sub_update_queue
+        self.addr = addr
+        self.addrType = addrType
+        self.ble_activity_lock = ble_activity_lock
+      
+    def ble_listen_loop(self, write_cs, notify_cs):
+        print("writing something so connection stays alive")
+        write_cs.write(b"hey")
         print("listening to read...")
         while True:
+            # TODO: Listen for self.room_sub_update_queue updates
             msg = notify_cs.read()
             if msg:
                 print(msg)
@@ -26,35 +31,23 @@ class BLEDevice:
                     # SUB:0568:$ $ value is $x::$ $ $x is open
                     sub_id = split_msg[1]
                     query_strings = [x for x in split_msg[2:] if x != ""]
-                    # Callback should be related to 1. BLE Device 2. BLE SUB ?ID
-                    callback = make_ble_sub_callback("TODO BLE DEVICE ID", sub_id)
-                    subscribe(query_strings, callback)
+                    self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
                 elif msg_type == "CLEANUP":
-                    batch({"type": "retract", "fact": [
-                        ["id", MY_ID_STR],
-                        ["variable", ""],
-                        ["text", self.device_name],
-                        ["postfix", ""]
-                    ]})
+                    self.room_batch_queue.put(("CLEANUP",))
                 elif msg_type == "CLAIM":
                     claim_fact_str = split_msg[1]
-                    batch({"type": "claim", "fact": [
-                        ["id", MY_ID_STR],
-                        ["id", "0"],
-                        ["text", self.device_name],
-                        ["text", "says"],
-                        ["text", claim_fact_str],
-                    ]})
+                    self.room_batch_queue.put(("CLAIM", claim_fact_str))
+                else:
+                    print("COULD NOT PARSE MESSAGE ({}): {}".format(self.addr, msg))
             time.sleep(0.05)
 
-    def thread_connect(addr, addrType):
+    def run(self):
         print("attempting connect to {}".format(addr))
+        self.ble_activity_lock.acquire()
         dev = Peripheral(addr, addrType)
+        self.ble_activity_lock.release()
         print("Connected!")
-        # print(dev.getServices())
         css = dev.getCharacteristics()
-        print(css)
-        # print(dev.getDescriptors())
         notify_cs = None
         write_cs = None
         for cs in css:
@@ -63,52 +56,68 @@ class BLEDevice:
                 notify_cs = cs
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
-        if write_cs:
-            print("writing something so connection stays alive")
-            write_cs.write(b"hey")
-        if notify_cs:
-            t = threading.Thread(target=thread_listen, args=(notify_cs, write_cs,))
-            t.setDaemon(True)
-            t.start()
+        if write_cs and notify_cs:
+            self.ble_listen_loop(write_cs, notify_cs)
+        else:
+            print("Device {} did not have a write and notify BLE characteristic.".format(self.addr))
 
-threads = []
 
-class ScanDelegate(DefaultDelegate):
-    def __init__(self):
-        DefaultDelegate.__init__(self)
+def create_ble(addr, addrType):
+    global connected_ble_devices, ble_activity_lock
+    room_batch_queue = queue.Queue()
+    room_sub_update_queue = queue.Queue()
+    new_ble_device = BLEDevice(room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock)
+    new_ble_device.setDaemon(True)  # TODO: Is a daemon thread important?
+    connected_ble_devices[addrType] = (room_batch_queue, room_sub_update_queue, new_ble_device)
+    new_ble_device.start()
 
-    def handleDiscovery(self, dev, isNewDev, isNewData):
-        if isNewDev:
-            print("Discovered device", dev.addr)
-            desc = dev.getDescription(9)
-            print(desc)
-            value = dev.getValueText(9)
-            print(value)
-            if (desc == "Complete Local Name" and value is not None and "CIRCUITPY" in value) or dev.addr == "e5:59:80:c5:bc:4d":
-                print("FOUND CIRCUIT PY!!")
-                t = threading.Thread(target=thread_connect, args=(dev.addr, dev.addrType,))
-                t.setDaemon(True)
-                threads.append(t)
-        elif isNewData:
-            print("Received new data from", dev.addr)
-
-scanner = Scanner().withDelegate(ScanDelegate())
+# 1. Discover devices
+scanner = Scanner()
 devices = scanner.scan(2.0)
 
-for t in threads:
-    t.start()
-    t.join()
+# 2. Connect to them
+for dev in devices:
+    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
+    for (adtype, desc, value) in dev.getScanData():
+        print("  %s = %s" % (desc, value))
+        if desc == "Complete Local Name" and "CIRCUITPY" in value:
+            create_ble(dev.addr, dev.addrType)
+        if dev.addr == "e5:59:80:c5:bc:4d":
+            create_ble(dev.addr, dev.addrType)
 
-time.sleep(10)
+# 3. Init connection to room
+# init(__file__, skipListening=True)
 
-init(__file__, skipListening=True)
-
+# 4. Listen for updates from room and BLE devices
 while True:
-    listen(blocked=False)
-    time.sleep(0.01)
-    # Once in a while, rescan for BLE devices?
-
-# Loops:
-# 1. Subscription listen loop
-# 2. Poll BLE devices
-# 4. Listen for messages from connected BLE devices
+    # listen(blocking=False)
+    for addr, data in connected_ble_devices.items():
+        room_batch_queue, room_sub_update_queue, device = data
+        if not device.is_alive():
+            print("Device died: {}".format(addr))
+            del connected_ble_devices[addr]
+        else:
+            # process things in from the room_batch_queue
+            try:
+                batch_update_from_ble_device = room_batch_queue.get(block=False, timeout=None)
+                update_type = batch_update_from_ble_device[0]
+                if update_type == "SUBSCRIBE":
+                    print("TODO Create subscribe: {} {}".format(addr, batch_update_from_ble_device[2]))
+                    # subscribe(batch_update_from_ble_device[2], TODO_CALLBACK)
+                else if update_type == "CLEANUP":
+                    print("TODO cleanup: {}".format(addr))
+                    # batch({"type": "retract", "fact": [
+                    #     ["id", get_my_id_str()],
+                    #     ["variable", ""],
+                    #     ["text", device.addr],
+                    #     ["postfix", ""]
+                    # ]})
+                else if update_type == "CLAIM":
+                    print("TODO claim: {} {}".format(addr, batch_update_from_ble_device))
+                    # batch({"type": "claim", "fact": [
+                    #     ["id", get_my_id_str()],
+                    #     ["id", device.addr],
+                    #     ["text", batch_update_from_ble_device],
+                    # ]})
+            except queue.Empty:
+                pass
