@@ -26,16 +26,16 @@ class BLEDevice(Thread):
             msg = notify_cs.read()
             if msg:
                 print(msg)
-                split_msg = msg.split(":")
+                split_msg = msg.split(b":")
                 msg_type = split_msg[0]
-                if msg_type == "SUB":
+                if msg_type == b"SUB":
                     # SUB:0568:$ $ value is $x::$ $ $x is open
                     sub_id = split_msg[1]
                     query_strings = [x for x in split_msg[2:] if x != ""]
                     self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
-                elif msg_type == "CLEANUP":
+                elif msg_type == b"CLEANUP":
                     self.room_batch_queue.put(("CLEANUP",))
-                elif msg_type == "CLAIM":
+                elif msg_type == b"CLAIM":
                     claim_fact_str = split_msg[1]
                     self.room_batch_queue.put(("CLAIM", claim_fact_str))
                 else:
@@ -69,7 +69,7 @@ def create_ble(addr, addrType):
     room_sub_update_queue = queue.Queue()
     new_ble_device = BLEDevice(room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock)
     new_ble_device.setDaemon(True)  # TODO: Is a daemon thread important?
-    connected_ble_devices[addrType] = (room_batch_queue, room_sub_update_queue, new_ble_device)
+    connected_ble_devices[addr] = (room_batch_queue, room_sub_update_queue, new_ble_device)
     new_ble_device.start()
 
 # 1. Discover devices
