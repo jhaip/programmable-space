@@ -45,10 +45,10 @@ class Room:
     
     def when(self, query_strings, callback):
         x = random.randint(0, 9999)
-        subscriber_id = '0'*(4-len(x)) + x  # like 0568
+        subscription_id = '0'*(4-len(x)) + x  # like 0568
         self.subscription_ids[subscription_id] = callback
         # SUB:0568:$ $ value is $x::$ $ $x is open
-        self.uart_server.write('SUB:{}:{}\n'.format(subscriber_id, '::'.join(query_strings)))
+        self.uart_server.write('SUB:{}:{}\n'.format(subscription_id, '::'.join(query_strings)))
     
     def parse_results(self, val):
         result_vals = val[2:-2].split("},{")
