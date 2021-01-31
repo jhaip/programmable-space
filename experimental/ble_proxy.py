@@ -2,6 +2,7 @@
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
 import time
 import threading, queue
+from threading import Thread
 
 ble_activity_lock = threading.Lock()
 connected_ble_devices = {}
@@ -42,9 +43,9 @@ class BLEDevice(Thread):
             time.sleep(0.05)
 
     def run(self):
-        print("attempting connect to {}".format(addr))
+        print("attempting connect to {}".format(self.addr))
         self.ble_activity_lock.acquire()
-        dev = Peripheral(addr, addrType)
+        dev = Peripheral(self.addr, self.addrType)
         self.ble_activity_lock.release()
         print("Connected!")
         css = dev.getCharacteristics()
@@ -91,7 +92,7 @@ for dev in devices:
 # 4. Listen for updates from room and BLE devices
 while True:
     # listen(blocking=False)
-    for addr, data in connected_ble_devices.items():
+    for addr, data in list(connected_ble_devices.items()):
         room_batch_queue, room_sub_update_queue, device = data
         if not device.is_alive():
             print("Device died: {}".format(addr))
@@ -104,7 +105,7 @@ while True:
                 if update_type == "SUBSCRIBE":
                     print("TODO Create subscribe: {} {}".format(addr, batch_update_from_ble_device[2]))
                     # subscribe(batch_update_from_ble_device[2], TODO_CALLBACK)
-                else if update_type == "CLEANUP":
+                elif update_type == "CLEANUP":
                     print("TODO cleanup: {}".format(addr))
                     # batch({"type": "retract", "fact": [
                     #     ["id", get_my_id_str()],
@@ -112,7 +113,7 @@ while True:
                     #     ["text", device.addr],
                     #     ["postfix", ""]
                     # ]})
-                else if update_type == "CLAIM":
+                elif update_type == "CLAIM":
                     print("TODO claim: {} {}".format(addr, batch_update_from_ble_device))
                     # batch({"type": "claim", "fact": [
                     #     ["id", get_my_id_str()],
