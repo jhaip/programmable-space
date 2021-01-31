@@ -47,7 +47,7 @@ class BLEDevice(Thread):
         self.ble_activity_lock.acquire()
         dev = Peripheral(self.addr, self.addrType)
         self.ble_activity_lock.release()
-        print("Connected!")
+        print("Connected! {}".format(self.addr))
         css = dev.getCharacteristics()
         notify_cs = None
         write_cs = None
@@ -81,10 +81,11 @@ for dev in devices:
     print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
     for (adtype, desc, value) in dev.getScanData():
         print("  %s = %s" % (desc, value))
-        if desc == "Complete Local Name" and "CIRCUITPY" in value:
-            create_ble(dev.addr, dev.addrType)
-        if dev.addr == "e5:59:80:c5:bc:4d":
-            create_ble(dev.addr, dev.addrType)
+        if dev.addr not in connected_ble_devices:
+            if desc == "Complete Local Name" and "CIRCUITPY" in value:
+                create_ble(dev.addr, dev.addrType)
+            if dev.addr == "e5:59:80:c5:bc:4d":
+                create_ble(dev.addr, dev.addrType)
 
 # 3. Init connection to room
 # init(__file__, skipListening=True)
