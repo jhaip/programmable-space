@@ -75,6 +75,7 @@ def create_ble(addr, addrType):
 
 def make_ble_callback(query_strings, addr, sub_id, room_sub_update_queue):
     global callback_map
+    print("BLE CALLBACK ADDED: {} {} {}".format(addr, sub_id, query_strings))
     if query_strings not in callback_map:
         callback_map[query_strings] = []
     callback_map[query_strings].append((addr, sub_id, room_sub_update_queue))
@@ -86,6 +87,22 @@ def make_ble_callback(query_strings, addr, sub_id, room_sub_update_queue):
             room_sub_update_queue.put((sub_id, results))
 
     # subscribe(query_strings, callback)
+
+def room_cleanup(addr):
+    print("TODO cleanup: {}".format(addr))
+    # batch({"type": "retract", "fact": [
+    #     ["id", get_my_id_str()],
+    #     ["id", addr],
+    #     ["postfix", ""]
+    # ]})
+
+def room_claim(addr, batch_update_from_ble_device):
+    print("TODO claim: {} {}".format(addr, batch_update_from_ble_device))
+    # batch({"type": "claim", "fact": [
+    #     ["id", get_my_id_str()],
+    #     ["id", device.addr],
+    #     ["text", batch_update_from_ble_device],
+    # ]})
 
 
 # 1. Discover devices
@@ -115,29 +132,16 @@ while True:
             print("Device died: {}".format(addr))
             del connected_ble_devices[addr]
         else:
-            # process things in from the room_batch_queue
             try:
                 batch_update_from_ble_device = room_batch_queue.get(block=False, timeout=None)
                 update_type = batch_update_from_ble_device[0]
                 if update_type == "SUBSCRIBE":
                     sub_id = batch_update_from_ble_device[1]
                     sub_query_strings = batch_update_from_ble_device[2]
-                    print("TODO Create subscribe: {} {} {}".format(addr, sub_id, sub_query_strings))
-                    # make_ble_callback(sub_query_strings, addr, sub_id, room_sub_update_queue)
+                    make_ble_callback(sub_query_strings, addr, sub_id, room_sub_update_queue)
                 elif update_type == "CLEANUP":
-                    print("TODO cleanup: {}".format(addr))
-                    # batch({"type": "retract", "fact": [
-                    #     ["id", get_my_id_str()],
-                    #     ["variable", ""],
-                    #     ["text", device.addr],
-                    #     ["postfix", ""]
-                    # ]})
+                    room_cleanup(addr)
                 elif update_type == "CLAIM":
-                    print("TODO claim: {} {}".format(addr, batch_update_from_ble_device))
-                    # batch({"type": "claim", "fact": [
-                    #     ["id", get_my_id_str()],
-                    #     ["id", device.addr],
-                    #     ["text", batch_update_from_ble_device],
-                    # ]})
+                    room_claim(addr, batch_update_from_ble_device)
             except queue.Empty:
                 pass
