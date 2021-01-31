@@ -6,6 +6,7 @@ from threading import Thread
 
 ble_activity_lock = threading.Lock()
 connected_ble_devices = {}
+callback_map = {}
 
 class BLEDevice(Thread):
     def __init__(self, room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock):
@@ -72,6 +73,21 @@ def create_ble(addr, addrType):
     connected_ble_devices[addr] = (room_batch_queue, room_sub_update_queue, new_ble_device)
     new_ble_device.start()
 
+def make_ble_callback(query_strings, addr, sub_id, room_sub_update_queue):
+    global callback_map
+    if query_strings not in callback_map:
+        callback_map[query_strings] = []
+    callback_map[query_strings].append((addr, sub_id, room_sub_update_queue))
+
+    def callback(results):
+        global callback_map
+        # Given callback's query_string:
+        for addr, sub_id, room_sub_update_queue in callback_map[query_strings]:
+            room_sub_update_queue.put((sub_id, results))
+
+    # subscribe(query_strings, callback)
+
+
 # 1. Discover devices
 scanner = Scanner()
 devices = scanner.scan(2.0)
@@ -104,8 +120,10 @@ while True:
                 batch_update_from_ble_device = room_batch_queue.get(block=False, timeout=None)
                 update_type = batch_update_from_ble_device[0]
                 if update_type == "SUBSCRIBE":
-                    print("TODO Create subscribe: {} {}".format(addr, batch_update_from_ble_device[2]))
-                    # subscribe(batch_update_from_ble_device[2], TODO_CALLBACK)
+                    sub_id = batch_update_from_ble_device[1]
+                    sub_query_strings = batch_update_from_ble_device[2]
+                    print("TODO Create subscribe: {} {} {}".format(addr, sub_id, sub_query_strings))
+                    # make_ble_callback(sub_query_strings, addr, sub_id, room_sub_update_queue)
                 elif update_type == "CLEANUP":
                     print("TODO cleanup: {}".format(addr))
                     # batch({"type": "retract", "fact": [
