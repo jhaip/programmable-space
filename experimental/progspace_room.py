@@ -64,7 +64,7 @@ class Room:
 
     def listen_and_update_subscriptions(self):
         self.debug("sub update")
-        raw_msg = self.uart.readline()
+        raw_msg = self.uart_server.readline()
         if not raw_msg:
             self.debug("no message received, skipping")
             return
