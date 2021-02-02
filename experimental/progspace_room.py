@@ -25,15 +25,15 @@ from adafruit_ble.services.nordic import UARTService
 #     time.sleep(0.1)
 
 class Room:
-    def __init__(self, debug=False):
-        self.debug = debug
+    def __init__(self, use_debug=False):
+        self.use_debug = use_debug
         self.subscription_ids = []
         self.ble = BLERadio()
         self.uart_server = UARTService()
         self.advertisement = ProvideServicesAdvertisement(self.uart_server)
     
     def debug(self, msg):
-        if self.debug:
+        if self.use_debug:
             print(msg)
 
     def cleanup(self, msg):
