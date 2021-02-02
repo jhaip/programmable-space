@@ -31,24 +31,31 @@ class Room:
         self.ble = BLERadio()
         self.uart_server = UARTService()
         self.advertisement = ProvideServicesAdvertisement(self.uart_server)
+        self.chunk_size = 20  # adafruit_ble can only write in 20 byte chunks
     
     def debug(self, msg):
         if self.use_debug:
             print(msg)
 
-    def cleanup(self, msg):
+    def cleanup(self):
         self.uart_server.write('CLEANUP:\n'.encode("utf-8"))
 
     def claim(self, claim_str):
         # Cleanup claim = cleanup all previous claims
-        self.uart_server.write('CLAIM:{}\n'.format(claim_str).encode("utf-8"))
+        x = 'CLAIM:{}\n'.format(claim_str).encode("utf-8")
+        chunks = [x[i:i+self.chunk_size] for i in range(0, len(x), self.chunk_size)]
+        for chunk in chunks:
+            self.uart_server.write(chunk)
     
     def when(self, query_strings, callback):
         x = random.randint(0, 9999)
         subscription_id = '0'*(4-len(x)) + x  # like 0568
         self.subscription_ids[subscription_id] = callback
         # SUB:0568:$ $ value is $x::$ $ $x is open
-        self.uart_server.write('SUB:{}:{}\n'.format(subscription_id, '::'.join(query_strings)).encode("utf-8"))
+        x = 'SUB:{}:{}\n'.format(subscription_id, '::'.join(query_strings)).encode("utf-8")
+        chunks = [x[i:i+self.chunk_size] for i in range(0, len(x), self.chunk_size)]
+        for chunk in chunks:
+            self.uart_server.write(chunk)
     
     def parse_results(self, val):
         result_vals = val[2:-2].split("},{")
