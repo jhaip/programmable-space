@@ -43,9 +43,10 @@ class Room:
     def claim(self, claim_str):
         # Cleanup claim = cleanup all previous claims
         x = 'CLAIM:{}\n'.format(claim_str).encode("utf-8")
-        chunks = [x[i:i+self.chunk_size] for i in range(0, len(x), self.chunk_size)]
-        for chunk in chunks:
-            self.uart_server.write(chunk)
+        self.uart_server.write(chunk)
+        # chunks = [x[i:i+self.chunk_size] for i in range(0, len(x), self.chunk_size)]
+        # for chunk in chunks:
+        #     self.uart_server.write(chunk)
     
     def when(self, query_strings, callback):
         x = random.randint(0, 9999)
