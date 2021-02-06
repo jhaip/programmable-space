@@ -36,6 +36,7 @@ class BLEDevice(Thread):
         write_cs.write(b"hey")
         print("listening to read...")
         while True:
+            self.conn.waitForNotifications(1.0)
             # TODO: Listen for self.room_sub_update_queue updates
             # msg = notify_cs.read()
             # if msg:
@@ -59,7 +60,7 @@ class BLEDevice(Thread):
     def run(self):
         print("attempting connect to {}".format(self.addr))
         self.ble_activity_lock.acquire()
-        dev = Peripheral(self.addr, self.addrType)
+        self.conn = Peripheral(self.addr, self.addrType)
         self.ble_activity_lock.release()
         print("Connected! {}".format(self.addr))
         css = dev.getCharacteristics()
@@ -72,7 +73,7 @@ class BLEDevice(Thread):
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
         if write_cs and notify_cs:
-            dev.setDelegate( MyDelegate() )
+            self.conn.setDelegate( MyDelegate() )
             self.ble_listen_loop(write_cs, notify_cs)
         else:
             print("Device {} did not have a write and notify BLE characteristic.".format(self.addr))
