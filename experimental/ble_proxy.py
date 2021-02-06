@@ -8,6 +8,19 @@ ble_activity_lock = threading.Lock()
 connected_ble_devices = {}
 callback_map = {}
 
+class MyDelegate(DefaultDelegate):
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+
+    def handleNotification(self, cHandle, data):
+        #     if (cHandle == temperature_handle):
+        #         # temp = binascii.b2a_hex(data)
+        #         temp = ord(data)
+        #         # temp2 = int(data.encode('hex'), 8)
+        #         print("A notification was received: %s ", temp)
+        #     else:
+        print("A notification was received: {} ".format(data))
+
 class BLEDevice(Thread):
     def __init__(self, room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock):
         Thread.__init__(self)
@@ -24,23 +37,23 @@ class BLEDevice(Thread):
         print("listening to read...")
         while True:
             # TODO: Listen for self.room_sub_update_queue updates
-            msg = notify_cs.read()
-            if msg:
-                print(msg)
-                split_msg = msg.split(b":")
-                msg_type = split_msg[0]
-                if msg_type == b"SUB":
-                    # SUB:0568:$ $ value is $x::$ $ $x is open
-                    sub_id = split_msg[1]
-                    query_strings = [x for x in split_msg[2:] if x != ""]
-                    self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
-                elif msg_type == b"CLEANUP":
-                    self.room_batch_queue.put(("CLEANUP",))
-                elif msg_type == b"CLAIM":
-                    claim_fact_str = split_msg[1]
-                    self.room_batch_queue.put(("CLAIM", claim_fact_str))
-                else:
-                    print("COULD NOT PARSE MESSAGE ({}): {}".format(self.addr, msg))
+            # msg = notify_cs.read()
+            # if msg:
+            #     print(msg)
+            #     split_msg = msg.split(b":")
+            #     msg_type = split_msg[0]
+            #     if msg_type == b"SUB":
+            #         # SUB:0568:$ $ value is $x::$ $ $x is open
+            #         sub_id = split_msg[1]
+            #         query_strings = [x for x in split_msg[2:] if x != ""]
+            #         self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
+            #     elif msg_type == b"CLEANUP":
+            #         self.room_batch_queue.put(("CLEANUP",))
+            #     elif msg_type == b"CLAIM":
+            #         claim_fact_str = split_msg[1]
+            #         self.room_batch_queue.put(("CLAIM", claim_fact_str))
+            #     else:
+            #         print("COULD NOT PARSE MESSAGE ({}): {}".format(self.addr, msg))
             time.sleep(0.05)
 
     def run(self):
@@ -59,6 +72,7 @@ class BLEDevice(Thread):
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
         if write_cs and notify_cs:
+            dev.setDelegate( MyDelegate() )
             self.ble_listen_loop(write_cs, notify_cs)
         else:
             print("Device {} did not have a write and notify BLE characteristic.".format(self.addr))
