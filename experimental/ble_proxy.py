@@ -25,18 +25,18 @@ class MyDelegate(DefaultDelegate):
         if data:
             self.msg_cache += data
             if len(self.msg_cache) > 1 and self.msg_cache.decode("utf-8")[-1] == "\n":
-                msg = self.msg_cache.decode("utf-8").trim()
+                msg = self.msg_cache.decode("utf-8").strip()
                 print(msg)
-                split_msg = msg.split(b":")
+                split_msg = msg.split(":")
                 msg_type = split_msg[0]
-                if msg_type == b"SUB":
+                if msg_type == "SUB":
                     # SUB:0568:$ $ value is $x::$ $ $x is open
                     sub_id = split_msg[1]
                     query_strings = [x for x in split_msg[2:] if x != ""]
                     self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
-                elif msg_type == b"CLEANUP":
+                elif msg_type == "CLEANUP":
                     self.room_batch_queue.put(("CLEANUP",))
-                elif msg_type == b"CLAIM":
+                elif msg_type == "CLAIM":
                     claim_fact_str = split_msg[1]
                     self.room_batch_queue.put(("CLAIM", claim_fact_str))
                 else:
