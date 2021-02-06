@@ -36,7 +36,9 @@ class BLEDevice(Thread):
         write_cs.write(b"hey")
         print("listening to read...")
         while True:
-            self.conn.waitForNotifications(1.0)
+            if self.conn.waitForNotifications(1.0):
+                continue
+            print("waiting...")
             # TODO: Listen for self.room_sub_update_queue updates
             # msg = notify_cs.read()
             # if msg:
@@ -68,12 +70,18 @@ class BLEDevice(Thread):
         write_cs = None
         for cs in css:
             print(cs.uuid, cs.propertiesToString())
+            # per.getCharacteristics(uuid='6e400003-b5a3-f393-e0a9-e50e24dcca9e')[0]
             if cs.propertiesToString() == "NOTIFY ":
                 notify_cs = cs
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
         if write_cs and notify_cs:
             self.conn.setDelegate( MyDelegate() )
+
+            # enable notification
+            setup_data = b"\x01\x00"
+            notify_handle = notify_cs.getHandle() + 1
+            self.conn.writeCharacteristic(notify_handle, setup_data, withResponse=True)
             self.ble_listen_loop(write_cs, notify_cs)
         else:
             print("Device {} did not have a write and notify BLE characteristic.".format(self.addr))
