@@ -9,8 +9,10 @@ connected_ble_devices = {}
 callback_map = {}
 
 class MyDelegate(DefaultDelegate):
-    def __init__(self):
+    def __init__(self, room_batch_queue):
         DefaultDelegate.__init__(self)
+        self.msg_cache = b""
+        self.room_batch_queue = room_batch_queue
 
     def handleNotification(self, cHandle, data):
         #     if (cHandle == temperature_handle):
@@ -20,6 +22,25 @@ class MyDelegate(DefaultDelegate):
         #         print("A notification was received: %s ", temp)
         #     else:
         print("A notification was received: {} ".format(data))
+        if data:
+            self.msg_cache += data
+            if len(self.msg_cache) > 1 and self.msg_cache.decode("utf-8")[-1] == "\n":
+                msg = self.msg_cache.decode("utf-8").trim()
+                print(msg)
+                split_msg = msg.split(b":")
+                msg_type = split_msg[0]
+                if msg_type == b"SUB":
+                    # SUB:0568:$ $ value is $x::$ $ $x is open
+                    sub_id = split_msg[1]
+                    query_strings = [x for x in split_msg[2:] if x != ""]
+                    self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
+                elif msg_type == b"CLEANUP":
+                    self.room_batch_queue.put(("CLEANUP",))
+                elif msg_type == b"CLAIM":
+                    claim_fact_str = split_msg[1]
+                    self.room_batch_queue.put(("CLAIM", claim_fact_str))
+                else:
+                    print("COULD NOT PARSE MESSAGE ({}): {}".format(self.addr, msg))
 
 class BLEDevice(Thread):
     def __init__(self, room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock):
@@ -76,7 +97,7 @@ class BLEDevice(Thread):
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
         if write_cs and notify_cs:
-            self.conn.setDelegate( MyDelegate() )
+            self.conn.setDelegate(MyDelegate(self.room_batch_queue))
 
             # enable notification
             setup_data = b"\x01\x00"
