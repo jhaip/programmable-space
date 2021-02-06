@@ -9,9 +9,10 @@ connected_ble_devices = {}
 callback_map = {}
 
 class MyDelegate(DefaultDelegate):
-    def __init__(self, room_batch_queue):
+    def __init__(self, addr, room_batch_queue):
         DefaultDelegate.__init__(self)
         self.msg_cache = b""
+        self.addr = addr
         self.room_batch_queue = room_batch_queue
 
     def handleNotification(self, cHandle, data):
@@ -61,23 +62,6 @@ class BLEDevice(Thread):
                 continue
             print("waiting...")
             # TODO: Listen for self.room_sub_update_queue updates
-            # msg = notify_cs.read()
-            # if msg:
-            #     print(msg)
-            #     split_msg = msg.split(b":")
-            #     msg_type = split_msg[0]
-            #     if msg_type == b"SUB":
-            #         # SUB:0568:$ $ value is $x::$ $ $x is open
-            #         sub_id = split_msg[1]
-            #         query_strings = [x for x in split_msg[2:] if x != ""]
-            #         self.room_batch_queue.put(("SUBSCRIBE", sub_id, query_strings))
-            #     elif msg_type == b"CLEANUP":
-            #         self.room_batch_queue.put(("CLEANUP",))
-            #     elif msg_type == b"CLAIM":
-            #         claim_fact_str = split_msg[1]
-            #         self.room_batch_queue.put(("CLAIM", claim_fact_str))
-            #     else:
-            #         print("COULD NOT PARSE MESSAGE ({}): {}".format(self.addr, msg))
             time.sleep(0.05)
 
     def run(self):
@@ -97,7 +81,7 @@ class BLEDevice(Thread):
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
         if write_cs and notify_cs:
-            self.conn.setDelegate(MyDelegate(self.room_batch_queue))
+            self.conn.setDelegate(MyDelegate(self.addr, elf.room_batch_queue))
 
             # enable notification
             setup_data = b"\x01\x00"
