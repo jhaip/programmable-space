@@ -63,7 +63,7 @@ class BLEDevice(Thread):
         self.conn = Peripheral(self.addr, self.addrType)
         self.ble_activity_lock.release()
         print("Connected! {}".format(self.addr))
-        css = dev.getCharacteristics()
+        css = self.conn.getCharacteristics()
         notify_cs = None
         write_cs = None
         for cs in css:
