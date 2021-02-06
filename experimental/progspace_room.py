@@ -42,11 +42,7 @@ class Room:
 
     def claim(self, claim_str):
         # Cleanup claim = cleanup all previous claims
-        x = 'CLAIM:{}\n'.format(claim_str).encode("utf-8")
-        self.uart_server.write(chunk)
-        # chunks = [x[i:i+self.chunk_size] for i in range(0, len(x), self.chunk_size)]
-        # for chunk in chunks:
-        #     self.uart_server.write(chunk)
+        self.uart_server.write('CLAIM:{}\n'.format(claim_str).encode("utf-8"))
     
     def when(self, query_strings, callback):
         x = random.randint(0, 9999)
@@ -54,9 +50,7 @@ class Room:
         self.subscription_ids[subscription_id] = callback
         # SUB:0568:$ $ value is $x::$ $ $x is open
         x = 'SUB:{}:{}\n'.format(subscription_id, '::'.join(query_strings)).encode("utf-8")
-        chunks = [x[i:i+self.chunk_size] for i in range(0, len(x), self.chunk_size)]
-        for chunk in chunks:
-            self.uart_server.write(chunk)
+        self.uart_server.write(x)
     
     def parse_results(self, val):
         result_vals = val[2:-2].split("},{")
