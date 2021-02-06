@@ -27,6 +27,7 @@ class MyDelegate(DefaultDelegate):
             self.msg_cache += data
             if len(self.msg_cache) > 1 and self.msg_cache.decode("utf-8")[-1] == "\n":
                 msg = self.msg_cache.decode("utf-8").strip()
+                self.msg_cache = b""
                 print(msg)
                 split_msg = msg.split(":")
                 msg_type = split_msg[0]
@@ -81,7 +82,7 @@ class BLEDevice(Thread):
             if "WRITE" in cs.propertiesToString():
                 write_cs = cs
         if write_cs and notify_cs:
-            self.conn.setDelegate(MyDelegate(self.addr, elf.room_batch_queue))
+            self.conn.setDelegate(MyDelegate(self.addr, self.room_batch_queue))
 
             # enable notification
             setup_data = b"\x01\x00"
@@ -145,8 +146,8 @@ for dev in devices:
         if dev.addr not in connected_ble_devices:
             if desc == "Complete Local Name" and "CIRCUITPY" in value:
                 create_ble(dev.addr, dev.addrType)
-            if dev.addr == "e5:59:80:c5:bc:4d":
-                create_ble(dev.addr, dev.addrType)
+            # if dev.addr == "e5:59:80:c5:bc:4d":
+            #     create_ble(dev.addr, dev.addrType)
 
 # 3. Init connection to room
 # init(__file__, skipListening=True)
