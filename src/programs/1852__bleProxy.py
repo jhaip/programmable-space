@@ -1,8 +1,8 @@
-from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str, listen, subscribe
+from helper import init, subscription, batch, get_my_id_str, listen, subscribe
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
+from threading import Thread
 import time
 import threading, queue
-from threading import Thread
 
 ble_activity_lock = threading.Lock()
 connected_ble_devices = {}
@@ -128,7 +128,7 @@ def room_claim(addr, batch_update_from_ble_device):
     batch([{"type": "claim", "fact": [
         ["id", get_my_id_str()],
         ["id", device.addr],
-        ["text", batch_update_from_ble_device],
+        ["text", str(batch_update_from_ble_device)],
     ]}])
 
 
@@ -171,6 +171,6 @@ while True:
                 elif update_type == "CLEANUP":
                     room_cleanup(addr)
                 elif update_type == "CLAIM":
-                    room_claim(addr, batch_update_from_ble_device)
+                    room_claim(addr, batch_update_from_ble_device[1])
             except queue.Empty:
                 pass
