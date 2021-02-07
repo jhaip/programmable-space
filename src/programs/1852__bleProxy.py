@@ -64,9 +64,9 @@ class BLEDevice(Thread):
                 serialized_results_arr = []
                 for result in sub_update_results:
                     serialized_results_arr.append(str(result)) # TODO: make this more explicit
-                result_ble_msg = b"SUB:{}:{}\n".format(sub_id, b"::".join(serialized_results_arr))
+                result_ble_msg = "SUB:{}:{}\n".format(sub_id, "::".join(serialized_results_arr))
                 print("Sending results: ({}): {}".format(self.addr, result_ble_msg))
-                write_cs.write(result_ble_msg)
+                write_cs.write(result_ble_msg.encode("utf-8"))
             except queue.Empty:
                 pass
             time.sleep(0.05)
