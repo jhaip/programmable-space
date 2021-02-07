@@ -28,6 +28,7 @@ class Room:
     def __init__(self, use_debug=False):
         self.use_debug = use_debug
         self.subscription_ids = {}
+        self.subscription_messages_on_reconnect = []
         self.ble = BLERadio()
         self.uart_server = UARTService()
         self.advertisement = ProvideServicesAdvertisement(self.uart_server)
@@ -50,7 +51,7 @@ class Room:
         self.subscription_ids[subscription_id] = callback
         # SUB:0568:$ $ value is $x::$ $ $x is open
         x = 'SUB:{}:{}\n'.format(subscription_id, '::'.join(query_strings)).encode("utf-8")
-        self.uart_server.write(x)
+        self.subscription_messages_on_reconnect.append(x)
     
     def parse_results(self, val):
         result_vals = val[2:-2].split("},{")
@@ -91,5 +92,9 @@ class Room:
                 pass
             self.ble.stop_advertising()
             print("BLE now connected")
+            for sub_msg in self.subscription_messages_on_reconnect:
+                self.debug("Sending sub message: {}".format(sub_msg))
+                self.uart_server.write(sub_msg)
+            self.subscription_messages_on_reconnect = []
         self.listen_and_update_subscriptions()
         return True
