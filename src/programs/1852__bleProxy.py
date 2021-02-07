@@ -56,7 +56,19 @@ class BLEDevice(Thread):
             if self.conn.waitForNotifications(1.0):
                 continue
             print("waiting...")
-            # TODO: Listen for self.room_sub_update_queue updates
+            try:
+                sub_update_data = self.room_sub_update_queue.get(block=False, timeout=None)
+                print("Got sub update for {}".format(self.addr))
+                sub_id = sub_update_data[0]
+                sub_update_results = sub_update_data[1]
+                serialized_results_arr = []
+                for result in sub_update_results:
+                    serialized_results_arr.append(str(result)) # TODO: make this more explicit
+                result_ble_msg = b"SUB:{}:{}\n".format(sub_id, b"::".join(serialized_results_arr))
+                print("Sending results: ({}): {}".format(self.addr, result_ble_msg))
+                write_cs.write(result_ble_msg)
+            except queue.Empty:
+                pass
             time.sleep(0.05)
 
     def run(self):

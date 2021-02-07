@@ -19,7 +19,7 @@ from adafruit_ble.services.nordic import UARTService
 #     if results:
 #         x = results[0]["x"]
 #
-# room.when("$ $ value is $x", callback)
+# room.when(["$ $ value is $x"], callback)
 #
 # while room.connected():
 #     print(x)
