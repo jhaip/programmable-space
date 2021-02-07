@@ -102,17 +102,21 @@ def create_ble(addr, addrType):
     connected_ble_devices[addr] = (room_batch_queue, room_sub_update_queue, new_ble_device)
     new_ble_device.start()
 
+def hash_query_strings(query_strings)
+    return str(query_strings)
+
 def make_ble_callback(query_strings, addr, sub_id, room_sub_update_queue):
     global callback_map
     print("BLE CALLBACK ADDED: {} {} {}".format(addr, sub_id, query_strings))
-    if query_strings not in callback_map:
-        callback_map[query_strings] = []
-    callback_map[query_strings].append((addr, sub_id, room_sub_update_queue))
+    qs_hash = hash_query_strings(query_strings)
+    if qs_hash not in callback_map:
+        callback_map[qs_hash] = []
+    callback_map[qs_hash].append((addr, sub_id, room_sub_update_queue))
 
     def callback(results):
         global callback_map
         # Given callback's query_string:
-        for addr, sub_id, room_sub_update_queue in callback_map[query_strings]:
+        for addr, sub_id, room_sub_update_queue in callback_map[qs_hash]:
             room_sub_update_queue.put((sub_id, results))
 
     # subscribe(query_strings, callback)
