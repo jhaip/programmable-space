@@ -45,7 +45,7 @@ class Room:
         self.uart_server.write('CLAIM:{}\n'.format(claim_str).encode("utf-8"))
     
     def when(self, query_strings, callback):
-        x = random.randint(0, 9999)
+        x = str(random.randint(0, 9999))
         subscription_id = '0'*(4-len(x)) + x  # like 0568
         self.subscription_ids[subscription_id] = callback
         # SUB:0568:$ $ value is $x::$ $ $x is open
