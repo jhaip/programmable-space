@@ -102,7 +102,7 @@ def create_ble(addr, addrType):
     connected_ble_devices[addr] = (room_batch_queue, room_sub_update_queue, new_ble_device)
     new_ble_device.start()
 
-def hash_query_strings(query_strings)
+def hash_query_strings(query_strings):
     return str(query_strings)
 
 def make_ble_callback(query_strings, addr, sub_id, room_sub_update_queue):
