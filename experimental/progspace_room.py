@@ -97,6 +97,5 @@ class Room:
             for sub_msg in self.subscription_messages_on_reconnect:
                 self.debug("Sending sub message: {}".format(sub_msg))
                 self.uart_server.write(sub_msg)
-            self.subscription_messages_on_reconnect = []
         self.listen_and_update_subscriptions()
         return True
