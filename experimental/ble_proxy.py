@@ -1,4 +1,4 @@
-# from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
+from helper import init, claim, retract, prehook, subscription, batch, get_my_id_str
 from bluepy.btle import Scanner, DefaultDelegate, Peripheral
 import time
 import threading, queue
@@ -16,12 +16,6 @@ class MyDelegate(DefaultDelegate):
         self.room_batch_queue = room_batch_queue
 
     def handleNotification(self, cHandle, data):
-        #     if (cHandle == temperature_handle):
-        #         # temp = binascii.b2a_hex(data)
-        #         temp = ord(data)
-        #         # temp2 = int(data.encode('hex'), 8)
-        #         print("A notification was received: %s ", temp)
-        #     else:
         print("A notification was received: {} ".format(data))
         if data:
             self.msg_cache += data
@@ -119,23 +113,23 @@ def make_ble_callback(query_strings, addr, sub_id, room_sub_update_queue):
         for addr, sub_id, room_sub_update_queue in callback_map[qs_hash]:
             room_sub_update_queue.put((sub_id, results))
 
-    # subscribe(query_strings, callback)
+    subscribe(query_strings, callback)
 
 def room_cleanup(addr):
     print("TODO cleanup: {}".format(addr))
-    # batch({"type": "retract", "fact": [
-    #     ["id", get_my_id_str()],
-    #     ["id", addr],
-    #     ["postfix", ""]
-    # ]})
+    batch([{"type": "retract", "fact": [
+        ["id", get_my_id_str()],
+        ["id", addr],
+        ["postfix", ""]
+    ]}])
 
 def room_claim(addr, batch_update_from_ble_device):
     print("TODO claim: {} {}".format(addr, batch_update_from_ble_device))
-    # batch({"type": "claim", "fact": [
-    #     ["id", get_my_id_str()],
-    #     ["id", device.addr],
-    #     ["text", batch_update_from_ble_device],
-    # ]})
+    batch([{"type": "claim", "fact": [
+        ["id", get_my_id_str()],
+        ["id", device.addr],
+        ["text", batch_update_from_ble_device],
+    ]}])
 
 
 # 1. Discover devices
@@ -154,11 +148,13 @@ for dev in devices:
             #     create_ble(dev.addr, dev.addrType)
 
 # 3. Init connection to room
-# init(__file__, skipListening=True)
+init(__file__, skipListening=True)
+# # Cleanup old claims and subscriptions
+batch([{"type": "death", "fact": [["id", get_my_id_str()]]}])
 
 # 4. Listen for updates from room and BLE devices
 while True:
-    # listen(blocking=False)
+    listen(blocking=False)
     for addr, data in list(connected_ble_devices.items()):
         room_batch_queue, room_sub_update_queue, device = data
         if not device.is_alive():
