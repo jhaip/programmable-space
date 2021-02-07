@@ -1,4 +1,5 @@
 import random
+import time
 from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
 from adafruit_ble.services.nordic import UARTService
@@ -92,6 +93,7 @@ class Room:
                 pass
             self.ble.stop_advertising()
             print("BLE now connected")
+            time.sleep(1.0)  # Give BLE connector time setup before sending data
             for sub_msg in self.subscription_messages_on_reconnect:
                 self.debug("Sending sub message: {}".format(sub_msg))
                 self.uart_server.write(sub_msg)
