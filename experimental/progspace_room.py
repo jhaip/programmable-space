@@ -62,7 +62,7 @@ class Room:
             rvs = result_val.split(",")
             for rv in rvs:
                 kv = rv.strip().split(":")
-                result[kv[0].replace('"')] = kv[1]
+                result[kv[0].replace('"', '')] = kv[1]
             results.append(result)
         return results
 
