@@ -55,6 +55,7 @@ class Room:
         self.subscription_messages_on_reconnect.append(x)
     
     def parse_results(self, val):
+        self.debug("parsing results: {}".format(val))
         result_vals = val[2:-2].split("},{")
         results = []
         for result_val in result_vals:
@@ -67,23 +68,23 @@ class Room:
         return results
 
     def listen_and_update_subscriptions(self):
-        self.debug("sub update")
-        raw_msg = self.uart_server.readline()
-        if not raw_msg:
-            self.debug("no message received, skipping")
-            return
-        raw_msg = raw_msg.decode("utf-8")
-        # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
-        sub_id = raw_msg[:4] # first four characters of message are sub id
-        if sub_id not in self.subscription_ids:
-            print("Unknown sub id {}".format(sub_id))
-            return
-        val = raw_msg[4:]
-        callback = self.subscription_ids[sub_id]
-        callback(self.parse_results(val))
-        # Keep receiving messages as long as they are available
-        # To drain the available messages
-        self.listen_and_update_subscriptions()
+        while True:
+            self.debug("sub update")
+            raw_msg = self.uart_server.readline()
+            if not raw_msg:
+                self.debug("no message received, skipping")
+                break
+            raw_msg = raw_msg.decode("utf-8")
+            # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
+            sub_id = raw_msg[:4] # first four characters of message are sub id
+            if sub_id not in self.subscription_ids:
+                print("Unknown sub id {}".format(sub_id))
+                continue
+            val = raw_msg[4:]
+            callback = self.subscription_ids[sub_id]
+            callback(self.parse_results(val))
+            # Keep receiving messages as long as they are available
+            # To drain the available messages
 
     def connected(self):
         if not self.ble.connected:
