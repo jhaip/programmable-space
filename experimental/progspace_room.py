@@ -72,6 +72,7 @@ class Room:
         if not raw_msg:
             self.debug("no message received, skipping")
             return
+        raw_msg = raw_msg.decode("utf-8")
         # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
         sub_id = raw_msg[:4] # first four characters of message are sub id
         if sub_id not in self.subscription_ids:
