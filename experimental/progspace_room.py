@@ -27,7 +27,7 @@ from adafruit_ble.services.nordic import UARTService
 class Room:
     def __init__(self, use_debug=False):
         self.use_debug = use_debug
-        self.subscription_ids = []
+        self.subscription_ids = {}
         self.ble = BLERadio()
         self.uart_server = UARTService()
         self.advertisement = ProvideServicesAdvertisement(self.uart_server)
