@@ -69,12 +69,12 @@ class Room:
         return results
 
     def listen_and_update_subscriptions(self):
-        while self.uart_server.in_waiting > 0:
+        read_msg = self.uart_server.read(nbytes=20)
+        while read_msg is not None and len(read_msg) > 0:
             self.debug("Bytes in waiting: {}".format(self.uart_server.in_waiting))
+            self.recv_msg_cache += read_msg.decode("utf-8")
+            self.debug("sub update: {}".format(self.recv_msg_cache))
             read_msg = self.uart_server.read(nbytes=20)
-            if read_msg is not None:
-                self.recv_msg_cache += read_msg.decode("utf-8")
-                self.debug("sub update: {}".format(self.recv_msg_cache))
         lines = self.recv_msg_cache.split("\n")
         self.debug("lines: {}".format(lines))
         if len(lines) > 1:
