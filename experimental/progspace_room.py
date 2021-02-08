@@ -75,7 +75,10 @@ class Room:
             if read_msg is not None:
                 self.recv_msg_cache += read_msg.decode("utf-8")
                 self.debug("sub update: {}".format(self.recv_msg_cache))
-        if self.recv_msg_cache[-1] == "\n":
+        if len(self.recv_msg_cache) > 1:
+            self.debug("last character: {} {} {}".format(self.recv_msg_cache[-1], type(self.recv_msg_cache[-1]), self.recv_msg_cache[-1] == "\n"))
+        if len(self.recv_msg_cache) > 1 and self.recv_msg_cache[-1] == "\n":
+            self.debug("Proccesing new sub update...")
             self.recv_msg_cache = ""
             # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
             sub_id = self.recv_msg_cache[:4] # first four characters of message are sub id
