@@ -34,6 +34,7 @@ class Room:
         self.uart_server = UARTService()
         self.advertisement = ProvideServicesAdvertisement(self.uart_server)
         self.chunk_size = 20  # adafruit_ble can only write in 20 byte chunks
+        self.recv_msg_cache = ""
     
     def debug(self, msg):
         if self.use_debug:
@@ -68,23 +69,21 @@ class Room:
         return results
 
     def listen_and_update_subscriptions(self):
-        while True:
-            raw_msg = self.uart_server.readline()
-            self.debug("sub update: {}".format(raw_msg))
-            if not raw_msg:
-                self.debug("no message received, skipping")
-                break
-            raw_msg = raw_msg.decode("utf-8")
+        while self.uart_server.in_waiting > 0:
+            read_msg = self.uart_server.read()
+            if read_msg is not None:
+                self.recv_msg_cache += read_msg.decode("utf-8")
+                self.debug("sub update: {}".format(self.recv_msg_cache))
+        if self.recv_msg_cache[-1] == "\n":
+            self.recv_msg_cache = ""
             # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
-            sub_id = raw_msg[:4] # first four characters of message are sub id
+            sub_id = self.recv_msg_cache[:4] # first four characters of message are sub id
             if sub_id not in self.subscription_ids:
                 print("Unknown sub id {}".format(sub_id))
-                continue
-            val = raw_msg[4:]
+                return
+            val = self.recv_msg_cache[4:]
             callback = self.subscription_ids[sub_id]
             callback(self.parse_results(val))
-            # Keep receiving messages as long as they are available
-            # To drain the available messages
 
     def connected(self):
         if not self.ble.connected:
