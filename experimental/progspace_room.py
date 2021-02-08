@@ -88,7 +88,7 @@ class Room:
                 val = line_msg[4:]
                 if sub_id not in self.subscription_ids:
                     print("Unknown sub id {}".format(sub_id))
-                    return
+                    continue
                 callback = self.subscription_ids[sub_id]
                 callback(self.parse_results(val))
             self.recv_msg_cache = lines[-1]
