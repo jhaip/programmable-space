@@ -67,14 +67,8 @@ class Room:
                 result[kv[0].replace('"', '')] = kv[1]
             results.append(result)
         return results
-
-    def listen_and_update_subscriptions(self):
-        read_msg = self.uart_server.read(nbytes=20)
-        while read_msg is not None and len(read_msg) > 0:
-            self.debug("Bytes in waiting: {}".format(self.uart_server.in_waiting))
-            self.recv_msg_cache += read_msg.decode("utf-8")
-            self.debug("sub update: {}".format(self.recv_msg_cache))
-            read_msg = self.uart_server.read(nbytes=20)
+    
+    def check_read_msg_cache_and_callbacks(self):
         lines = self.recv_msg_cache.split("\n")
         self.debug("lines: {}".format(lines))
         if len(lines) > 1:
@@ -92,7 +86,16 @@ class Room:
                 callback = self.subscription_ids[sub_id]
                 callback(self.parse_results(val))
             self.recv_msg_cache = lines[-1]
-            
+
+    def listen_and_update_subscriptions(self):
+        self.debug("listening~~~~~")
+        read_msg = self.uart_server.read(nbytes=20)
+        while read_msg is not None and len(read_msg) > 0:
+            self.debug("Bytes in waiting: {}".format(self.uart_server.in_waiting))
+            self.recv_msg_cache += read_msg.decode("utf-8")
+            self.check_read_msg_cache_and_callbacks()
+            self.debug("sub update: {}".format(self.recv_msg_cache))
+            read_msg = self.uart_server.read(nbytes=20)
 
     def connected(self):
         if not self.ble.connected:
