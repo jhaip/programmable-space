@@ -75,19 +75,23 @@ class Room:
             if read_msg is not None:
                 self.recv_msg_cache += read_msg.decode("utf-8")
                 self.debug("sub update: {}".format(self.recv_msg_cache))
-        if len(self.recv_msg_cache) > 1:
-            self.debug("last character: {} {} {}".format(self.recv_msg_cache[-1], type(self.recv_msg_cache[-1]), self.recv_msg_cache[-1] == "\n"))
-        if len(self.recv_msg_cache) > 1 and self.recv_msg_cache[-1] == "\n":
-            self.debug("Proccesing new sub update...")
-            self.recv_msg_cache = ""
-            # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
-            sub_id = self.recv_msg_cache[:4] # first four characters of message are sub id
-            if sub_id not in self.subscription_ids:
-                print("Unknown sub id {}".format(sub_id))
-                return
-            val = self.recv_msg_cache[4:]
-            callback = self.subscription_ids[sub_id]
-            callback(self.parse_results(val))
+        lines = self.recv_msg_cache.split("\n")
+        if len(lines) > 1:
+            # trim off the last line (either '' if \n is the last char or a partial string)
+            # because it is not part of a string that ends in a \n
+            full_lines = lines[:-1]
+            for line_msg in full_lines:
+                self.debug("Proccesing new sub update: {}".format(line_msg))
+                # 1234[{x:"5",y:"1"},{"x":1,"y":2}]
+                sub_id = line_msg[:4] # first four characters of message are sub id
+                val = line_msg[4:]
+                if sub_id not in self.subscription_ids:
+                    print("Unknown sub id {}".format(sub_id))
+                    return
+                callback = self.subscription_ids[sub_id]
+                callback(self.parse_results(val))
+            self.recv_msg_cache = lines[-1]
+            
 
     def connected(self):
         if not self.ble.connected:
