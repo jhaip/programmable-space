@@ -50,7 +50,7 @@ class BLEDevice(Thread):
       
     def ble_listen_loop(self, write_cs, notify_cs):
         print("writing something so connection stays alive")
-        write_cs.write(b"hey")
+        write_cs.write(b"hey\n")
         print("listening to read...")
         while True:
             if self.conn.waitForNotifications(1.0):
@@ -67,7 +67,11 @@ class BLEDevice(Thread):
                 # result_ble_msg = "{}:{}\n".format(sub_id, "::".join(serialized_results_arr))
                 result_ble_msg = "{}{}\n".format(sub_id, str(sub_update_results))
                 print("Sending results: ({}): {}".format(self.addr, result_ble_msg))
-                write_cs.write(result_ble_msg.encode("utf-8"))
+                x = result_ble_msg.encode("utf-8")
+                chunk_size = 20
+                chunks = [x[i:i+chunk_size] for i in range(0, len(x), chunk_size)]
+                for chunk in chunks:
+                    write_cs.write(chunk)
             except queue.Empty:
                 pass
             time.sleep(0.05)
