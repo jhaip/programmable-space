@@ -41,23 +41,23 @@ class Room:
             print(msg)
 
     def cleanup(self):
-        self.uart_server.write('CLEANUP:\n'.encode("utf-8"))
+        self.uart_server.write('~:\n'.encode("utf-8"))
 
     def claim(self, claim_str):
         # Cleanup claim = cleanup all previous claims
-        self.uart_server.write('CLAIM:{}\n'.format(claim_str).encode("utf-8"))
+        self.uart_server.write('N:{}\n'.format(claim_str).encode("utf-8"))
     
     def when(self, query_strings, callback):
         x = str(random.randint(0, 9999))
         subscription_id = '0'*(4-len(x)) + x  # like 0568
         self.subscription_ids[subscription_id] = callback
-        # SUB:0568:$ $ value is $x::$ $ $x is open
-        x = 'SUB:{}:{}\n'.format(subscription_id, '::'.join(query_strings)).encode("utf-8")
+        # S:0568:$ $ value is $x::$ $ $x is open
+        x = 'S:{}:{}\n'.format(subscription_id, '::'.join(query_strings)).encode("utf-8")
         self.subscription_messages_on_reconnect.append(x)
     
     def parse_results(self, val):
         self.debug("parsing results: {}".format(val))
-        result_vals = val[2:-2].split("},{")
+        result_vals = val[1:-1].split("},{")
         results = []
         for result_val in result_vals:
             result = {}
