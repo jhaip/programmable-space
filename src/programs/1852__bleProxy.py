@@ -207,7 +207,7 @@ scan_and_connect(seconds_to_scan=2.0)
 # 4. Listen for updates from room and BLE devices
 while True:
     listen(blocking=False)
-    if last_scan_time - time.time() > BLE_SCAN_DELAY:
+    if time.time() - last_scan_time > BLE_SCAN_DELAY:
         scan_and_connect(seconds_to_scan=1.0)
     some_device_died = False
     try:
