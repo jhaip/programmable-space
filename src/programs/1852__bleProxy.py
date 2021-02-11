@@ -11,6 +11,7 @@ connected_ble_devices = {}
 callback_map = {}
 last_scan_time = time.time()
 BLE_SCAN_DELAY = 10
+scanner = Scanner()
 
 class MyDelegate(DefaultDelegate):
     def __init__(self, addr, room_batch_queue):
@@ -181,17 +182,16 @@ def claim_connected_devices(connected_ble_devices):
     batch(claims)
 
 def scan_and_connect(seconds_to_scan=2.0):
-    global connected_ble_devices, last_scan_time
+    global scanner, connected_ble_devices, last_scan_time
     last_scan_time = time.time()
     print("Scanning for new BLE devices")
-    scanner = Scanner()
     devices = scanner.scan(seconds_to_scan)
 
     for dev in devices:
         print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-        for (adtype, desc, value) in dev.getScanData():
-            print("  %s = %s" % (desc, value))
-            if dev.addr not in connected_ble_devices:
+        if dev.addr not in connected_ble_devices:
+            for (adtype, desc, value) in dev.getScanData():
+                print("  %s = %s" % (desc, value))
                 if desc == "Complete Local Name" and "CIRCUITPY" in value:
                     create_ble(dev.addr, dev.addrType)
                 # if dev.addr == "e5:59:80:c5:bc:4d":
