@@ -9,6 +9,8 @@ ble_activity_lock = threading.Lock()
 ble_disconnect_queue = queue.Queue()
 connected_ble_devices = {}
 callback_map = {}
+last_scan_time = time.time()
+BLE_SCAN_DELAY = 10
 
 class MyDelegate(DefaultDelegate):
     def __init__(self, addr, room_batch_queue):
@@ -113,6 +115,9 @@ class BLEDevice(Thread):
 
 def create_ble(addr, addrType):
     global connected_ble_devices, ble_activity_lock
+    if addr in connected_ble_devices:
+        print("BLE device already connected, ignoring")
+        return
     room_batch_queue = queue.Queue()
     room_sub_update_queue = queue.Queue()
     new_ble_device = BLEDevice(room_batch_queue, room_sub_update_queue, addr, addrType, ble_activity_lock, ble_disconnect_queue)
@@ -175,35 +180,42 @@ def claim_connected_devices(connected_ble_devices):
         ]})
     batch(claims)
 
+def scan_and_connect(seconds_to_scan=2.0):
+    global connected_ble_devices, last_scan_time
+    last_scan_time = time.time()
+    print("Scanning for new BLE devices")
+    scanner = Scanner()
+    devices = scanner.scan(seconds_to_scan)
+
+    for dev in devices:
+        print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
+        for (adtype, desc, value) in dev.getScanData():
+            print("  %s = %s" % (desc, value))
+            if dev.addr not in connected_ble_devices:
+                if desc == "Complete Local Name" and "CIRCUITPY" in value:
+                    create_ble(dev.addr, dev.addrType)
+                # if dev.addr == "e5:59:80:c5:bc:4d":
+                #     create_ble(dev.addr, dev.addrType)
+        claim_connected_devices(connected_ble_devices)
+
 # 1. Init connection to room
 init(__file__, skipListening=True)
 # 2. Cleanup old claims and subscriptions
 batch([{"type": "death", "fact": [["id", get_my_id_str()]]}])
-
 # 3. Discover devices
-scanner = Scanner()
-devices = scanner.scan(2.0)
-
-# 2. Connect to them
-for dev in devices:
-    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-    for (adtype, desc, value) in dev.getScanData():
-        print("  %s = %s" % (desc, value))
-        if dev.addr not in connected_ble_devices:
-            if desc == "Complete Local Name" and "CIRCUITPY" in value:
-                create_ble(dev.addr, dev.addrType)
-            # if dev.addr == "e5:59:80:c5:bc:4d":
-            #     create_ble(dev.addr, dev.addrType)
-    claim_connected_devices(connected_ble_devices)
-
+scan_and_connect(seconds_to_scan=2.0)
 # 4. Listen for updates from room and BLE devices
 while True:
     listen(blocking=False)
+    if last_scan_time - time.time() > BLE_SCAN_DELAY:
+        scan_and_connect(seconds_to_scan=1.0)
     some_device_died = False
     try:
         while True:
             dead_device_addr = ble_disconnect_queue.get(block=False, timeout=None)
             del connected_ble_devices[dead_device_addr]
+            room_cleanup(dead_device_addr)
+            # TODO: cleanup device subscriptions as well
             print("Removed {} from connected_ble_devices cache".format(dead_device_addr))
             some_device_died = True
     except queue.Empty:
