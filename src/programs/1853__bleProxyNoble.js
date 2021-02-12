@@ -4,7 +4,10 @@ const noble = require('@abandonware/noble');
 
 var connectedCandidates = [];
 var connectedDevices = {};
+// serialized query strings -> array of (device ID, device Subscription ID)
+var deviceSubscriptions = {};
 
+const hashQueryStrings = queryStrings => `${queryStrings}`;
 const uuid = uuid_with_dashes => uuid_with_dashes.replace(/-/g, '');
 const strippedMAC = mac => mac.replace(/-/g, '').replace(/:/g, '');
 // circuit python: d1:d3:b6:0c:9b:95
@@ -39,6 +42,7 @@ noble.on('discover', peripheral => {
       delete connectedDevices[peripheral.id];
       connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
       room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
+      // TODO: cleanup subscriptions
     });
   }
 });
@@ -61,7 +65,7 @@ function connect(peripheral) {
           });
           if (readCharacteristic && writeCharacteristic) {
             console.log(`DEVICE IS READY FOR UART! ${peripheral.id}`)
-            connectedDevices[peripheral.id] = new BLEDevice(peripheral.id, writeCharacteristic, readCharacteristic);
+            connectedDevices[peripheral.id] = new BLEDevice(peripheral.id, writeCharacteristic, readCharacteristic, addDeviceSubscription);
           }
         });
         service.discoverCharacteristics();
@@ -72,10 +76,11 @@ function connect(peripheral) {
 }
 
 class BLEDevice {
-  constructor(addr, writeCharacteristic, readCharacteristic) {
+  constructor(addr, writeCharacteristic, readCharacteristic, addDeviceSubscription) {
     this.addr = addr;
     this.writeCharacteristic = writeCharacteristic;
     this.readCharacteristic = readCharacteristic;
+    this.addDeviceSubscription = addDeviceSubscription;
     this.msgCache = "";
 
     this.readCharacteristic.on('data', (data, isNotification) => this.onRecvData(data));
@@ -95,6 +100,7 @@ class BLEDevice {
         const subscriptionId = split_msg[1];
         const queryStrings = split_msg.slice(2).filter(x => x !== "");
         // self.room_batch_queue.put(("SUBSCRIBE", subscriptionId, queryStrings))
+        this.addDeviceSubscription(this.addr, subscriptionId, queryStrings);
         console.log(`(${this.addr}): subscribe ${subscriptionId} ${queryStrings}`);
       } else if (msg_type === "~") {
         room.retractRaw(...[["id", MY_ID_STR], ["id", this.addr], ["postfix", ""]])
@@ -112,6 +118,47 @@ class BLEDevice {
         room.flush();
       }
     }
+  }
+  onSubscriptionUpdate(deviceSubscriptionId, results) {
+    console.log(`(${this.addr}) Subscription Update ${deviceSubscriptionId} ${results}`);
+    const serialized_result = JSON.stringify(results).slice(1, -1);
+    const result_ble_msg = `${deviceSubscriptionId}${serialized_result}\n`;
+    console.log(`(${this.addr}) Subscription Update, sending: ${result_ble_msg}`);
+    const msgBytes = Buffer.from(result_ble_msg, 'utf-8');
+    const chunkSize = 20;
+    for (let i = 0; i < Math.ceil(msgBytes.length/chunkSize); i += 1) {
+      const chunk = msgBytes.slice(i*chunkSize, (i+1)*chunkSize);
+      const withoutResponse = true;
+      this.writeCharacteristic.write(chunk, withoutResponse, error => {
+        if (error) {
+          console.log(`(${this.addr}) Error writing: ${error}`);
+        }
+      });
+    }
+  }
+}
+
+function addDeviceSubscription(deviceId, deviceSubscriptionId, queryStrings) {
+  const key = hashQueryStrings(queryStrings);
+  let newSub = false;
+  if (!(key in deviceSubscriptions)) {
+    deviceSubscriptions[key] = [];
+    newSub = true;
+  }
+  deviceSubscriptions[key].push([deviceId, deviceSubscriptionId])
+  if (newSub) {
+    console.log(`NEW SUB ${deviceId} ${deviceSubscriptionId} #${queryStrings}#`);
+    room.onRaw(...queryStrings, results => {
+      deviceSubscriptions[key].forEach(d => {
+        const [ deviceId, deviceSubscriptionId ] = d;
+        console.log(results);
+        try {
+          connectedDevices[deviceId].onSubscriptionUpdate(deviceSubscriptionId, results);
+        } catch (error) {
+          console.log(`Error updating subscription ${deviceId} ${deviceSubscriptionId} : ${error}`);
+        }
+      });
+    });
   }
 }
 
