@@ -205,6 +205,12 @@ function init(filename) {
                 ].concat(fullyParseFact(fact))
             })
         },
+        assertRaw: (fact) => {
+            batched_calls.push({
+                "type": "claim",
+                "fact": fullyParseFact(fact)
+            })
+        },
         assert: (...args) => {
             batched_calls.push({
                 "type": "claim",
