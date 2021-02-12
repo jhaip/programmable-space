@@ -42,7 +42,7 @@ noble.on('discover', peripheral => {
       delete connectedDevices[peripheral.id];
       connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
       room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
-      // TODO: cleanup subscriptions
+      removeDeviceSubscriptions(peripheral.id);
     });
   }
 });
@@ -160,6 +160,24 @@ function addDeviceSubscription(deviceId, deviceSubscriptionId, queryStrings) {
       });
     });
   }
+}
+
+function removeDeviceSubscriptions(removedDeviceId) {
+  const newDeviceSubscriptions = {};
+  for (const [key, value] of Object.entries(deviceSubscriptions)) {
+    const newValue = value.filter(d => {
+      const [deviceId, deviceSubId] = d;
+      return deviceId !== deviceId;
+    });
+    if (newValue.length > 0) {
+      newDeviceSubscriptions[key] = newValue;
+    } else {
+      console.log(`TODO: no more devices use this sub so remote it ${key}`);
+      newDeviceSubscriptions[key] = []; // for now this is needed because sub results will still some in.
+      // TODO: unsubscribe. Send "subscriptiondeath" message with  [["id", "0004"], ["text", ..subscription id..]]
+    }
+  }
+  deviceSubscriptions = newDeviceSubscriptions;
 }
 
 room.cleanupOtherSource(MY_ID_STR);
