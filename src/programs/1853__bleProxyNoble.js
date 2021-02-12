@@ -107,6 +107,9 @@ class BLEDevice {
         console.log(`(${this.addr}): claim ${claim_fact_str}`);
       } else {
         console.log(`(${this.addr}) COULD NOT PARSE MESSAGE ${msg}`);
+        room.retractRaw(...[["id", MY_ID_STR], ["id", this.addr], ["postfix", ""]]);
+        room.assertRaw([["id", MY_ID_STR], ["id", this.addr], ["text", "?"], ["text", `${msg}`]]);
+        room.flush();
       }
     }
   }
