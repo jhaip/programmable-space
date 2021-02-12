@@ -61,15 +61,10 @@ function connect(peripheral) {
           if (readCharacteristic && writeCharacteristic) {
             console.log(`DEVICE IS READY FOR UART! ${peripheral.id}`)
 
-            readCharacteristic.on('data', function (data, isNotification) {;
-              const val = new Buffer.from(data).toString()
-              console.log(val.replace(/\n/g, "NEWLINE"));
-              // const characteristicValue = data.toString('hex');
-              // console.log(`value is now: ${characteristicValue}`);
-            });
+            let device = new BLEDevice(peripheral.id, writeCharacteristic, readCharacteristic);
+            // TODO: add device to connectedDevices map
 
-            // Enable notify:
-            readCharacteristic.subscribe(error => console.log(`notification on`));
+            
           }
         });
         service.discoverCharacteristics();
@@ -77,6 +72,45 @@ function connect(peripheral) {
   });
   console.log("started discovering services");
   peripheral.discoverServices();
+}
+
+class BLEDevice {
+  constructor(addr, writeCharacteristic, readCharacteristic) {
+    this.addr = addr;
+    this.writeCharacteristic = writeCharacteristic;
+    this.readCharacteristic = readCharacteristic;
+    this.msgCache = "";
+
+    this.readCharacteristic.on('data', this.onRecvData);
+    // Enable notify:
+    this.readCharacteristic.subscribe(error => console.log(`notification on`));
+  }
+  onRecvData(data, isNotification) {
+    const val = new Buffer.from(data).toString();
+    this.msgCache += val;
+    if (this.msgCache.length > 0 && self.msgCache[self.msgCache.length - 1] === "\n") {
+      const msg = this.msgCache.slice(); // make a copy
+      this.msgCache = "";
+      const split_msg = msg.split(":");
+      const msg_type = split_msg[0];
+      if (msg_type === "S") {
+        // S:0568:$ $ value is $x::$ $ $x is open
+        const subscriptionId = split_msg[1];
+        const queryStrings = split_msg.slice(2).filter(x => x !== "");
+        // self.room_batch_queue.put(("SUBSCRIBE", subscriptionId, queryStrings))
+        console.log(`(${this.addr}): subscribe ${subscriptionId} ${queryStrings}`);
+      } else if (msg_type === "~") {
+        // self.room_batch_queue.put(("CLEANUP",))
+        console.log(`(${this.addr}): cleanup`);
+      } else if (msg_type === "N") {
+        const claim_fact_str = split_msg[1];
+        // self.room_batch_queue.put(("CLAIM", claim_fact_str))
+        console.log(`(${this.addr}): claim ${claim_fact_str}`);
+      } else {
+        console.log(`(${this.addr}) COULD NOT PARSE MESSAGE ${msg}`);
+      }
+    }
+  }
 }
 
 // room.cleanup();
