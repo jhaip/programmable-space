@@ -38,6 +38,7 @@ noble.on('discover', peripheral => {
       console.log(`PERIPHERAL DISCONNECTED ${peripheral.id}`)
       delete connectedDevices[peripheral.id];
       connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
+      room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
     });
   }
 });
@@ -101,7 +102,8 @@ class BLEDevice {
         console.log(`(${this.addr}): cleanup`);
       } else if (msg_type === "N") {
         const claim_fact_str = split_msg[1];
-        room.assertRaw(...[["id", MY_ID_STR], ["id", this.addr], ["text", claim_fact_str]])
+        room.assertRaw([["id", MY_ID_STR], ["id", this.addr], ["text", claim_fact_str]])
+        room.flush();
         console.log(`(${this.addr}): claim ${claim_fact_str}`);
       } else {
         console.log(`(${this.addr}) COULD NOT PARSE MESSAGE ${msg}`);
