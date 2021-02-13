@@ -1,4 +1,4 @@
-from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str, prehook
+from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str, prehook, listen
 from mfrc522 import SimpleMFRC522
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
@@ -10,7 +10,12 @@ import threading
 
 rfid_sensor_updates = queue.Queue()
 room_rfid_code_updates = queue.Queue()
+room_ui_requests = queue.Queue()
 rfid_to_code = {}
+NO_RFID = ""
+ROOM_REQUEST_SAVE = "SAVE"
+ROOM_REQUEST_PRINT = "PRINT"
+active_rfid = NO_RFID
 context = pyudev.Context()
 monitor = pyudev.Monitor.from_netlink(context)
 monitor.filter_by('block')
@@ -30,17 +35,22 @@ def log_event(action, device):
     if 'ID_FS_TYPE' in device and device.get('ID_FS_LABEL') == 'CIRCUITPY':
         print(action)
         if action == "remove":
-            label_boardstatus.config(text="No device.")
-            editor.delete("1.0", tk.END)
+            if active_rfid == NO_RFID:
+                label_boardstatus.config(text="No device.")
+                editor.delete("1.0", tk.END)
         elif action == "add":
             label_boardstatus.config(text="Connecting...")
             time.sleep(0.5)
             load_code_to_editor()
 
 def onclick_save():
+    global room_ui_requests
     print("saving")
     newcode = editor.get("1.0", "end")
     print(newcode)
+    if active_rfid and active_rfid in rfid_to_code:
+        active_program_name = rfid_to_code[active_rfid][0]
+        room_ui_requests.put((ROOM_REQUEST_SAVE, active_rfid, active_program_name, newcode))
     if len(glob.glob(code_filename)) != 1:
         print("cannot save")
     else:
@@ -51,9 +61,15 @@ def onclick_save():
     print("done saving")
 
 def onclick_print():
-    print("TODO: print")
+    global room_ui_requests
+    code = editor.get("1.0", "end")
+    if active_rfid and active_rfid in rfid_to_code:
+        active_program_name = rfid_to_code[active_rfid][0]
+        room_ui_requests.put((ROOM_REQUEST_PRINT, active_rfid, active_program_name, code))
 
 def room_thread():
+    global room_ui_requests
+
     @prehook
     def room_prehook_callback():
         batch([{"type": "death", "fact": [["id", get_my_id_str()]]}])
@@ -63,11 +79,55 @@ def room_thread():
         rfid_to_source_code = {}
         if results:
             for result in results:
-                rfid_to_source_code[result["rfid"]] = result["sourceCode"]
+                source_code = result["sourceCode"].replace(chr(9787), '"')
+                rfid_to_source_code[result["rfid"]] = (result["targetName"], source_code)
         room_rfid_code_updates.put(rfid_to_source_code)
         print("updated RFID to source code map")
 
-    init(__file__)
+    init(__file__, skipListening=True)
+
+    while True:
+        listen(blocking=False)
+        try:
+            message = room_ui_requests.get(block=False)
+            if message is None:
+                print("received none message in room thread, exiting")
+                return
+            req_type = message[0]
+            active_rfid = message[1]
+            active_program_name = message[2]
+            source_code = message[3]
+            clean_source_code = source_code.replace('"', chr(9787))
+            if req_type == ROOM_REQUEST_SAVE:
+                batch([
+                    {"type": "claim", "fact": [
+                        ["id", get_my_id_str()],
+                        ["id", "0"],
+                        ["text", "wish"],
+                        ["text", active_program_name],
+                        ["text", "has"],
+                        ["text", "source"],
+                        ["text", "code"],
+                        ["text", clean_source_code],
+                    ]}
+                ])
+            elif req_type == ROOM_REQUEST_PRINT:
+                batch([
+                    {"type": "claim", "fact": [
+                        ["id", get_my_id_str()],
+                        ["id", "0"],
+                        ["text", "wish"],
+                        ["text", "text"],
+                        ["text", "Code for {}\n\n{}".format(active_program_name, clean_source_code)],
+                        ["text", "would"],
+                        ["text", "be"],
+                        ["text", "thermal"],
+                        ["text", "printed"],
+                    ]}
+                ])
+        except queue.Empty:
+            pass
+        time.sleep(0.1)
 
 def rfid_sensor_thread():
     global rfid_sensor_updates
@@ -89,7 +149,7 @@ def rfid_sensor_thread():
                 if last_sent_value != id:
                     last_sent_value = id
                     print("RFID ID: None")
-                    rfid_sensor_updates.put("")
+                    rfid_sensor_updates.put(NO_RFID)
         last_read_value = id
         time.sleep(0.1)
 
@@ -105,20 +165,20 @@ def room_rfid_code_updates_callback():
         window.after(200, room_rfid_code_updates_callback)
 
 def rfid_sensor_updates_callback():
-    global rfid_sensor_updates, window, label_rfid_status, editor
+    global rfid_sensor_updates, window, label_rfid_status, editor, active_rfid
     try:
         message = rfid_sensor_updates.get(block=False)
     except queue.Empty:
         window.after(101, rfid_sensor_updates_callback)  # let's try again later
         return
     if message is not None: # None means exit the thread. Different than empty string!
-        new_rfid_sensor_value = message
-        if new_rfid_sensor_value == "":
+        active_rfid = message
+        if active_rfid == NO_RFID:
             label_rfid_status.config(text="No RFID")
         else:
-            label_rfid_status.config(text="{}".format(new_rfid_sensor_value))
-            if new_rfid_sensor_value in rfid_to_code:
-                new_code = rfid_to_code[new_rfid_sensor_value]
+            label_rfid_status.config(text="{}".format(active_rfid))
+            if active_rfid in rfid_to_code:
+                new_code = rfid_to_code[active_rfid][1] # 0 = program name, 1 = source code
                 editor.delete("1.0", tk.END)
                 editor.insert(tk.END, new_code)
                 # onclick_save()
