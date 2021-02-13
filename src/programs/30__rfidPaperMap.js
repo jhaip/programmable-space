@@ -85,4 +85,12 @@ room.assert(`paper 1970 has RFID`, ["text", "45d9ea3b"])
 room.assert(`paper 1969 has RFID`, ["text", "c531f53b"])
 room.assert(`paper 1968 has RFID`, ["text", "05cbff3b"])
 
+room.assert(`paper 1760 has RFID`, ["text", "cb206c53"])
+room.assert(`paper 1761 has RFID`, ["text", "d50ef43b"])
+room.assert(`paper 1762 has RFID`, ["text", "5546f913"])
+room.assert(`paper 1763 has RFID`, ["text", "50d10140"])
+room.assert(`paper 1764 has RFID`, ["text", "755cf03b"])
+room.assert(`paper 1765 has RFID`, ["text", "a52dfd3b"])
+
+
 run();
