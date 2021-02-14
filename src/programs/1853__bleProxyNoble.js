@@ -150,7 +150,7 @@ function addDeviceSubscription(deviceId, deviceSubscriptionId, queryStrings) {
   if (newSub) {
     console.log(`NEW SUB ${deviceId} ${deviceSubscriptionId} #${queryStrings}#`);
     room.onRaw(...queryStrings, results => {
-      deviceSubscriptionLastResult[key] = result;
+      deviceSubscriptionLastResult[key] = results;
       deviceSubscriptions[key].forEach(d => {
         const [ deviceId, deviceSubscriptionId ] = d;
         console.log(results);
