@@ -6,6 +6,7 @@ var connectedCandidates = [];
 var connectedDevices = {};
 // serialized query strings -> array of (device ID, device Subscription ID)
 var deviceSubscriptions = {};
+var deviceSubscriptionLastResult = {};
 
 const hashQueryStrings = queryStrings => `${queryStrings}`;
 const uuid = uuid_with_dashes => uuid_with_dashes.replace(/-/g, '');
@@ -149,6 +150,7 @@ function addDeviceSubscription(deviceId, deviceSubscriptionId, queryStrings) {
   if (newSub) {
     console.log(`NEW SUB ${deviceId} ${deviceSubscriptionId} #${queryStrings}#`);
     room.onRaw(...queryStrings, results => {
+      deviceSubscriptionLastResult[key] = result;
       deviceSubscriptions[key].forEach(d => {
         const [ deviceId, deviceSubscriptionId ] = d;
         console.log(results);
@@ -159,6 +161,10 @@ function addDeviceSubscription(deviceId, deviceSubscriptionId, queryStrings) {
         }
       });
     });
+  } else {
+    // device joined after the subscription was created so we need to sent it the initial subscription result
+    const lastResult = deviceSubscriptionLastResult[key];
+    connectedDevices[deviceId].onSubscriptionUpdate(deviceSubscriptionId, lastResult)
   }
 }
 
@@ -175,6 +181,7 @@ function removeDeviceSubscriptions(removedDeviceId) {
       console.log(`TODO: no more devices use this sub so remote it ${key}`);
       newDeviceSubscriptions[key] = []; // for now this is needed because sub results will still some in.
       // TODO: unsubscribe. Send "subscriptiondeath" message with  [["id", "0004"], ["text", ..subscription id..]]
+      // TOOD: trim key from deviceSubscriptionLastResult
     }
   }
   deviceSubscriptions = newDeviceSubscriptions;

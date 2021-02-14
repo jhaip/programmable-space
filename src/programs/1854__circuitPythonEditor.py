@@ -181,7 +181,7 @@ def rfid_sensor_updates_callback():
                 new_code = rfid_to_code[active_rfid][1] # 0 = program name, 1 = source code
                 editor.delete("1.0", tk.END)
                 editor.insert(tk.END, new_code)
-                # onclick_save()
+                onclick_save()
         window.after(101, rfid_sensor_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
