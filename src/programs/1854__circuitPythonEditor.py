@@ -16,6 +16,7 @@ serial_updates = queue.Queue()
 room_ui_requests = queue.Queue()
 rfid_to_code = {}
 serial_log_cache = ""
+follow_log = True
 SERIAL_PORT_1 = "/dev/ttyACM0"
 SERIAL_PORT_2 = "/dev/ttyACM1"
 NO_RFID = ""
@@ -76,6 +77,15 @@ def onclick_print():
 def onclick_clearserial():
     global serialout
     serialout.delete("1.0", tk.END)
+
+def onclick_followserial():
+    global button_followserial, follow_log
+    if button_followserial.config('relief')[-1] == 'sunken':
+        button_followserial.config(relief="raised")
+        follow_log = True
+    else:
+        button_followserial.config(relief="sunken")
+        follow_log = False
 
 def room_thread():
     global room_ui_requests
@@ -217,17 +227,19 @@ def rfid_sensor_updates_callback():
         window.after(101, rfid_sensor_updates_callback)
 
 def serial_updates_callback():
-    global serial_updates, window, serialout, serial_log_cache
+    global serial_updates, window, serialout, serial_log_cache, follow_log
     try:
         message = serial_updates.get(block=False)
     except queue.Empty:
-        window.after(200, serial_updates_callback)  # let's try again later
+        window.after(10, serial_updates_callback)  # let's try again later
         return
     if message is not None:
         serialout.delete("1.0", tk.END)
         serial_log_cache += message
         serialout.insert(tk.END, serial_log_cache)
-        window.after(200, serial_updates_callback)
+        if follow_log:
+            serialout.see(Tkinter.END)
+        window.after(10, serial_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
 observer.start()
@@ -243,6 +255,8 @@ button_print = tk.Button(menubar, text="PRINT", command=onclick_print)
 button_print.pack(side=tk.LEFT)
 button_clearserial = tk.Button(menubar, text="CLEAR LOG", command=onclick_clearserial)
 button_clearserial.pack(side=tk.LEFT)
+button_followserial = tk.Button(menubar, text="FOLLOW LOG", relief="raised", command=onclick_followserial)
+button_followserial.pack(side=tk.LEFT)
 
 label_rfid_status = tk.Label(menubar, fg="blue")
 label_rfid_status.pack(side=tk.RIGHT)
@@ -271,7 +285,7 @@ threading.Thread(target=serial_thread, args=(SERIAL_PORT_1,)).start()
 threading.Thread(target=serial_thread, args=(SERIAL_PORT_2,)).start()
 window.after(200, room_rfid_code_updates_callback)
 window.after(101, rfid_sensor_updates_callback)
-window.after(200, serial_updates_callback)
+window.after(10, serial_updates_callback)
 window.mainloop()
 
 # Cleanup
