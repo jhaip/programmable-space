@@ -229,18 +229,19 @@ def rfid_sensor_updates_callback():
 
 def serial_updates_callback():
     global serial_updates, window, serialout, serial_log_cache, follow_log
-    try:
-        message = serial_updates.get(block=False)
-    except queue.Empty:
-        window.after(10, serial_updates_callback)  # let's try again later
-        return
-    if message is not None:
-        serialout.delete("1.0", tk.END)
-        serial_log_cache += message
-        serialout.insert(tk.END, serial_log_cache)
-        if follow_log:
-            serialout.see(tk.END)
-        window.after(10, serial_updates_callback)
+    while True:  # drain the queue
+        try:
+            message = serial_updates.get(block=False)
+        except queue.Empty:
+            window.after(100, serial_updates_callback)  # let's try again later
+            return
+        if message is not None:
+            serialout.delete("1.0", tk.END)
+            serial_log_cache += message
+            serialout.insert(tk.END, serial_log_cache)
+            if follow_log:
+                serialout.see(tk.END)
+            # window.after(10, serial_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
 observer.start()
@@ -286,7 +287,7 @@ threading.Thread(target=serial_thread, args=(SERIAL_PORT_1,)).start()
 threading.Thread(target=serial_thread, args=(SERIAL_PORT_2,)).start()
 window.after(200, room_rfid_code_updates_callback)
 window.after(101, rfid_sensor_updates_callback)
-window.after(10, serial_updates_callback)
+window.after(100, serial_updates_callback)
 window.mainloop()
 
 # Cleanup
