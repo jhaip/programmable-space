@@ -16,7 +16,8 @@ serial_updates = queue.Queue()
 room_ui_requests = queue.Queue()
 rfid_to_code = {}
 serial_log_cache = ""
-SERIAL_PORT = "/dev/ttyACM1"
+SERIAL_PORT_1 = "/dev/ttyACM0"
+SERIAL_PORT_2 = "/dev/ttyACM1"
 NO_RFID = ""
 ROOM_REQUEST_SAVE = "SAVE"
 ROOM_REQUEST_PRINT = "PRINT"
@@ -162,24 +163,24 @@ def rfid_sensor_thread():
         last_read_value = id
         time.sleep(0.1)
 
-def serial_thread():
-    global serial_updates, SERIAL_PORT
+def serial_thread(port):
+    global serial_updates
 
     class MyPacket(serial.threaded.LineReader):
         def handle_packet(self, packet):
             print(packet)
-            serial_updates.put(packet.decode("utf-8"))
+            serial_updates.put(packet.decode("utf-8") + "\n")
 
     class MyWatchedReaderThread(WatchedReaderThread):
         def handle_reconnect(self):
             print("Reconnected")
-            serial_updates.put("~~~Reconnected")
+            serial_updates.put("~~~Reconnected\n")
 
         def handle_disconnect(self, error):
             print("Disconnected")
-            serial_updates.put("~~~Disconnected")
+            serial_updates.put("~~~Disconnected\n")
 
-    ser = serial.Serial(SERIAL_PORT, baudrate=9600)
+    ser = serial.Serial(port, baudrate=9600)
     with MyWatchedReaderThread(ser, MyPacket) as protocol:
         while True:
             time.sleep(1)
@@ -266,7 +267,8 @@ load_code_to_editor()
 
 threading.Thread(target=room_thread).start()
 threading.Thread(target=rfid_sensor_thread).start()
-threading.Thread(target=serial_thread).start()
+threading.Thread(target=serial_thread, args=(SERIAL_PORT_1,)).start()
+threading.Thread(target=serial_thread, args=(SERIAL_PORT_2,)).start()
 window.after(200, room_rfid_code_updates_callback)
 window.after(101, rfid_sensor_updates_callback)
 window.after(200, serial_updates_callback)
