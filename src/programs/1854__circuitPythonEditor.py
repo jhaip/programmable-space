@@ -15,6 +15,7 @@ room_rfid_code_updates = queue.Queue()
 serial_updates = queue.Queue()
 room_ui_requests = queue.Queue()
 rfid_to_code = {}
+serial_log_cache = ""
 SERIAL_PORT = "/dev/ttyACM1"
 NO_RFID = ""
 ROOM_REQUEST_SAVE = "SAVE"
@@ -215,15 +216,16 @@ def rfid_sensor_updates_callback():
         window.after(101, rfid_sensor_updates_callback)
 
 def serial_updates_callback():
-    global serial_updates, window, serialout
+    global serial_updates, window, serialout, serial_log_cache
     try:
         message = serial_updates.get(block=False)
     except queue.Empty:
         window.after(200, serial_updates_callback)  # let's try again later
         return
     if message is not None:
-        # serialout.delete("1.0", tk.END)
-        serialout.insert(tk.END, message)
+        serialout.delete("1.0", tk.END)
+        serial_log_cache += message
+        serialout.insert(tk.END, serial_log_cache)
         window.after(200, serial_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
