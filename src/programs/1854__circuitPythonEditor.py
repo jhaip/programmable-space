@@ -159,7 +159,7 @@ def rfid_sensor_thread():
 def serial_thread():
     global serial_updates
 
-    PORT = "/dev/ttyACM0"
+    PORT = "/dev/ttyACM1"
 
     class MyPacket(serial.threaded.LineReader):
         def handle_packet(self, packet):
@@ -175,10 +175,10 @@ def serial_thread():
             print("Disconnected")
             serial_updates.put("~~~Disconnected")
 
-        ser = serial.Serial(PORT, baudrate=9600)
-        with MyWatchedReaderThread(ser, MyPacket) as protocol:
-            while True:
-                time.sleep(1)
+    ser = serial.Serial(PORT, baudrate=9600)
+    with MyWatchedReaderThread(ser, MyPacket) as protocol:
+        while True:
+            time.sleep(1)
 
 def room_rfid_code_updates_callback():
     global rfid_to_code, room_rfid_code_updates, window
