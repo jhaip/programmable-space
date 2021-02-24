@@ -75,7 +75,8 @@ def onclick_print():
         room_ui_requests.put((ROOM_REQUEST_PRINT, active_rfid, active_program_name, code))
 
 def onclick_clearserial():
-    global serialout
+    global serialout, serial_log_cache
+    serial_log_cache = ""
     serialout.delete("1.0", tk.END)
 
 def onclick_followserial():
