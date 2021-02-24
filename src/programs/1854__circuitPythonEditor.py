@@ -214,9 +214,9 @@ def rfid_sensor_updates_callback():
 def serial_updates_callback():
     global serial_updates, window, serialout
     try:
-        message = room_rfid_code_updates.get(block=False)
+        message = serial_updates.get(block=False)
     except queue.Empty:
-        window.after(200, room_rfid_code_updates_callback)  # let's try again later
+        window.after(200, serial_updates_callback)  # let's try again later
         return
     if message is not None:
         serialout.delete("1.0", tk.END)
