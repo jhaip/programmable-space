@@ -239,7 +239,7 @@ def serial_updates_callback():
         serial_log_cache += message
         serialout.insert(tk.END, serial_log_cache)
         if follow_log:
-            serialout.see(Tkinter.END)
+            serialout.see(tk.END)
         window.after(10, serial_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
