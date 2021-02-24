@@ -220,7 +220,7 @@ def serial_updates_callback():
         return
     if message is not None:
         serialout.delete("1.0", tk.END)
-        serialout.insert(tk.END, messae)
+        serialout.insert(tk.END, memessagessae)
         window.after(200, serial_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
