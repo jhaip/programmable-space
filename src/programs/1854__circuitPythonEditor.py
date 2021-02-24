@@ -1,5 +1,6 @@
 from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str, prehook, listen
 from mfrc522 import SimpleMFRC522
+from watchedserial import WatchedReaderThread
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import pyudev
@@ -7,9 +8,11 @@ import glob
 import time
 import queue
 import threading
+import serial
 
 rfid_sensor_updates = queue.Queue()
 room_rfid_code_updates = queue.Queue()
+serial_updates = queue.Queue()
 room_ui_requests = queue.Queue()
 rfid_to_code = {}
 NO_RFID = ""
@@ -153,6 +156,30 @@ def rfid_sensor_thread():
         last_read_value = id
         time.sleep(0.1)
 
+def serial_thread():
+    global serial_updates
+
+    PORT = "/dev/ttyACM0"
+
+    class MyPacket(serial.threaded.LineReader):
+        def handle_packet(self, packet):
+            print(packet)
+            serial_updates.put(packet)
+
+    class MyWatchedReaderThread(WatchedReaderThread):
+        def handle_reconnect(self):
+            print("Reconnected")
+            serial_updates.put("~~~Reconnected")
+
+        def handle_disconnect(self, error):
+            print("Disconnected")
+            serial_updates.put("~~~Disconnected")
+
+        ser = serial.Serial(PORT, baudrate=9600)
+        with MyWatchedReaderThread(ser, MyPacket) as protocol:
+            while True:
+                time.sleep(1)
+
 def room_rfid_code_updates_callback():
     global rfid_to_code, room_rfid_code_updates, window
     try:
@@ -184,6 +211,18 @@ def rfid_sensor_updates_callback():
                 onclick_save()
         window.after(101, rfid_sensor_updates_callback)
 
+def serial_updates_callback():
+    global serial_updates, window, serialout
+    try:
+        message = room_rfid_code_updates.get(block=False)
+    except queue.Empty:
+        window.after(200, room_rfid_code_updates_callback)  # let's try again later
+        return
+    if message is not None:
+        serialout.delete("1.0", tk.END)
+        serialout.insert(tk.END, messae)
+        window.after(200, serial_updates_callback)
+
 observer = pyudev.MonitorObserver(monitor, log_event)
 observer.start()
 
@@ -212,15 +251,17 @@ editor.pack(fill=tk.BOTH, expand=True)
 editorside.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
 
 frame2 = tk.Frame(master=body, width=100, bg="yellow")
-ScrolledText(frame2).pack(fill=tk.BOTH, expand=True)
+serialout = ScrolledText(frame2).pack(fill=tk.BOTH, expand=True)
 frame2.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
 
 load_code_to_editor()
 
 threading.Thread(target=room_thread).start()
 threading.Thread(target=rfid_sensor_thread).start()
+threading.Thread(target=serial_thread).start()
 window.after(200, room_rfid_code_updates_callback)
 window.after(101, rfid_sensor_updates_callback)
+window.after(200, serial_updates_callback)
 window.mainloop()
 
 # Cleanup
