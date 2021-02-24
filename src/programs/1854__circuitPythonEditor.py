@@ -229,7 +229,9 @@ def rfid_sensor_updates_callback():
 
 def serial_updates_callback():
     global serial_updates, window, serialout, serial_log_cache, follow_log
-    while True:  # drain the queue
+    max_messages_to_drain = 100
+    while max_messages_to_drain > 0:  # drain the queue
+        max_messages_to_drain -= 1
         try:
             message = serial_updates.get(block=False)
         except queue.Empty:
@@ -241,7 +243,8 @@ def serial_updates_callback():
             serialout.insert(tk.END, serial_log_cache)
             if follow_log:
                 serialout.see(tk.END)
-            # window.after(10, serial_updates_callback)
+    # fallback if more than 100 messages where drained
+    window.after(10, serial_updates_callback)
 
 observer = pyudev.MonitorObserver(monitor, log_event)
 observer.start()
