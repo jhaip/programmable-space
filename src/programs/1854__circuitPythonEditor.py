@@ -251,7 +251,8 @@ editor.pack(fill=tk.BOTH, expand=True)
 editorside.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
 
 frame2 = tk.Frame(master=body, width=100, bg="yellow")
-serialout = ScrolledText(frame2).pack(fill=tk.BOTH, expand=True)
+serialout = ScrolledText(frame2)
+serialout.pack(fill=tk.BOTH, expand=True)
 frame2.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
 
 load_code_to_editor()
