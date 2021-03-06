@@ -282,6 +282,29 @@ serialout = ScrolledText(frame2)
 serialout.pack(fill=tk.BOTH, expand=True)
 frame2.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
 
+accept_secret = False
+secret = ""
+def key(event):
+    global accept_secret, secret
+    print(event)
+    print(event.state)
+    print(event.char)
+    if accept_secret:
+        if event.state == 0:
+            secret += event.char
+        elif event.state == 4 and event.keysym == '2':
+            print("READ RFID: {}".format(secret))
+            rfid_sensor_updates.put(secret)
+            secret = ""
+            accept_secret = False
+        return "break"
+    elif event.state == 4 and event.keysym == '1':
+        accept_secret = True
+
+window.bind("<Key>", key)
+editor.bind("<Key>", key)
+serialout.bind("<Key>", key)
+
 load_code_to_editor()
 
 threading.Thread(target=room_thread).start()

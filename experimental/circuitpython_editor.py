@@ -20,7 +20,7 @@ def load_code_to_editor():
                         editor.insert(tk.END, data)
 
 def log_event(action, device):
-        if 'ID_FS_TYPE' in device and device.get('ID_FS_LABEL') == 'CIRCUI$
+        if 'ID_FS_TYPE' in device and device.get('ID_FS_LABEL') == 'CIRCUITPY':
                 print(action)
                 if action == "remove":
                         label_boardstatus.config(text="No device.")
