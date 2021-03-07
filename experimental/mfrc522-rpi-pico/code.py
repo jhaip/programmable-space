@@ -17,9 +17,9 @@ def uidToString(uid):
     return mystring
 
 def send_value(val):
-    print("TODO: send {}".format(val))
+    print("TODO: send {}".format(val.lower()))
     kbd.send(Keycode.CONTROL, Keycode.ONE)
-    layout.write(val)
+    layout.write(val.lower())
     kbd.send(Keycode.CONTROL, Keycode.TWO)
 
 reader = MFRC522()
