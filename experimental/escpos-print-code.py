@@ -5,6 +5,8 @@ PAPER_WIDTH = 570
 PAGE_SIZE = 440
 MARGIN = 30
 TITLE_FONT_SIZE = 36
+FONT_PATH_BASE = '/usr/share/fonts/' # '/Users/jacobhaip/Library/Fonts/'
+FONT_PATH = FONT_PATH_BASE + 'Inconsolata-SemiCondensedMedium.ttf'
 
 def printFront(programId):
     img = Image.new('RGB', (PAGE_SIZE, PAPER_WIDTH), color=(255, 255, 255))
@@ -13,8 +15,8 @@ def printFront(programId):
     d.line((0, 0, 0, PAPER_WIDTH), fill=50)
     d.line((PAGE_SIZE - 1, 0, PAGE_SIZE - 1, PAPER_WIDTH), fill=50)
     # Card title
-    fnt_title = ImageFont.truetype('/Users/jacobhaip/Library/Fonts/Inconsolata-SemiCondensedMedium.ttf', TITLE_FONT_SIZE)
-    fnt_description = ImageFont.truetype('/Users/jacobhaip/Library/Fonts/Inconsolata-SemiCondensedMedium.ttf', 24)
+    fnt_title = ImageFont.truetype(FONT_PATH, TITLE_FONT_SIZE)
+    fnt_description = ImageFont.truetype(FONT_PATH, 24)
     d.text((MARGIN, 0), "#{}".format(programId), font=fnt_title, fill=(0, 0, 0))
     # Drawing rectange
     d.rectangle([(MARGIN, TITLE_FONT_SIZE+5), (PAGE_SIZE - MARGIN, PAPER_WIDTH/2 + TITLE_FONT_SIZE+5)], outline=128, width=3)
@@ -27,7 +29,7 @@ def printFront(programId):
     p.cut()
 
 def printCode(text):
-    fnt = ImageFont.truetype('/Users/jacobhaip/Library/Fonts/Inconsolata-SemiCondensedMedium.ttf', 16)
+    fnt = ImageFont.truetype(FONT_PATH, 16)
     lines = text.split("\n")
     img_height = 20*(len(lines)+2)
     img = Image.new('RGB', (PAPER_WIDTH, img_height), color=(255, 255, 255))
