@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.dom.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="submit">submit</button>
+    <script>
+function setup() {
+  noCanvas();
+  const video = createCapture(VIDEO);
+  video.size(160, 120); // any bigger and the base64 payload is too large
+  const button = document.getElementById('submit');
+  button.addEventListener('click', async event => {
+    video.loadPixels();
+    const image64 = video.canvas.toDataURL();
+    const data = {
+      "claim": `wish "${image64.replace(`data:image/png;base64,`, "")}" would be thermal printed on epson`,
+      "retract": "$ $ blah"
+    };
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+      redirect: 'follow'
+    };
+    const response = await fetch('http://192.168.1.34:5000/cleanup-claim', options);
+    const json = await response.text();
+    console.log(json);
+  });
+}
+
+    </script>
+  </body>
+</html>
