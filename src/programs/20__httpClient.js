@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require("body-parser");
+const cors = require('cors');
 const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 const app = express();
 const port = 5000;
@@ -8,6 +9,7 @@ let data_cache = {};
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 app.use(express.static('./src/files/web-tablet'))
 
 app.post('/cleanup-claim', (req, res) => {
