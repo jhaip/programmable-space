@@ -6,6 +6,7 @@ from datetime import datetime
 import logging
 import base64
 import traceback
+import requests
 
 p = printer.Usb(0x04b8, 0x0e15)
 
@@ -13,7 +14,7 @@ p = printer.Usb(0x04b8, 0x0e15)
 def room_prehook_callback():
     batch([{"type": "death", "fact": [["id", get_my_id_str()]]}])
 
-@subscription(["$ $ wish $b64data would be thermal printed on epson"])
+@subscription(["$ $ wish $filePath would be thermal printed on epson"])
 def sub_callback(results):
     global p
     claims = []
@@ -31,11 +32,10 @@ def sub_callback(results):
     ]})
     batch(claims)
     for result in results:
-        logging.info("PRINTING {}".format(datetime.now().isoformat()))
+        logging.info("PRINTING {} {}".format(datetime.now().isoformat(), result["filePath"]))
         try:
-            im_bytes = base64.b64decode(result["b64data"])
-            im_file = BytesIO(im_bytes)
-            PIL_image = Image.open(im_file)
+            url = "http://192.168.1.34:5000/{}".format(result["filePath"])
+            PIL_image = Image.open(requests.get(url, stream=True).raw)
             p.image(PIL_image)
             p.cut()
         except Exception as e:
