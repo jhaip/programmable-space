@@ -12,7 +12,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static('./src/files/web-tablet'))
-const upload = multer({ dest: './src/files/web-tablet' })
+var storage = multer.diskStorage({   
+    destination: (req, file, cb) => cb(null, './src/files/web-tablet'), 
+    filename: (req, file, cb) => cb(null, file.originalname)
+});
+const upload = multer({ storage: storage }).single("myfile");
 
 app.post('/cleanup-claim', (req, res) => {
     console.error("cleanup-claim")
@@ -65,11 +69,14 @@ app.get('/select', (req, res) => {
     }
 })
 
-app.post('/profile', upload.any(), (req, res) => {
-    // req.file is the file
-    // req.body will hold the text fields, if there were any
-    console.error("GOT FILE");
-    console.error(req.body);
-  })
+app.post('/file', (req, res) => {
+    // send image as myfile
+    upload(req, res, (err) => {
+        if (err) {
+            res.status(400).send("Something went wrong!");
+        }
+        res.send(req.file);
+    });
+});
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
