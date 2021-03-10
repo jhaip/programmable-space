@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require("body-parser");
 const cors = require('cors');
+const multer  = require('multer');
 const { room, myId, scriptName, run } = require('../helpers/helper')(__filename);
 const app = express();
 const port = 5000;
@@ -11,6 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static('./src/files/web-tablet'))
+const upload = multer({ dest: './src/files/web-tablet' })
 
 app.post('/cleanup-claim', (req, res) => {
     console.error("cleanup-claim")
@@ -62,5 +64,12 @@ app.get('/select', (req, res) => {
         res.status(400).send("could not parse JSON query parameter 'subscription'")
     }
 })
+
+app.post('/profile', upload.any(), (req, res) => {
+    // req.file is the file
+    // req.body will hold the text fields, if there were any
+    console.error("GOT FILE");
+    console.error(req.body);
+  })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
