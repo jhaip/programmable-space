@@ -25,6 +25,7 @@ SERIAL_PORT_2 = "/dev/ttyACM1"
 NO_RFID = ""
 ROOM_REQUEST_SAVE = "SAVE"
 ROOM_REQUEST_PRINT = "PRINT"
+ROOM_REQUEST_PRINT_FRONT = "PRINT_FRONT"
 # Print image generation stuff
 PAPER_WIDTH = 570
 PAGE_SIZE = 440
@@ -87,6 +88,14 @@ def onclick_print():
     else:
         print("not printing because no active_rfid or not in code")
 
+def onclick_print_front():
+    global room_ui_requests
+    if active_rfid and active_rfid in rfid_to_code:
+        active_program_name = rfid_to_code[active_rfid][0]
+        room_ui_requests.put((ROOM_REQUEST_PRINT_FRONT, active_rfid, active_program_name, ""))
+    else:
+        print("not printing because no active_rfid or not in code")
+
 def onclick_clearserial():
     global serialout, serial_log_cache
     serial_log_cache = ""
@@ -119,6 +128,29 @@ def generate_and_upload_code_image(text):
     files = {'myfile': open('/tmp/1854-code.png', 'rb')}
     requests.post(url, files=files)
     print("done posting image")
+
+def generate_and_upload_code_front_image(programId):
+    img = Image.new('RGB', (PAGE_SIZE, PAPER_WIDTH), color=(255, 255, 255))
+    d = ImageDraw.Draw(img)
+    # Page edges
+    d.line((0, 0, 0, PAPER_WIDTH), fill=50)
+    d.line((PAGE_SIZE - 1, 0, PAGE_SIZE - 1, PAPER_WIDTH), fill=50)
+    # Card title
+    fnt_title = ImageFont.truetype(FONT_PATH, TITLE_FONT_SIZE)
+    fnt_description = ImageFont.truetype(FONT_PATH, 24)
+    d.text((MARGIN, 0), "#{}".format(programId), font=fnt_title, fill=(0, 0, 0))
+    # Drawing rectange
+    d.rectangle([(MARGIN, TITLE_FONT_SIZE+5), (PAGE_SIZE - MARGIN, PAPER_WIDTH/2 + TITLE_FONT_SIZE+5)], outline=128, width=3)
+    # Description
+    d.text((MARGIN, PAPER_WIDTH/2 + TITLE_FONT_SIZE+5 + 10), "DESCRIPTION:", font=fnt_description, fill=128)
+
+    img_r=img.rotate(90,  expand=1)
+    img_r.save('/tmp/1854-front.png')
+    print("done generating front image")
+    url = "http://{}:5000/file".format(os.getenv('PROG_SPACE_SERVER_URL', "localhost"))
+    files = {'myfile': open('/tmp/1854-front.png', 'rb')}
+    requests.post(url, files=files)
+    print("done posting front image")
 
 def room_thread():
     global room_ui_requests
@@ -174,6 +206,22 @@ def room_thread():
                         ["id", "0"],
                         ["text", "wish"],
                         ["text", "1854-code.png"],
+                        ["text", "would"],
+                        ["text", "be"],
+                        ["text", "thermal"],
+                        ["text", "printed"],
+                        ["text", "on"],
+                        ["text", "epson"],
+                    ]}
+                ])
+            elif req_type  == ROOM_REQUEST_PRINT_FRONT:
+                generate_and_upload_code_front_image(active_program_name)
+                batch([
+                    {"type": "claim", "fact": [
+                        ["id", get_my_id_str()],
+                        ["id", "0"],
+                        ["text", "wish"],
+                        ["text", "1854-front.png"],
                         ["text", "would"],
                         ["text", "be"],
                         ["text", "thermal"],
@@ -292,8 +340,10 @@ menubar = tk.Frame(master=window, width=200, height=50)
 menubar.pack(fill='x', side=tk.TOP, expand=False)
 button_save = tk.Button(menubar, text="SAVE", command=onclick_save)
 button_save.pack(side=tk.LEFT)
-button_print = tk.Button(menubar, text="PRINT", command=onclick_print)
+button_print = tk.Button(menubar, text="PRINT CODE", command=onclick_print)
 button_print.pack(side=tk.LEFT)
+button_print_front = tk.Button(menubar, text="PRINT FRONT", command=onclick_print_front)
+button_print_front.pack(side=tk.LEFT)
 button_clearserial = tk.Button(menubar, text="CLEAR LOG", command=onclick_clearserial)
 button_clearserial.pack(side=tk.LEFT)
 button_followserial = tk.Button(menubar, text="FOLLOW LOG", relief="raised", command=onclick_followserial)
