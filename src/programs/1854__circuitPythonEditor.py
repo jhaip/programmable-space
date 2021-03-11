@@ -11,6 +11,7 @@ import queue
 import threading
 import serial
 import requests
+import os
 
 rfid_sensor_updates = queue.Queue()
 room_rfid_code_updates = queue.Queue()
@@ -83,6 +84,8 @@ def onclick_print():
     if active_rfid and active_rfid in rfid_to_code:
         active_program_name = rfid_to_code[active_rfid][0]
         room_ui_requests.put((ROOM_REQUEST_PRINT, active_rfid, active_program_name, code))
+    else:
+        print("not printing because no active_rfid or not in code")
 
 def onclick_clearserial():
     global serialout, serial_log_cache
@@ -112,7 +115,7 @@ def generate_and_upload_code_image(text):
         d.text((0, i*20), lines[i], font=fnt, fill=(0,0,0))
     img.save('/tmp/1854-code.png')
     print("done generating code image")
-    url = "{}:5000/file".format(os.getenv('PROG_SPACE_SERVER_URL', "localhost"))
+    url = "http://{}:5000/file".format(os.getenv('PROG_SPACE_SERVER_URL', "localhost"))
     files = {'myfile': open('/tmp/1854-code.png', 'rb')}
     requests.post(url, files=files)
     print("done posting image")
