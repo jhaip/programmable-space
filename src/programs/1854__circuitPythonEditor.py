@@ -177,7 +177,7 @@ def room_thread():
                         ["text", "printed"],
                         ["text", "on"],
                         ["text", "epson"],
-                    ]}
+                    ]},
                 ])
         except queue.Empty:
             pass
