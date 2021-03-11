@@ -170,14 +170,14 @@ def room_thread():
                         ["id", get_my_id_str()],
                         ["id", "0"],
                         ["text", "wish"],
-                        ["text", "1854-code.png",
+                        ["text", "1854-code.png"],
                         ["text", "would"],
                         ["text", "be"],
                         ["text", "thermal"],
                         ["text", "printed"],
                         ["text", "on"],
                         ["text", "epson"],
-                    ]},
+                    ]}
                 ])
         except queue.Empty:
             pass
