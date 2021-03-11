@@ -1,6 +1,7 @@
 from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str, prehook, listen
 from mfrc522 import SimpleMFRC522
 from watchedserial import WatchedReaderThread
+from PIL import Image, ImageDraw, ImageFont
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import pyudev
@@ -9,6 +10,7 @@ import time
 import queue
 import threading
 import serial
+import requests
 
 rfid_sensor_updates = queue.Queue()
 room_rfid_code_updates = queue.Queue()
@@ -22,6 +24,14 @@ SERIAL_PORT_2 = "/dev/ttyACM1"
 NO_RFID = ""
 ROOM_REQUEST_SAVE = "SAVE"
 ROOM_REQUEST_PRINT = "PRINT"
+# Print image generation stuff
+PAPER_WIDTH = 570
+PAGE_SIZE = 440
+MARGIN = 30
+TITLE_FONT_SIZE = 36
+FONT_PATH_BASE = '/usr/share/fonts/' # '/Users/jacobhaip/Library/Fonts/'
+FONT_PATH = FONT_PATH_BASE + 'Inconsolata-SemiCondensedMedium.ttf'
+
 active_rfid = NO_RFID
 context = pyudev.Context()
 monitor = pyudev.Monitor.from_netlink(context)
@@ -88,6 +98,25 @@ def onclick_followserial():
         button_followserial.config(relief="sunken")
         follow_log = False
 
+def generate_and_upload_code_image(text):
+    fnt = ImageFont.truetype(FONT_PATH, 16)
+    lines = text.split("\n")
+    img_height = 20*(len(lines)+2)
+    img = Image.new('RGB', (PAPER_WIDTH, img_height), color=(255, 255, 255))
+    d = ImageDraw.Draw(img)
+
+    for y in range(int(img_height/PAGE_SIZE) + 1):
+        d.line((0, y*PAGE_SIZE, PAPER_WIDTH, y*PAGE_SIZE), fill=50)
+
+    for i in range(len(lines)):
+        d.text((0, i*20), lines[i], font=fnt, fill=(0,0,0))
+    img.save('/tmp/1854-code.png')
+    print("done generating code image")
+    url = "{}:5000/file".format(os.getenv('PROG_SPACE_SERVER_URL', "localhost"))
+    files = {'myfile': open('/tmp/1854-code.png', 'rb')}
+    requests.post(url, files=files)
+    print("done posting image")
+
 def room_thread():
     global room_ui_requests
 
@@ -133,17 +162,21 @@ def room_thread():
                     ]}
                 ])
             elif req_type == ROOM_REQUEST_PRINT:
+                generate_and_upload_code_image(
+                    "Code for {}\n\n{}".format(active_program_name, clean_source_code)
+                )
                 batch([
                     {"type": "claim", "fact": [
                         ["id", get_my_id_str()],
                         ["id", "0"],
                         ["text", "wish"],
-                        ["text", "text"],
-                        ["text", "Code for {}\n\n{}".format(active_program_name, clean_source_code)],
+                        ["text", "1854-code.png",
                         ["text", "would"],
                         ["text", "be"],
                         ["text", "thermal"],
                         ["text", "printed"],
+                        ["text", "on"],
+                        ["text", "epson"],
                     ]}
                 ])
         except queue.Empty:
