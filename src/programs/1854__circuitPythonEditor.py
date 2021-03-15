@@ -334,7 +334,7 @@ observer = pyudev.MonitorObserver(monitor, log_event)
 observer.start()
 
 window = tk.Tk()
-window.attributes("-fullscreen", True)
+# window.attributes("-fullscreen", True)
 
 menubar = tk.Frame(master=window, width=200, height=50)
 menubar.pack(fill='x', side=tk.TOP, expand=False)
