@@ -12,6 +12,7 @@ import threading
 import serial
 import requests
 import os
+import traceback
 
 rfid_sensor_updates = queue.Queue()
 room_rfid_code_updates = queue.Queue()
@@ -275,10 +276,18 @@ def serial_thread(port):
             print("Disconnected")
             serial_updates.put("~~~Disconnected\n")
 
-    ser = serial.Serial(port, baudrate=9600)
-    with MyWatchedReaderThread(ser, MyPacket) as protocol:
-        while True:
-            time.sleep(1)
+    while True:
+        try:
+            ser = serial.Serial(port, baudrate=9600)
+            with MyWatchedReaderThread(ser, MyPacket) as protocol:
+                while True:
+                    time.sleep(1)
+        except Exception as e:
+            logging.info("Error in serial thread {}".format(port))
+            logging.info(traceback.format_exc())
+            logging.info("sleeping for 20 seconds")
+            serial_updates.put("~~~No serial connection on {}, sleeping...\n".format(port))
+            time.sleep(20)
 
 def room_rfid_code_updates_callback():
     global rfid_to_code, room_rfid_code_updates, window
