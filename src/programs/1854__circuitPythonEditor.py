@@ -283,9 +283,9 @@ def serial_thread(port):
                 while True:
                     time.sleep(1)
         except Exception as e:
-            logging.info("Error in serial thread {}".format(port))
-            logging.info(traceback.format_exc())
-            logging.info("sleeping for 20 seconds")
+            print("Error in serial thread {}".format(port))
+            print(traceback.format_exc())
+            print("sleeping for 20 seconds")
             serial_updates.put("~~~No serial connection on {}, sleeping...\n".format(port))
             time.sleep(20)
 
