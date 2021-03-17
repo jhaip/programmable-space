@@ -286,7 +286,6 @@ def serial_thread(port):
             print("Error in serial thread {}".format(port))
             print(traceback.format_exc())
             print("sleeping for 20 seconds")
-            serial_updates.put("~~~No serial connection on {}, sleeping...\n".format(port))
             time.sleep(20)
 
 def room_rfid_code_updates_callback():
