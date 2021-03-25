@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <title>Websocket Practice</title>
+  <script src="lib/codemirror.js"></script>
+  <link rel="stylesheet" href="lib/codemirror.css">
+  <link rel="stylesheet" href="lib/ayu-dark.css">
+  <script src="lib/python.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #topbar {
+      border-bottom: 2px solid #333;
+      background-color: black;
+      user-select: none;
+    }
+    #main {
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: row;
+    }
+    #editor {
+      flex-basis: 70%;
+    }
+    .CodeMirror {
+      font-size: 20px;
+      line-height: 1.3;
+      height: 100%;
+      overflow: hidden;
+    }
+    #serialout {
+      flex-grow: 1;
+      background-color: black;
+      border-left: 2px solid #333;
+      height: 100%;
+      overflow: hidden;
+    }
+    button {
+      margin: 10px 4px;
+      background-color: #333;
+      border: none;
+      color: #CCC;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      text-transform: uppercase;
+      display: inline-block;
+      font-size: 20px;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #555;
+      cursor: pointer;
+    }
+    button:focus {
+      outline:0;
+    }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <button onClick="fire('SAVE')">Save</button>
+    <button onClick="fire('PRINT-CODE')">Print Code</button>
+    <button onClick="fire('PRINT-FRONT')">Print Front</button>
+    <button onClick="clearSerial();">Clear Serial</button>
+  </div>
+  <div id="main">
+    <div id="editor"></div>
+    <div id="serialout"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
