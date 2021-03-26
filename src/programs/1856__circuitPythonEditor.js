@@ -98,14 +98,37 @@ gamepad.on("down", function (id, num) {
 // https://medium.com/@machadogj/arduino-and-node-js-via-serial-port-bcf9691fab6a
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
-const port = new SerialPort('/dev/ttyACM0', { baudRate: 9600 });
-const parser = port.pipe(new Readline({ delimiter: '\n' }));
-// Read the port data
-port.on("open", () => {
-  console.log('serial port open');
-});
-parser.on('data', data =>{
-  console.log('got word from arduino:', data);
+
+const portPaths = ['/dev/tty.usbmodem144101']; // ['/dev/ttyACM0', '/dev/ttyACM1'];
+portPaths.forEach(portPath => {
+  const port = new SerialPort(portPath, { baudRate: 9600, autoOpen: false });
+  const parser = port.pipe(new Readline({ delimiter: '\n' }));
+  const openPort = () => {
+    port.open(err => {
+      if (err) {
+        console.log('Error opening port: ', err.message)
+        setTimeout(openPort, 10*1000);
+      }
+    });
+  }
+  openPort();
+  port.on("open", () => {
+    console.log('serial port open');
+    updateUiWithCode({'type': 'SERIAL', 'data': `~~~~~ ${portPath} opened`});
+  });
+  port.on("error", err => {
+    console.log('serial port error', err.message);
+    updateUiWithCode({'type': 'SERIAL', 'data': `~~~~~ ${portPath} error`});
+  });
+  port.on("close", err => {
+    console.log('serial port closed', err.message);
+    updateUiWithCode({'type': 'SERIAL', 'data': `~~~~~ ${portPath} closed`});
+    setTimeout(openPort, 10*1000);
+  });
+  parser.on('data', data =>{
+    console.log('got word from arduino:', data);
+    updateUiWithCode({'type': 'SERIAL', 'data': data});
+  });
 });
 
 /////////////////////////////////////////////////////////////

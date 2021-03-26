@@ -12,6 +12,10 @@ ws.onmessage = (event) => {
   if (msgType === 'CODE') {
     console.log(msgData);
     rfidToCode = msgData;
+  } else if (msgType === 'SERIAL') {
+    console.log(`SERIAL: ${msgData}`);
+    const $serialout = getElement('serialout');
+    $serialout.innerHTML += `${msgData}<br>`;
   }
 };
 const fire = (msg) => {
