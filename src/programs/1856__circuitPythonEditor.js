@@ -293,7 +293,7 @@ portPaths.forEach(portPath => {
 // CIRCUITPY Drive detection
 /////////////////////////////////////////////////////////////
 
-function updateUiWithCode() {
+function loadCodeToEditor() {
   console.log("TODO");
 }
 
