@@ -290,6 +290,35 @@ portPaths.forEach(portPath => {
 });
 
 /////////////////////////////////////////////////////////////
+// CIRCUITPY Drive detection
+/////////////////////////////////////////////////////////////
+
+function updateUiWithCode() {
+  console.log("TODO");
+}
+
+var udev = require("udev");
+
+var monitor = udev.monitor("block");
+monitor.on('add', function (device) {
+  // console.log('added ' + device);
+  if (device.ID_FS_TYPE && device.ID_FS_LABEL === 'CIRCUITPY') {
+    updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'Connecting...'});
+    setTimeout(loadCodeToEditor, 500);
+  }
+});
+monitor.on('remove', function (device) {
+  // console.log('removed ' + device);
+  if (device.ID_FS_TYPE && device.ID_FS_LABEL === 'CIRCUITPY') {
+    updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'No device.'});
+  }
+});
+// I don't think we need change?
+// monitor.on('change', function (device) {
+//   console.log('changed ' + device);
+// });
+
+/////////////////////////////////////////////////////////////
 // Prog space stuff
 /////////////////////////////////////////////////////////////
 
