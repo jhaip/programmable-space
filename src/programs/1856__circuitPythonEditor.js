@@ -2,8 +2,10 @@ const { room, myId, MY_ID_STR, run } = require('../helpers/helper')(__filename);
 const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
-const app = express();
+const fs = require('fs');
+const request = require('request');
 const gamepad = require("gamepad");
+const app = express();
 
 app.use(express.static('./src/files/circuitPythonEditor'))
 
@@ -33,13 +35,20 @@ const socketServer = new WebSocket.Server({port: 3030});
 socketServer.on('connection', (socketClient) => {
   console.log('connected');
   console.log('client Set length: ', socketServer.clients.size);
-  updateUiWithCode({'type': 'CODE', 'data': rfidToCode});
+  updateUiWithCode({'type': 'RFID', 'data': {'rfid': activeRFID, 'nameAndCode': rfidToCode[activeRFID] || null}});
   // Send initial data to new client
   //socketClient.send(JSON.stringify(messages));
 
   socketClient.on('message', (message) => {
     console.log(message);
     // TODO: save, print front, print code
+    if (message === 'PRINT-FRONT') {
+      if (rfidToCode[activeRFID]) {
+        generate_and_upload_code_front_image(rfidToCode[activeRFID][0]);
+      } else {
+        console.log(`can't print, active RFID ${activeRFID} not in rfidToCode`);
+      }
+    }
   });
 
   socketClient.on('close', (socketClient) => {
@@ -87,12 +96,13 @@ gamepad.on("move", function (id, axis, value) {
     joystickValues[3] !== ""
   ) {
     activeRFID = joystickValues.join("");
+    joystickValues = ["", "", "", ""];
     if (activeRFID === "7f7f7f7f") {
       activeRFID = "";
     }
-    // TODO: sent to frontend
-    joystickValues = ["", "", "", ""];
     console.log(`NEW RFID VALUE: ${activeRFID}`);
+    console.log(Object.keys(rfidToCode));
+    updateUiWithCode({'type': 'RFID', 'data': {'rfid': activeRFID, 'nameAndCode': rfidToCode[activeRFID] || null}});
   }
 });
  
@@ -111,6 +121,68 @@ gamepad.on("down", function (id, num) {
     num: num,
   });
 });
+
+/////////////////////////////////////////////////////////////
+// Generate code images
+/////////////////////////////////////////////////////////////
+
+const { createCanvas } = require('canvas');
+
+const PAPER_WIDTH = 570;
+const PAGE_SIZE = 440;
+const MARGIN = 30;
+const TITLE_FONT_SIZE = 36;
+// const FONT_PATH_BASE = '/usr/share/fonts/'
+const FONT_NAME = 'Inconsolata-SemiCondensedMedium.ttf';
+const FONT_PATH_BASE = '/Users/jacobhaip/Library/Fonts/';
+const FONT_PATH = FONT_PATH_BASE + FONT_NAME;
+
+function generate_and_upload_code_front_image(programId) {
+  const canvas = createCanvas(PAGE_SIZE, PAPER_WIDTH)
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#FFF'
+  ctx.fillRect(0, 0, PAGE_SIZE, PAPER_WIDTH)
+  // Page edges
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.beginPath();
+  ctx.lineTo(0, 0);
+  ctx.lineTo(0, PAPER_WIDTH);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.lineTo(PAGE_SIZE - 1, 0);
+  ctx.lineTo(PAGE_SIZE - 1, PAPER_WIDTH);
+  ctx.stroke();
+  // Card title
+  ctx.font = `${TITLE_FONT_SIZE}px ${FONT_NAME}`;
+  ctx.fillStyle = '#000';
+  ctx.fillText(`#${programId}`, MARGIN, 0)
+  // Drawing rectange
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.strokeRect(MARGIN, TITLE_FONT_SIZE+5, PAGE_SIZE - MARGIN, PAPER_WIDTH/2 + TITLE_FONT_SIZE+5);
+  ctx.lineWidth = 1;
+  // Description
+  ctx.font = `$24px ${FONT_NAME}`;
+  ctx.fillStyle = '#777';
+  ctx.fillText("DESCRIPTION:", MARGIN, PAPER_WIDTH/2 + TITLE_FONT_SIZE+5 + 10)
+  // TODO: rotate image
+  // img_r=img.rotate(90,  expand=1)
+  const buffer = canvas.toBuffer('image/png');
+  fs.writeFileSync('/tmp/1854-front.png', buffer);
+  console.log("done generating front image")
+  const urlBase = process.env.PROG_SPACE_SERVER_URL || "localhost";
+  const url = `http://${urlBase}:5000/file`;
+  const formData = {
+    'myfile': fs.createReadStream('/tmp/1854-front.png'),
+  }
+  request.post(url, {formData: formData}, function(err, res, body) {
+    console.log(err, body);
+    console.log(res.status);
+    console.log("done posting front image")
+    room.assert(`wish "1854-front.png" would be thermal printed on epson`);
+    room.flush();
+  });
+}
 
 /////////////////////////////////////////////////////////////
 // serial log
@@ -177,7 +249,6 @@ room.onRaw(
       })
     }
     rfidToCode = rfidToSourceCode;
-    updateUiWithCode({'type': 'CODE', 'data': rfidToCode});
   }
 )
 

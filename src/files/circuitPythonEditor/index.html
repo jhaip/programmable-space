@@ -19,6 +19,23 @@
       background-color: black;
       user-select: none;
       flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+    }
+    .spacer {
+      flex-grow: 1;
+    }
+    #rfidStatus {
+      color: red;
+      font-size: 20px;
+      font-family: monospace;
+      padding-right: 20px;
+    }
+    #programStatus {
+      color: green;
+      font-size: 20px;
+      font-family: monospace;
+      padding-right: 20px;
     }
     #main {
       width: 100%;
@@ -76,6 +93,9 @@
     <button onClick="fire('PRINT-CODE')">Print Code</button>
     <button onClick="fire('PRINT-FRONT')">Print Front</button>
     <button onClick="clearSerial();">Clear Serial</button>
+    <div class="spacer"></div>
+    <div id="rfidStatus"></div>
+    <div id="programStatus"></div>
   </div>
   <div id="main">
     <div id="editor"></div>
