@@ -301,15 +301,15 @@ var udev = require("udev");
 
 var monitor = udev.monitor("block");
 monitor.on('add', function (device) {
-  // console.log('added ' + device);
   if (device.ID_FS_TYPE && device.ID_FS_LABEL === 'CIRCUITPY') {
+    console.log("added CIRCUITPY device");
     updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'Connecting...'});
     setTimeout(loadCodeToEditor, 500);
   }
 });
 monitor.on('remove', function (device) {
-  // console.log('removed ' + device);
   if (device.ID_FS_TYPE && device.ID_FS_LABEL === 'CIRCUITPY') {
+    console.log("lost CIRCUITPY device");
     updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'No device.'});
   }
 });

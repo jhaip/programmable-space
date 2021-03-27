@@ -5,6 +5,7 @@ var activeProgramEditing = "";
 const getElement = (id) => document.getElementById(id);
 const $rfidStatus = getElement('rfidStatus');
 const $programStatus = getElement('programStatus');
+const $boardStatus = getElement('boardStatus');
 const $serialout = getElement('serialout');
 var myCodeMirror = CodeMirror(getElement("editor"), {
   value: '',
@@ -37,6 +38,8 @@ ws.onmessage = (event) => {
   } else if (msgType === 'SERIAL') {
     console.log(`SERIAL: ${msgData}`);
     $serialout.innerHTML += `${msgData}<br>`;
+  } else if (msgType === 'BOARD_STATUS') {
+    $boardStatus.innerHTML = msgData;
   }
 };
 const fire = (type, data) => {
