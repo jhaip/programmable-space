@@ -254,7 +254,7 @@ function generate_and_upload_code_front_image(programId) {
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
-var portPaths = ['/dev/ttyACM0', '/dev/ttyACM1'];
+var portPaths = ['/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyAMA0'];
 if (process.platform === "darwin") {
   portPaths = ['/dev/tty.usbmodem144101'];
 }
