@@ -7,6 +7,8 @@ const request = require('request');
 const gamepad = require("gamepad");
 const app = express();
 
+const CODE_FILENAME = "/media/pi/CIRCUITPY/code.py";
+
 app.use(express.static('./src/files/circuitPythonEditor'))
 
 app.get('/', (req, res) => {
@@ -57,6 +59,25 @@ socketServer.on('connection', (socketClient) => {
       printFront();
     } else if (msgType === 'PRINT_CODE') {
       generate_and_upload_code_image(msgData);
+    } else if (msgType === 'SAVE') {
+      if (activeRFID && activeRFID in rfidToCode) {
+        const activeProgramName = rfidToCode[activeRFID][0];
+        const cleanSourceCode = msgData.replace(/"/g, String.fromCharCode(9787));
+        room.assert(`wish "${activeProgramName}" has source code`, ["text", cleanSourceCode]);
+        room.flush();
+      } else {
+        console.log("not saving to room because no RFID present");
+      }
+      if (boardConnected) {
+        fs.writeFile(CODE_FILENAME, msgData, 'utf-8', err => {
+          if (err) {
+            console.log("Error saving code!", err);
+          }
+          console.log("done saving.")
+        })
+      } else {
+        console.log("cannot save to board because board not connected");
+      }
     }
   });
 
@@ -293,10 +314,7 @@ portPaths.forEach(portPath => {
 // CIRCUITPY Drive detection
 /////////////////////////////////////////////////////////////
 
-var CODE_FILENAME = "/media/pi/CIRCUITPY/code.py";
-
 function loadCodeToEditor() {
-  console.log("TODO");
   fs.readFile(CODE_FILENAME, 'utf8', function(err, data) {
     if (err) {
       console.log("read CIRCUITPY file error:", err);
@@ -309,11 +327,12 @@ function loadCodeToEditor() {
 }
 
 var udev = require("udev");
-const e = require('express');
+var boardConnected =  false;
 
 var monitor = udev.monitor("block");
 monitor.on('add', function (device) {
   if (device.ID_FS_TYPE && device.ID_FS_LABEL === 'CIRCUITPY') {
+    boardConnected = true;
     console.log("added CIRCUITPY device");
     updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'Connecting...'});
     setTimeout(loadCodeToEditor, 500);
@@ -321,6 +340,7 @@ monitor.on('add', function (device) {
 });
 monitor.on('remove', function (device) {
   if (device.ID_FS_TYPE && device.ID_FS_LABEL === 'CIRCUITPY') {
+    boardConnected = false;
     console.log("lost CIRCUITPY device");
     updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'No device.'});
   }
