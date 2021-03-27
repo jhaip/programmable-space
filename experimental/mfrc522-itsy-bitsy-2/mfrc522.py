@@ -20,7 +20,8 @@ class MFRC522:
     AUTHENT1A = 0x60
     AUTHENT1B = 0x61
 
-    def __init__(self, gpioRst=None, gpioCs=None):
+    def __init__(self, gpioRst=None, gpioCs=None, cardWaitCount=2000):
+        self.cardWaitCount = cardWaitCount
         if gpioRst is not None:
             self.rst = DigitalInOut(gpioRst)
             self.rst.direction = Direction.OUTPUT
@@ -101,7 +102,7 @@ class MFRC522:
         if cmd == 0x0C:
             self._sflags(0x0D, 0x80)
 
-        i = 2000
+        i = self.cardWaitCount
         while True:
             n = self._rreg(0x04)
             i -= 1

@@ -52,6 +52,8 @@ socketServer.on('connection', (socketClient) => {
 // Gamepad stuff
 /////////////////////////////////////////////////////////////
 
+var joystickValues = ["", "", "", ""];
+var activeRFID = "";
 // Initialize the library
 gamepad.init()
  
@@ -72,6 +74,26 @@ gamepad.on("move", function (id, axis, value) {
     axis: axis,
     value: value,
   });
+  // RFID values are encoded using the x,y,z,r_z joystick values that range from -127 to 127
+  // Note: This -127 to 127 is less than a full byte so any RFID value that includes "FF" cannot be used
+  // And the middle value "7f7f7f7f" is used an the "no rfid card present" value
+  // For some reason the "gamepad" library labels them axis 3,4,5,6 and converts the range to 0-1
+  // .toString(16) converts the value to hex, which we want to two characters with '0' if needed
+  joystickValues[axis - 3] = ('0' + (Math.round(value * 127) + 127).toString(16)).slice(-2);
+  if (
+    joystickValues[0] !== "" &&
+    joystickValues[1] !== "" &&
+    joystickValues[2] !== "" &&
+    joystickValues[3] !== ""
+  ) {
+    activeRFID = joystickValues.join("");
+    if (activeRFID === "7f7f7f7f") {
+      activeRFID = "";
+    }
+    // TODO: sent to frontend
+    joystickValues = ["", "", "", ""];
+    console.log(`NEW RFID VALUE: ${activeRFID}`);
+  }
 });
  
 // Listen for button up events on all gamepads
