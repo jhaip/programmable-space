@@ -293,11 +293,23 @@ portPaths.forEach(portPath => {
 // CIRCUITPY Drive detection
 /////////////////////////////////////////////////////////////
 
+var CODE_FILENAME = "/media/pi/CIRCUITPY/code.py";
+
 function loadCodeToEditor() {
   console.log("TODO");
+  fs.readFile(CODE_FILENAME, 'utf8', function(err, data) {
+    if (err) {
+      console.log("read CIRCUITPY file error:", err);
+    } else {
+      console.log(data);
+      updateUiWithCode({'type': 'BOARD_STATUS', 'data': 'Connected'});
+      updateUiWithCode({'type': 'BOARD_CODE', 'data': data});
+    }
+  });
 }
 
 var udev = require("udev");
+const e = require('express');
 
 var monitor = udev.monitor("block");
 monitor.on('add', function (device) {

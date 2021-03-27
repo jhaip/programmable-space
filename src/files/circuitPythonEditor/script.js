@@ -40,6 +40,8 @@ ws.onmessage = (event) => {
     $serialout.innerHTML += `${msgData}<br>`;
   } else if (msgType === 'BOARD_STATUS') {
     $boardStatus.innerHTML = msgData;
+  } else if (msgType === 'BOARD_CODE') {
+    myCodeMirror.setValue(msgData);
   }
 };
 const fire = (type, data) => {
