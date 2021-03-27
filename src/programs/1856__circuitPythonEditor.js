@@ -42,6 +42,30 @@ const printFront = () => {
   }
 }
 
+function saveCodeToRoom(newCode) {
+  if (activeRFID && activeRFID in rfidToCode) {
+    const activeProgramName = rfidToCode[activeRFID][0];
+    const cleanSourceCode = newCode.replace(/"/g, String.fromCharCode(9787));
+    room.assert(`wish "${activeProgramName}" has source code`, ["text", cleanSourceCode]);
+    room.flush();
+  } else {
+    console.log("not saving to room because no RFID present");
+  }
+}
+
+function saveCodeToBoard(newCode) {
+  if (boardConnected) {
+    fs.writeFile(CODE_FILENAME, msgData, 'utf-8', err => {
+      if (err) {
+        console.log("Error saving code!", err);
+      }
+      console.log("done saving.")
+    })
+  } else {
+    console.log("cannot save to board because board not connected");
+  }
+}
+
 socketServer.on('connection', (socketClient) => {
   console.log('connected');
   console.log('client Set length: ', socketServer.clients.size);
@@ -60,24 +84,8 @@ socketServer.on('connection', (socketClient) => {
     } else if (msgType === 'PRINT_CODE') {
       generate_and_upload_code_image(msgData);
     } else if (msgType === 'SAVE') {
-      if (activeRFID && activeRFID in rfidToCode) {
-        const activeProgramName = rfidToCode[activeRFID][0];
-        const cleanSourceCode = msgData.replace(/"/g, String.fromCharCode(9787));
-        room.assert(`wish "${activeProgramName}" has source code`, ["text", cleanSourceCode]);
-        room.flush();
-      } else {
-        console.log("not saving to room because no RFID present");
-      }
-      if (boardConnected) {
-        fs.writeFile(CODE_FILENAME, msgData, 'utf-8', err => {
-          if (err) {
-            console.log("Error saving code!", err);
-          }
-          console.log("done saving.")
-        })
-      } else {
-        console.log("cannot save to board because board not connected");
-      }
+      saveCodeToRoom(msgData);
+      saveCodeToBoard(msgData);
     }
   });
 
@@ -135,6 +143,10 @@ gamepad.on("move", function (id, axis, value) {
     }
     console.log(`NEW RFID VALUE: ${activeRFID}`);
     updateUiWithCode({'type': 'RFID', 'data': {'rfid': activeRFID, 'nameAndCode': rfidToCode[activeRFID] || null}});
+    if (rfidToCode[activeRFID]) {
+      // save code to board is RFID card is changed
+      saveCodeToBoard(rfidToCode[activeRFID][1]);
+    }
   }
 });
  
