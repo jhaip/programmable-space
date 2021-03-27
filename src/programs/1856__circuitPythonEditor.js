@@ -55,19 +55,19 @@ function saveCodeToRoom(newCode) {
 
 function saveCodeToBoard(newCode) {
   if (boardConnected) {
-    // Delete file before saving to avoid OS errors?
-    fs.unlink(CODE_FILENAME, (err) => {
+    fs.open(CODE_FILENAME, 'r+', function(err, fd) {
       if (err) {
-        console.error(err)
-        return
+        console.log("could not open file", err);
+      } else {
+        fs.writeFile(fd, newCode, 'utf8', err => {
+          if (err) {
+            console.log("Error saving code!", err);
+          }
+          fs.close(fd, function() {
+            console.log("done saving.")
+          });
+        });
       }
-      fs.writeFile(CODE_FILENAME, newCode, 'utf8', err => {
-        if (err) {
-          console.log("Error saving code!", err);
-        }
-        console.log("done saving.")
-      })  
-    })
   } else {
     console.log("cannot save to board because board not connected");
   }
