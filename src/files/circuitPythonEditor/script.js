@@ -38,6 +38,7 @@ ws.onmessage = (event) => {
   } else if (msgType === 'SERIAL') {
     console.log(`SERIAL: ${msgData}`);
     $serialout.innerHTML += `${msgData}<br>`;
+    $serialout.scrollTop = $serialout.scrollHeight;
   } else if (msgType === 'BOARD_STATUS') {
     $boardStatus.innerHTML = msgData;
   } else if (msgType === 'BOARD_CODE') {
