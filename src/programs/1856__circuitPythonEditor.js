@@ -97,7 +97,10 @@ gamepad.on("move", function (id, axis, value) {
   // And the middle value "7f7f7f7f" is used an the "no rfid card present" value
   // For some reason the "gamepad" library labels them axis 3,4,5,6 and converts the range to 0-1
   // .toString(16) converts the value to hex, which we want to two characters with '0' if needed
-  joystickValues[axis - 3] = ('0' + (Math.round(value * 127) + 127).toString(16)).slice(-2);
+  if (process.platform === "darwin") {
+    axis = axis - 3;
+  }
+  joystickValues[axis] = ('0' + (Math.round(value * 127) + 127).toString(16)).slice(-2);
   if (
     joystickValues[0] !== "" &&
     joystickValues[1] !== "" &&
@@ -147,10 +150,12 @@ const PAPER_WIDTH = 570;
 const PAGE_SIZE = 440;
 const MARGIN = 30;
 const TITLE_FONT_SIZE = 36;
-const FONT_PATH_BASE = '/usr/share/fonts/';
-// const FONT_PATH_BASE = '/Users/jacobhaip/Library/Fonts/';
-// const FONT_NAME = 'Inconsolata for Powerline.otf';
-const FONT_NAME = 'Inconsolata-SemiCondensedMedium.ttf';
+var FONT_PATH_BASE = '/usr/share/fonts/';
+var FONT_NAME = 'Inconsolata-SemiCondensedMedium.ttf';
+if (process.platform === "darwin") {
+  FONT_PATH_BASE = '/Users/jacobhaip/Library/Fonts/';
+  FONT_NAME = 'Inconsolata for Powerline.otf';
+}
 const FONT_PATH = FONT_PATH_BASE + FONT_NAME;
 registerFont(FONT_PATH, { family: 'Inconsolata', weight: 'normal' });
 
@@ -249,8 +254,10 @@ function generate_and_upload_code_front_image(programId) {
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
-// const portPaths = ['/dev/tty.usbmodem144101'];
-const portPaths = ['/dev/ttyACM0', '/dev/ttyACM1'];
+var portPaths = ['/dev/ttyACM0', '/dev/ttyACM1'];
+if (process.platform === "darwin") {
+  portPaths = ['/dev/tty.usbmodem144101'];
+}
 portPaths.forEach(portPath => {
   const port = new SerialPort(portPath, { baudRate: 9600, autoOpen: false });
   const parser = port.pipe(new Readline({ delimiter: '\n' }));
