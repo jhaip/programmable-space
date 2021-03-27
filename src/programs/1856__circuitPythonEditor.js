@@ -55,7 +55,7 @@ function saveCodeToRoom(newCode) {
 
 function saveCodeToBoard(newCode) {
   if (boardConnected) {
-    fs.writeFileSync(CODE_FILENAME, newCode, 'utf-8', err => {
+    fs.writeFile(CODE_FILENAME, newCode, 'utf8', err => {
       if (err) {
         console.log("Error saving code!", err);
       }
