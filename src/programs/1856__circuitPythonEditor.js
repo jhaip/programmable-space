@@ -147,9 +147,9 @@ const PAPER_WIDTH = 570;
 const PAGE_SIZE = 440;
 const MARGIN = 30;
 const TITLE_FONT_SIZE = 36;
-// const FONT_PATH_BASE = '/usr/share/fonts/'
+const FONT_PATH_BASE = '/usr/share/fonts/';
+// const FONT_PATH_BASE = '/Users/jacobhaip/Library/Fonts/';
 const FONT_NAME = 'Inconsolata for Powerline.otf'; // 'Inconsolata-SemiCondensedMedium.ttf';
-const FONT_PATH_BASE = '/Users/jacobhaip/Library/Fonts/';
 const FONT_PATH = FONT_PATH_BASE + FONT_NAME;
 registerFont(FONT_PATH, { family: 'Inconsolata', weight: 'normal' });
 
