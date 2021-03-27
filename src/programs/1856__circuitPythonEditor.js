@@ -249,7 +249,8 @@ function generate_and_upload_code_front_image(programId) {
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
-const portPaths = ['/dev/tty.usbmodem144101']; // ['/dev/ttyACM0', '/dev/ttyACM1'];
+// const portPaths = ['/dev/tty.usbmodem144101'];
+const portPaths = ['/dev/ttyACM0', '/dev/ttyACM1'];
 portPaths.forEach(portPath => {
   const port = new SerialPort(portPath, { baudRate: 9600, autoOpen: false });
   const parser = port.pipe(new Readline({ delimiter: '\n' }));
