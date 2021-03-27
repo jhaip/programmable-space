@@ -68,6 +68,7 @@ function saveCodeToBoard(newCode) {
           });
         });
       }
+    });
   } else {
     console.log("cannot save to board because board not connected");
   }
