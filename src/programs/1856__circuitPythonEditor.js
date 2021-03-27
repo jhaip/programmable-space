@@ -275,7 +275,7 @@ function generate_and_upload_code_front_image(programId) {
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
-var portPaths = ['/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyAMA0'];
+var portPaths = ['/dev/ttyACM0', '/dev/ttyACM1'];
 if (process.platform === "darwin") {
   portPaths = ['/dev/tty.usbmodem144101'];
 }
@@ -286,7 +286,10 @@ portPaths.forEach(portPath => {
     port.open(err => {
       if (err) {
         console.log('Error opening port: ', err.message)
-        setTimeout(openPort, 10*1000);
+        port.close(closeErr => {
+          if (closeErr) console.log("Close error", closeErr);
+          setTimeout(openPort, 10*1000);
+        })
       }
     });
   }
