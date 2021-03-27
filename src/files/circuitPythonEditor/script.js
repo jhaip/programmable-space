@@ -7,21 +7,10 @@ const $rfidStatus = getElement('rfidStatus');
 const $programStatus = getElement('programStatus');
 const $serialout = getElement('serialout');
 var myCodeMirror = CodeMirror(getElement("editor"), {
-  value: `import time
-import board
-import analogio
-from progspace_room import Room
-
-room = Room(use_debug=True)
-
-while True:
-    while room.connected():
-        room.cleanup()
-        room.claim('temp is {}'.format(5))
-        time.sleep(1)
-`,
+  value: '',
   mode: "python",
   lineNumbers: true,
+  scrollbarStyle: "simple",
   theme: 'ayu-dark',
 });
 const ws = new WebSocket('ws://localhost:3030');
@@ -50,9 +39,12 @@ ws.onmessage = (event) => {
     $serialout.innerHTML += `${msgData}<br>`;
   }
 };
-const fire = (msg) => {
-  ws.send(`${msg}`);
+const fire = (type, data) => {
+  ws.send(JSON.stringify({type, data}))
 };
+const printCode = () => fire('PRINT_CODE', myCodeMirror.getValue());
+const printFront = () => fire('PRINT_FRONT', null);
+const saveCode = () => fire('SAVE', myCodeMirror.getValue());
 
 function clearSerial() {
   $serialout.innerHTML = '';
