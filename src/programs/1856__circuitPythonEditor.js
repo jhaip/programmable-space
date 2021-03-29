@@ -55,11 +55,11 @@ function saveCodeToRoom(newCode) {
 
 function saveCodeToBoard(newCode) {
   if (boardConnected) {
-    fs.open(CODE_FILENAME, 'r+', function(err, fd) {
+    fs.open(CODE_FILENAME, 'w+', function(err, fd) {
       if (err) {
         console.log("could not open file", err);
       } else {
-        fs.writeFile(fd, newCode, 'utf8', err => {
+        fs.writeFile(fd, newCode, {flag: 'w', encoding: 'utf8'}, err => {
           if (err) {
             console.log("Error saving code!", err);
           }
