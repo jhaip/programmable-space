@@ -164,9 +164,10 @@ gamepad.on("up", function (id, num) {
     id: id,
     num: num,
   });
-  if (num === 897) {
+  const buttonNumber = process.platform === "darwin" ? num - 897: num;
+  if (num === buttonNumber) {
     printFront();
-  } else if (num === 898) {
+  } else if (num === buttonNumber) {
     if (activeRFID in rfidToCode) {
       generate_and_upload_code_image(rfidToCode[activeRFID][1]);
     }
