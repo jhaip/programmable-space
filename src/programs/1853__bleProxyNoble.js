@@ -1,5 +1,5 @@
 
-const { room, myId, MY_ID_STR, run } = require('../helpers/helper')(__filename);
+const { room, myId, MY_ID_STR, run, fullyParseFact } = require('../helpers/helper')(__filename);
 const noble = require('@abandonware/noble');
 
 var connectedCandidates = [];
@@ -109,7 +109,7 @@ class BLEDevice {
         console.log(`(${this.addr}): cleanup`);
       } else if (msg_type === "N") {
         const claim_fact_str = split_msg[1];
-        room.assertRaw([["id", MY_ID_STR], ["id", this.addr], ["text", claim_fact_str]])
+        room.assertRaw([["id", MY_ID_STR], ["id", this.addr]].concat(fullyParseFact(claim_fact_str)));
         room.flush();
         console.log(`(${this.addr}): claim ${claim_fact_str}`);
       } else {

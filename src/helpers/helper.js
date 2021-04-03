@@ -352,7 +352,7 @@ function init(filename) {
     }
 
     return {
-        room, myId, scriptName, MY_ID_STR, run, getIdFromProcessName, getIdStringFromId, afterServerConnects
+        room, myId, scriptName, MY_ID_STR, run, getIdFromProcessName, getIdStringFromId, afterServerConnects, fullyParseFact
     }
 }
 
