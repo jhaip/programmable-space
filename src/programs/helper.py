@@ -6,6 +6,8 @@ import uuid
 import random
 import os
 import sys
+import math
+import shlex
 
 context = zmq.Context()
 rpc_url = os.getenv('PROG_SPACE_SERVER_URL', "localhost")
@@ -99,6 +101,43 @@ def parse_results(val):
                 new_result[key] = str(result[key][1])
         results.append(new_result)
     return results
+
+
+def string_to_term(x):
+    if x[0] == '"':
+        return ["text", x[1:-1]]
+    try:
+        num = float(x)
+        if "." in x:
+            return ["float", "{:.6f}".format(num)]
+        return ["integer", str(int(num))]
+    except:
+        if x[0] == "#":
+            return ["id", x[1:]]
+        if x[0] == "$":
+            return ["variable", x[1:]]
+        if x[0] == "%":
+            return ["postfix", x[1:]]
+        return ["text", x]
+
+
+def tokenize_string(s):
+    shlex.split(s)
+
+
+def fully_parse_fact(q):
+    if type(q) == list:
+        terms = []
+        for qe in q:
+            if type(qe) == list:
+                terms.append(qe)
+            else:
+                q_tokens = tokenize_string(qe)
+                for x in q_tokens:
+                    terms.push(string_to_term(x))
+    else:
+        q_tokens = tokenize_string(q)
+        return [string_to_term(x) for x in q_tokens]
 
 
 def listen(blocking=True):
