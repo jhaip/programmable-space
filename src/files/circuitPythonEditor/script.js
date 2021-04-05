@@ -1,6 +1,8 @@
 var activeRfid = "";
 var originalRfidCode = "";
 var activeProgramEditing = "";
+var serialLinesSinceLastClear = 0;
+const MAX_SERIAL_LINES = 2000; // to prevent browser from running out of memory
 
 const getElement = (id) => document.getElementById(id);
 const $rfidStatus = getElement('rfidStatus');
@@ -37,6 +39,10 @@ ws.onmessage = (event) => {
     $programStatus.innerHTML = activeProgramEditing;
   } else if (msgType === 'SERIAL') {
     console.log(`SERIAL: ${msgData}`);
+    serialLinesSinceLastClear += 1;
+    if (serialLinesSinceLastClear > MAX_SERIAL_LINES) {
+      clearSerial();
+    }
     $serialout.innerHTML += `${msgData}<br>`;
     $serialout.scrollTop = $serialout.scrollHeight;
   } else if (msgType === 'BOARD_STATUS') {
@@ -54,4 +60,5 @@ const saveCode = () => fire('SAVE', myCodeMirror.getValue());
 
 function clearSerial() {
   $serialout.innerHTML = '';
+  serialLinesSinceLastClear = 0;
 }
