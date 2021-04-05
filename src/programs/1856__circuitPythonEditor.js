@@ -55,18 +55,26 @@ function saveCodeToRoom(newCode) {
 
 function saveCodeToBoard(newCode) {
   if (boardConnected) {
+    const smallDelay = 5;
     fs.open(CODE_FILENAME, 'w+', function(err, fd) {
       if (err) {
         console.log("could not open file", err);
-      } else {
-        fs.writeFile(fd, newCode, {flag: 'w', encoding: 'utf8'}, err => {
-          if (err) {
-            console.log("Error saving code!", err);
-          }
-          fs.close(fd, function() {
-            console.log("done saving.")
-          });
+        fs.close(fd, function() {
+          console.log("closed file after error");
         });
+      } else {
+        setTimeout(() => {
+          fs.writeFile(fd, newCode, {flag: 'w', encoding: 'utf8'}, err => {
+            if (err) {
+              console.log("Error saving code!", err);
+            }
+            setTimeout(() => {
+              fs.close(fd, function() {
+                console.log("done saving.")
+              });
+            }, smallDelay);
+          });
+        }, smallDelay);
       }
     });
   } else {
