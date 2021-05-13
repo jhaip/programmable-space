@@ -136,22 +136,47 @@ function init(filename) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    const waitForServerListening = () => {
+    const waitForServerListening = (timeout_ms = 5000) => {
         // Sends a single ping and loops until server_listening is set to true
         // server_listening is set to true outside this function in the message received callback
-        return new Promise(async resolve => {
+        return new Promise(async (resolve, reject) => {
             if (server_listening === false) {
                 if (sent_ping == false) {
                     client.send([`.....PING${MY_ID_STR}${init_ping_id}`])
                     sent_ping = true;
                 }
+                const listeningStartTime = new Date();
                 while (server_listening === false) {
+                    if ((new Date()) - listeningStartTime > timeout_ms) {
+                        reject(new Error('broker did not response in timeout window'))
+                    }
                     await sleep(100);
                     // await null; // prevents app from hanging
                 }
                 // console.log(`wait for server listening done ${MY_ID_STR}`)
             }
             resolve();
+        });
+    }
+
+    // checks if server is connected
+    // returns a promise
+    // if server responds, it returns a boolean if it was a reconnection to the server
+    // if server doesn't response, the promise is rejected
+    const checkServerConnection = () => {
+        console.log("checking if broker is still listening")
+        return new Promise(async (resolve, reject) => {
+            try {
+                const serverWasListening = server_listening;
+                server_listening = false // global
+                init_ping_id = randomId() // global
+                await waitForServerListening()
+                resolve(!serverWasListening);
+            } catch (err) {
+                // clear my cache of subscriptions
+                subscription_ids = {}; // global
+                reject(new Error('lost broker connection'))
+            }
         });
     }
 
@@ -352,7 +377,7 @@ function init(filename) {
     }
 
     return {
-        room, myId, scriptName, MY_ID_STR, run, getIdFromProcessName, getIdStringFromId, afterServerConnects, fullyParseFact
+        room, myId, scriptName, MY_ID_STR, run, getIdFromProcessName, getIdStringFromId, afterServerConnects, fullyParseFact, checkServerConnection
     }
 }
 
