@@ -106,7 +106,7 @@ class Illumination {
     toString() { return JSON.stringify(this.illuminations) }
 }
 
-function init(filename) {
+function init(filename, myOverrideId) {
     const scriptName = path.basename(filename);
     const scriptNameNoExtension = path.parse(scriptName).name;
     const logPath = filename.replace(scriptName, 'logs/' + scriptNameNoExtension + '.log')
@@ -115,7 +115,7 @@ function init(filename) {
     process.on('uncaughtException', function (err) {
         console.error((err && err.stack) ? err.stack : err);
     })
-    const myId = process.env.PROGRAM_ID || getIdFromProcessName(scriptName);
+    const myId = myOverrideId || getIdFromProcessName(scriptName);
 
     const rpc_url = process.env.PROG_SPACE_SERVER_URL || "localhost";
     const MY_ID_STR = getIdStringFromId(myId);
@@ -148,7 +148,7 @@ function init(filename) {
                 const listeningStartTime = new Date();
                 while (server_listening === false) {
                     if ((new Date()) - listeningStartTime > timeout_ms) {
-                        reject(new Error('broker did not response in timeout window'))
+                        reject(new Error('broker did not respond in timeout window'))
                         return;
                     }
                     await sleep(100);
