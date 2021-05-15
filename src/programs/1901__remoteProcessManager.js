@@ -1,6 +1,6 @@
 /*
 Call like:
-PROGRAM_ID=9001 sudo node src/programs/1901__remoteProcessManager.js
+PROG_SPACE_SERVER_URL='192.168.1.34' sudo -E node src/programs/1901__remoteProcessManager.js
 
 Assuming the os hostname is "haippi3", then you should be able to make other claims like:
 wish "... code as a shell script ..." would be running on "haippi3"
