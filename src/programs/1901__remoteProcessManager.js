@@ -17,19 +17,22 @@ const { room, run, MY_ID_STR, checkServerConnection } = require('../helpers/help
 
 const MY_COMPUTER_NAME = process.env.PROG_SPACE_MY_COMPUTER_NAME || os.hostname();
 const MY_SCRIPT_NAME = 'my_remote_script.sh'
+var serverPrevListening = true;
 
 setInterval(async () => {
   try {
-    const serverReconnected = await checkServerConnection();
+    await checkServerConnection();
     room.retractMine(`remoteProcessManager "${MY_COMPUTER_NAME}" update $`)
     room.assert(`remoteProcessManager "${MY_COMPUTER_NAME}" update ${(new Date()).toISOString()}`)
-    if (serverReconnected) {
+    if (!serverPrevListening) {
+      serverPrevListening = true;
       console.log("server reconnected, reinitializing subscriptions")
       initSubscriptions();
     }
   } catch (err) {
     console.log(err);
     console.log("Connection to server died")
+    serverPrevListening = false;
   }
 }, 30*1000);
 
