@@ -28,6 +28,7 @@ setInterval(async () => {
       initSubscriptions();
     }
   } catch (err) {
+    console.log(err);
     console.log("Connection to server died")
   }
 }, 30*1000);
