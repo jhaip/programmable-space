@@ -1,9 +1,9 @@
 /*
 Call like:
-PROGRAM_ID=9001 node src/programs/1901_remoteProcessManager.js
+PROGRAM_ID=9001 sudo node src/programs/1901__remoteProcessManager.js
 
-Assuming the os hostname is "haippi3.local", then you should be able to make other claims like:
-wish "... code as a shell script ..." would be running on "haippi3.local"
+Assuming the os hostname is "haippi3", then you should be able to make other claims like:
+wish "... code as a shell script ..." would be running on "haippi3"
 
 Expect the shell script when starting to stop any actively running programs that it created last time
 */
@@ -12,6 +12,7 @@ const process = require('process');
 const path = require('path');
 const pkill = require('pkill');
 const os = require('os');
+const fs = require('fs');
 const { room, run, MY_ID_STR, checkServerConnection } = require('../helpers/helper')(__filename);
 
 const MY_COMPUTER_NAME = process.env.PROG_SPACE_MY_COMPUTER_NAME || os.hostname();
@@ -53,5 +54,6 @@ function initSubscriptions() {
   )
 }
 
+room.cleanupOtherSource(MY_ID_STR);
 initSubscriptions();
 run()
