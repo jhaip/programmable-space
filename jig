@@ -239,6 +239,12 @@ function cmd() {
     cd ../..
     /home/jacob/processing-3.5.4/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --run 1994 &
     echo -e "booting"
+  elif [ "$1" == "remotestart" ]
+  then
+    pkill -f "1901__remoteProcessManager.js"
+    export PROG_SPACE_SERVER_URL="192.168.1.34"
+    sudo -E node src/programs/1901__remoteProcessManager.js $2 &
+    echo -e "booting"
   elif [ "$1" == "pieditorstart" ]
   then
     pkill -f "650__keyboard"
