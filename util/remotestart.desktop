@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/pi/programmable-space/jig remotestart 9003
+# Copy this file to ~/.config/autostart/pidisplay.desktop
