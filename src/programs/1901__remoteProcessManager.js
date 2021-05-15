@@ -3,7 +3,7 @@ Call like:
 PROG_SPACE_SERVER_URL='192.168.1.34' sudo -E node src/programs/1901__remoteProcessManager.js
 
 Assuming the os hostname is "haippi3", then you should be able to make other claims like:
-wish "... code as a shell script ..." would be running on "haippi3"
+wish "pkill -f 1856__circuitPythonEditor.js\nnode src/programs/1856__circuitPythonEditor.js" would be running on "haippi3"
 
 Expect the shell script when starting to stop any actively running programs that it created last time
 */
