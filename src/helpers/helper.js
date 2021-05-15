@@ -169,6 +169,7 @@ function init(filename) {
         return new Promise(async (resolve, reject) => {
             try {
                 const serverWasListening = server_listening;
+                sent_ping = false;
                 server_listening = false // global
                 init_ping_id = randomId() // global
                 await waitForServerListening()
