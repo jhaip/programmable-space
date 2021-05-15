@@ -149,6 +149,7 @@ function init(filename) {
                 while (server_listening === false) {
                     if ((new Date()) - listeningStartTime > timeout_ms) {
                         reject(new Error('broker did not response in timeout window'))
+                        return;
                     }
                     await sleep(100);
                     // await null; // prevents app from hanging
@@ -173,6 +174,7 @@ function init(filename) {
                 await waitForServerListening()
                 resolve(!serverWasListening);
             } catch (err) {
+                console.log(err);
                 // clear my cache of subscriptions
                 subscription_ids = {}; // global
                 reject(new Error('lost broker connection'))
