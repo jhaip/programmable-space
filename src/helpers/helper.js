@@ -115,7 +115,7 @@ function init(filename) {
     process.on('uncaughtException', function (err) {
         console.error((err && err.stack) ? err.stack : err);
     })
-    const myId = getIdFromProcessName(scriptName);
+    const myId = process.env.PROGRAM_ID || getIdFromProcessName(scriptName);
 
     const rpc_url = process.env.PROG_SPACE_SERVER_URL || "localhost";
     const MY_ID_STR = getIdStringFromId(myId);
