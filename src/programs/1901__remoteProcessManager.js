@@ -13,7 +13,8 @@ const path = require('path');
 const pkill = require('pkill');
 const os = require('os');
 const fs = require('fs');
-const { room, run, MY_ID_STR, checkServerConnection } = require('../helpers/helper')(__filename, "1901");
+var myArgs = process.argv.slice(2);
+const { room, run, MY_ID_STR, checkServerConnection } = require('../helpers/helper')(__filename, myArgs.length > 0 ? myArgs[0] : "1901");
 
 const MY_COMPUTER_NAME = process.env.PROG_SPACE_MY_COMPUTER_NAME || os.hostname();
 const MY_SCRIPT_NAME = 'my_remote_script.sh'
