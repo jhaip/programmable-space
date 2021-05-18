@@ -1,0 +1,19 @@
+[Unit]
+Description=Unified remote start script for programmable space clients
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# Copy this file to /etc/systemd/system
+# sudo systemctl daemon-reload
+# sudo systemctl start remoteprogspace
+# Run at boot: sudo systemctl enable remoteprogspace
+# Environment=PATH=/home/pi/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/usr/local/go/bin:/home/pi/.local/bin
+Environment=PROG_SPACE_SERVER_URL='192.168.1.34'
+Restart=always
+ExecStart=/home/pi/programmable-space/jig remotestart 9005
+ExecStop=/usr/bin/pkill -f programs/1901__remoteProcessManager.js
+
+[Install]
+WantedBy=multi-user.target
