@@ -51,7 +51,18 @@ function initSubscriptions() {
           fs.writeFile(MY_SCRIPT_NAME, sourceCode, err => {
             if (err) return console.log(err);
             console.log(`running ${MY_SCRIPT_NAME}`);
-            spawn("sh", [MY_SCRIPT_NAME]);
+            const child = spawn("sh", [MY_SCRIPT_NAME]);
+            child.stdout.setEncoding('utf8');
+            child.stdout.on('data', function(data) {
+                console.log('stdout: ' + data);
+            });
+            child.stderr.setEncoding('utf8');
+            child.stderr.on('data', function(data) {
+                console.log('stderr: ' + data);
+            });
+            child.on('close', function(code) {
+                console.log('closing code: ' + code);
+            });
           });
         });
       });
