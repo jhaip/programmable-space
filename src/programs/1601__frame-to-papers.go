@@ -218,8 +218,8 @@ func main() {
 	defer simpleKP.Close()
 
 	// set webcam properties
-	// webcam.Set(gocv.VideoCaptureFrameWidth, 1920)
-	// webcam.Set(gocv.VideoCaptureFrameHeight, 1080)
+	webcam.Set(gocv.VideoCaptureFrameWidth, 1920)
+	webcam.Set(gocv.VideoCaptureFrameHeight, 1080)
 	// webcam.Set(gocv.VideoCaptureFPS, 30)
 	// YUYV = 1448695129
 	// webcam.Set(gocv.VideoCaptureFOURCC, 1195724877) // MPEG
@@ -229,6 +229,7 @@ func main() {
 		fmt.Printf("cannot read device %v\n", deviceID)
 		return
 	}
+	fmt.Printf("Webcam resolution: %v %v\n", img.Size()[0], img.Size()[1])
 
 	lag := 250
 	lag_sub_id, lag_sub_id_err := newUUID()

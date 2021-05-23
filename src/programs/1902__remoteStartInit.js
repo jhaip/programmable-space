@@ -6,14 +6,14 @@ pkill -f "1601__frame-to-papers.go"
 pkill -f "exe/1601__frame-to-papers"
 pkill -f "processing/graphics"
 export PATH=/home/jacob/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin
-export DISPLAY=:1
-# export HEADLESS_CV=true
+export DISPLAY=:0
+export HEADLESS_CV=true
 export CV_PROGRAM_ID="1599"
 export CV_CAMERA_ID="1994"
 sleep 2
 v4l2-ctl \
       --set-ctrl=white_balance_temperature_auto=0 \
-      --set-ctrl=white_balance_temperature=3000 \
+      --set-ctrl=white_balance_temperature=4500 \
       --set-ctrl=focus_auto=0
 v4l2-ctl --device /dev/video0 --set-fmt-video=width=1920,height=1080,pixelformat=MPEG
 sleep 2
