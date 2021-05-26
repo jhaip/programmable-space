@@ -1,6 +1,7 @@
 const { room, run, MY_ID_STR } = require('../helpers/helper')(__filename);
 
-let start_g5 = `
+const TARGET_CODE_MAP = {
+"jacob-G5-5090": `
 cd /home/jacob/programmable-space
 pkill -f "1601__frame-to-papers.go"
 pkill -f "exe/1601__frame-to-papers"
@@ -21,10 +22,34 @@ cd src/programs
 PROG_SPACE_SERVER_URL="192.168.1.34" /usr/local/go/bin/go run 1601__frame-to-papers.go 0 &
 cd ../..
 /home/jacob/processing-3.5.4/processing-java --output=/home/jacob/tmp/processing/ --sketch=src/processing/graphics --force --run 1994
-`;
+`,
 
-room.assert(`wish`, ["text", start_g5.replace(/"/g, String.fromCharCode(9787))], `would be running on`, ["text", "jacob-G5-5090"])
+"haippi3": `
+pkill -f '650__keyboard'
+pkill -f 'processing/graphics'
+export DISPLAY=:0
+export PROG_SPACE_SERVER_URL='192.168.1.34'
+sudo python3 src/programs/650__keyboard.py &
+/usr/local/bin/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --run 1999 &
+`,
 
+"haippi5": `
+pkill -f programs/793__textToSpeech.js
+pkill -f programs/792__deepspeech.py
+sudo PROG_SPACE_SERVER_URL='192.168.1.34' node /home/pi/programmable-space/src/programs/793__textToSpeech.js &
+sudo -E python3 /home/pi/programmable-space/src/programs/792__deepspeech.py -m /home/pi/deepspeech-0.7.4-models.tflite -s /home/pi/deepspeech-0.7.4-models.scorer &
+`,
+
+"haippi9": `
+sudo pkill -f '1855__thermalPrinterEscpos.py'
+sudo -E python3 src/programs/1855__thermalPrinterEscpos.py &
+`,
+};
+
+for (target in TARGET_CODE_MAP) {
+  room.retractAll(`wish $ would be running on`, ["text", target]);
+  room.assert(`wish`, ["text", TARGET_CODE_MAP[target].replace(/"/g, String.fromCharCode(9787))], `would be running on`, ["text", target]);
+}
 room.cleanupOtherSource(MY_ID_STR);
 run();
 
