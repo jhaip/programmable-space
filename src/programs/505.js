@@ -3,6 +3,7 @@ const { room, myId, run } = require('../helpers/helper')(__filename);
 room.cleanup();
 room.assert("x wish RGB light strand is color 0 0 0");
 
+// TODO: poll on a daily cycle to catch even if the weather isn't changing?
 room.on(`weather forecast for $timestamp is low $low F high $high F and $weather with $p chance of rain`,
     results => {
         room.subscriptionPrefix(1);
