@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      color: yellow;
+    }
+  </style>
+</head>
+<body>
+  <img id="frame" />
+  <div id="corner0" class="corner" >1</div>
+  <div id="corner1" class="corner" >2</div>
+  <div id="corner2" class="corner" >3</div>
+  <div id="corner3" class="corner" >4</div>
+  <script>
+    var selectingIndex = 0;
+    var cal = [0, 0, 0, 0, 0, 0, 0, 0];
+    async function loop() {
+      try {
+        const response = await fetch('/frame')
+        const myBlob = await response.blob();
+        document.getElementById("frame").src = URL.createObjectURL(myBlob);
+        const calResponse = await fetch('/cal');
+        cal = await calResponse.json();
+        console.log(cal);
+        updateCorners();
+        if (longPollingActive) {
+          setTimeout(function () {
+            loop();
+          }, 1000);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    
+    loop();
+
+    async function sendNewCalibration() {
+      const response = await fetch('/cal', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: 'follow',
+        body: JSON.stringify(cal)
+      });
+      console.log(response.json());
+    }
+
+    function updateCorners() {
+      updateCornerLocation(0, cal[0], cal[1]);
+      updateCornerLocation(1, cal[2], cal[3]);
+      updateCornerLocation(2, cal[4], cal[5]);
+      updateCornerLocation(3, cal[6], cal[7]);
+    }
+
+    function updateCornerLocation(index, x, y) {
+      document.getElementById(`corner${index}`).style=`position:absolute; left:${x-10}px; top:${y-10}px;`;
+    }
+    
+    function printMousePos(event) {
+      console.log("clientX: " + event.clientX, "clientY: " + event.clientY);
+      cal[selectingIndex*2] = event.clientX;
+      cal[selectingIndex*2 + 1] = event.clientY;
+      updateCorners();
+      sendNewCalibration();
+    }
+    document.getElementById("frame").addEventListener("click", printMousePos);
+    
+document.onkeypress = function(evt) {
+    evt = evt || window.event;
+    var charCode = evt.keyCode || evt.which;
+    var charStr = String.fromCharCode(charCode);
+    console.log(charStr);
+    if (charStr === '1' || charStr === '2' || charStr === '3' || charStr === '4') {
+      selectingIndex = (+charStr)-1;
+    }
+};
+      </script>
+</body>
+</html>

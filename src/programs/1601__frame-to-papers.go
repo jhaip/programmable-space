@@ -12,9 +12,11 @@ import (
 	"image/color"
 	"github.com/nfnt/resize"
 	"image/png"
+	"image/jpeg"
 	"io"
 	"log"
 	"math"
+	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -34,7 +36,9 @@ const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
 var CAMERA_ID = "1"
+var cal = []int{0,0,0,0,0,0,0,0};
 var webcamMutex sync.Mutex
+var cachedFrame image.Image
 
 type Vec struct {
 	X int `json:"x"`
@@ -103,7 +107,7 @@ func GetBasePath() string {
 	} else if runtime.GOOS == "plan9" {
 		env = "home"
 	}
-	return os.Getenv(env) + "/programmable-space/src/"
+	return os.Getenv(env) + "/Personal/programmable-space/src/"
 }
 
 // Copied from https://play.golang.org/p/4FkNSiUDMg
@@ -141,6 +145,52 @@ func initZeroMQ(MY_ID_STR string) *zmq.Socket {
 	checkErr(recvErr);
 	
 	return client
+}
+
+func hello(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "hello\n")
+}
+
+func get_calibration(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "GET" {
+		msg, _ := json.Marshal(cal)
+		fmt.Fprintf(w, fmt.Sprintf("%s\n", msg))
+	} else if req.Method == "POST" {
+		decoder := json.NewDecoder(req.Body)
+    var t []int
+    err := decoder.Decode(&t)
+    checkErr(err)
+		fmt.Println("GOT NEW CAL", t)
+		cal = t
+		// TODO: claim cal back to room
+	}
+}
+
+func writeImage(w http.ResponseWriter, img *image.Image) {
+	buffer := new(bytes.Buffer)
+	if err := jpeg.Encode(buffer, *img, nil); err != nil {
+			log.Println("unable to encode image.")
+	}
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+	if _, err := w.Write(buffer.Bytes()); err != nil {
+			log.Println("unable to write image.")
+	}
+}
+
+func shareFrame(w http.ResponseWriter, req *http.Request) {
+	writeImage(w, &cachedFrame)
+}
+
+func serveFiles(w http.ResponseWriter, r *http.Request) {
+	// fmt.Println(r.URL.Path)
+	// p := "." + r.URL.Path
+	// if p == "./static/" {
+	// 		p = "./static/index.html"
+	// }
+	p := GetBasePath() + "files/frame-to-papers/index.html"
+	http.ServeFile(w, r, p)
 }
 
 func main() {
@@ -241,6 +291,13 @@ func main() {
 		client.SendMessage(lag_sub_msg)
 	}
 
+	cal_sub_id, cal_sub_id_err := newUUID()
+	checkErr(cal_sub_id_err)
+	cal_sub_query := map[string]interface{}{"id": cal_sub_id, "facts": []string{"$ $ camera " + CAMERA_ID + " has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $"}}
+	cal_sub_query_msg, _ := json.Marshal(cal_sub_query)
+	cal_sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, cal_sub_query_msg)
+	client.SendMessage(cal_sub_msg)
+
 	papers_cache := make(map[string]PaperCache)
 
 	if HEADLESS {
@@ -249,15 +306,26 @@ func main() {
 		go drainFrames(deviceID, webcam, drainImg)
 	}
 
+	
+	http.HandleFunc("/hello", hello)
+	http.HandleFunc("/cal", get_calibration)
+	http.HandleFunc("/frame", shareFrame)
+	http.HandleFunc("/static", serveFiles)
+	go func() {
+		http.ListenAndServe(":8090", nil)
+	}()
+
 	for {
 		start := time.Now()
 
-		if HEADLESS == false {
-			hasNewLag, newLag := getLag(client, MY_ID_STR, lag_sub_id)
-			if (hasNewLag) {
-				log.Println("**UPDATED LAG", newLag)
-				lag = newLag
-			}
+		hasNewLag, newLag, hasNewCal, newCal := getSubscriptionUpdates(client, MY_ID_STR, lag_sub_id, cal_sub_id)
+		if (hasNewLag) {
+			log.Println("**UPDATED LAG", newLag)
+			lag = newLag
+		}
+		if (hasNewCal) {
+			cal = newCal
+			fmt.Println("**UPDATED CAL", cal)
 		}
 
 		log.Println("waiting for dots")
@@ -267,6 +335,9 @@ func main() {
 			checkErr(errors.New("DEVICE_CLOSED"))
 		}
 		webcamMutex.Unlock()
+		var toImgErr error
+		cachedFrame, toImgErr = img.ToImage()
+		checkErr(toImgErr)
 
 		points, dotKeyPoints, dotError := getDots(bdp, img)
 		log.Println("got dots")
@@ -372,14 +443,16 @@ func main() {
 		}
 		// show the image in the window, and wait
 		if HEADLESS == false {
-			window.IMShow(simpleKP)
-			// this also limits the FPS - 1000 / 250 = 4 fps
-			keyId := window.WaitKey(lag)
-			if keyId == 27 {
-				return
-			} else if keyId == 99 {
-				// 99 == c key
-				claimBase64Screenshot(client, MY_ID_STR, img)
+			if simpleKP.Empty() == false && simpleKP.Size()[0] > 0 && simpleKP.Size()[1] > 0 {
+				window.IMShow(simpleKP)
+				// this also limits the FPS - 1000 / 250 = 4 fps
+				keyId := window.WaitKey(lag)
+				if keyId == 27 {
+					return
+				} else if keyId == 99 {
+					// 99 == c key
+					claimBase64Screenshot(client, MY_ID_STR, img)
+				}
 			}
 		} else {
 			// claim base64 screenshot every X frames
@@ -406,7 +479,7 @@ func trimLeftChars(s string, n int) string {
 	return s[:0]
 }
 
-func getLag(client *zmq.Socket, MY_ID_STR string, lag_sub_id string) (bool, int) {
+func getSubscriptionUpdates(client *zmq.Socket, MY_ID_STR string, lag_sub_id string, cal_sub_id string) (bool, int, bool, []int) {
 	sub_prefix := fmt.Sprintf("%s%s", MY_ID_STR, lag_sub_id)
 	rawReply, err := client.RecvMessage(zmq.DONTWAIT)
 	if err == nil {
@@ -414,20 +487,41 @@ func getLag(client *zmq.Socket, MY_ID_STR string, lag_sub_id string) (bool, int)
 		val := trimLeftChars(reply, len(sub_prefix)+13)
 		json_val := make([]map[string][]string, 0)
 		json.Unmarshal([]byte(val), &json_val)
-		if len(json_val) > 0 {
-			json_result := json_val[0]
-			rawLag, err := strconv.Atoi(json_result["lag"][1])
-			checkErr(err)
-			MIN_LOOP_DELAY := 200
-			MAX_LOOP_DELAY := 5000
-			lag := rawLag*5 + MIN_LOOP_DELAY
-			if lag > MAX_LOOP_DELAY {
-				lag = MAX_LOOP_DELAY
+		// TODO
+		fmt.Printf("%v\n", json_val)
+		for _, json_result := range json_val {
+			if strings.Contains(reply, lag_sub_id) {
+				rawLag, err := strconv.Atoi(json_result["lag"][1])
+				checkErr(err)
+				MIN_LOOP_DELAY := 200
+				MAX_LOOP_DELAY := 5000
+				lag := rawLag*5 + MIN_LOOP_DELAY
+				if lag > MAX_LOOP_DELAY {
+					lag = MAX_LOOP_DELAY
+				}
+				return true, lag, false, []int{}
+			} else if strings.Contains(reply, cal_sub_id) {
+				x1, err := strconv.Atoi(json_result["x1"][1])
+				checkErr(err)
+				x2, err := strconv.Atoi(json_result["x2"][1])
+				checkErr(err)
+				x3, err := strconv.Atoi(json_result["x3"][1])
+				checkErr(err)
+				x4, err := strconv.Atoi(json_result["x4"][1])
+				checkErr(err)
+				y1, err := strconv.Atoi(json_result["y1"][1])
+				checkErr(err)
+				y2, err := strconv.Atoi(json_result["y2"][1])
+				checkErr(err)
+				y3, err := strconv.Atoi(json_result["y3"][1])
+				checkErr(err)
+				y4, err := strconv.Atoi(json_result["y4"][1])
+				checkErr(err)
+				return false, 0, true, []int{x1, y1, x2, y2, x3, y3, x4, y4};
 			}
-			return true, lag
 		}
 	}
-	return false, 0
+	return false, 0, false, []int{}
 }
 
 func projectMissingCorner(orderedCorners []PaperCorner, missingCornerId int) PaperCorner {
