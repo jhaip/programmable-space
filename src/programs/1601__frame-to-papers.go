@@ -16,6 +16,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"net"
 	"net/http"
 	"os"
 	"runtime"
@@ -147,22 +148,20 @@ func initZeroMQ(MY_ID_STR string) *zmq.Socket {
 	return client
 }
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello\n")
-}
-
-func get_calibration(w http.ResponseWriter, req *http.Request) {
-	if req.Method == "GET" {
-		msg, _ := json.Marshal(cal)
-		fmt.Fprintf(w, fmt.Sprintf("%s\n", msg))
-	} else if req.Method == "POST" {
-		decoder := json.NewDecoder(req.Body)
-    var t []int
-    err := decoder.Decode(&t)
-    checkErr(err)
-		fmt.Println("GOT NEW CAL", t)
-		cal = t
-		// TODO: claim cal back to room
+func make_get_calibration(client *zmq.Socket, MY_ID_STR string) func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		if req.Method == "GET" {
+			msg, _ := json.Marshal(cal)
+			fmt.Fprintf(w, fmt.Sprintf("%s\n", msg))
+		} else if req.Method == "POST" {
+			decoder := json.NewDecoder(req.Body)
+			var t []int
+			err := decoder.Decode(&t)
+			checkErr(err)
+			fmt.Println("GOT NEW CAL", t)
+			cal = t
+			claimCalibration(client, MY_ID_STR, cal)
+		}
 	}
 }
 
@@ -184,12 +183,11 @@ func shareFrame(w http.ResponseWriter, req *http.Request) {
 }
 
 func serveFiles(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println(r.URL.Path)
-	// p := "." + r.URL.Path
-	// if p == "./static/" {
-	// 		p = "./static/index.html"
-	// }
 	p := GetBasePath() + "files/frame-to-papers/index.html"
+	http.ServeFile(w, r, p)
+}
+func serveFilesFrame(w http.ResponseWriter, r *http.Request) {
+	p := GetBasePath() + "files/frame-to-papers/frame.jpg"
 	http.ServeFile(w, r, p)
 }
 
@@ -306,14 +304,14 @@ func main() {
 		go drainFrames(deviceID, webcam, drainImg)
 	}
 
-	
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/cal", get_calibration)
-	http.HandleFunc("/frame", shareFrame)
+	http.HandleFunc("/cal", make_get_calibration(client, MY_ID_STR))
+	http.HandleFunc("/frame", serveFilesFrame)
 	http.HandleFunc("/static", serveFiles)
 	go func() {
 		http.ListenAndServe(":8090", nil)
 	}()
+
+	claimFrameLocation(client, MY_ID_STR);
 
 	for {
 		start := time.Now()
@@ -442,6 +440,7 @@ func main() {
 				gocv.FontHersheyPlain, 1.2, color.RGBA{0, 0, 255, 0}, 2)
 		}
 		// show the image in the window, and wait
+		gocv.IMWrite(GetBasePath() + "files/frame-to-papers/frame.jpg", img)
 		if HEADLESS == false {
 			if simpleKP.Empty() == false && simpleKP.Size()[0] > 0 && simpleKP.Size()[1] > 0 {
 				window.IMShow(simpleKP)
@@ -1112,6 +1111,102 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	}
 	log.Println("post send message! 2")
 	log.Println(s)
+}
+
+func claimCalibration(client *zmq.Socket, MY_ID_STR string, cal []int) {
+	log.Println("CLAIM CALIBRATION -----")
+	batch_claims := make([]BatchMessage, 0)
+	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
+		[]string{"id", MY_ID_STR},
+		[]string{"id", "2"},
+		[]string{"postfix", ""},
+	}})
+	batch_claims = append(batch_claims, BatchMessage{"claim", [][]string{
+		[]string{"id", MY_ID_STR},
+		[]string{"id", "2"},
+		[]string{"text", "camera"},
+		[]string{"text", CAMERA_ID},
+		[]string{"text", "has"},
+		[]string{"text", "projector"},
+		[]string{"text", "calibration"},
+		[]string{"text", "TL"},
+		[]string{"text", "("},
+		[]string{"integer", strconv.Itoa(cal[0])},
+		[]string{"text", ","},
+		[]string{"integer", strconv.Itoa(cal[1])},
+		[]string{"text", ")"},
+		[]string{"text", "TR"},
+		[]string{"text", "("},
+		[]string{"integer", strconv.Itoa(cal[2])},
+		[]string{"text", ","},
+		[]string{"integer", strconv.Itoa(cal[3])},
+		[]string{"text", ")"},
+		[]string{"text", "BR"},
+		[]string{"text", "("},
+		[]string{"integer", strconv.Itoa(cal[4])},
+		[]string{"text", ","},
+		[]string{"integer", strconv.Itoa(cal[5])},
+		[]string{"text", ")"},
+		[]string{"text", "BL"},
+		[]string{"text", "("},
+		[]string{"integer", strconv.Itoa(cal[6])},
+		[]string{"text", ","},
+		[]string{"integer", strconv.Itoa(cal[7])},
+		[]string{"text", ")"},
+		[]string{"text", "@"},
+		[]string{"integer", strconv.Itoa(1)},
+	}})
+	batch_claim_str, _ := json.Marshal(batch_claims)
+	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
+	log.Println("Sending ", msg)
+	_, err := client.SendMessage(msg)
+	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+	if err != nil {
+		log.Println("ERROR!")
+		log.Println(err)
+		// panic(err)
+	}
+}
+
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+			log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
+}
+
+func claimFrameLocation(client *zmq.Socket, MY_ID_STR string) {
+	log.Println("CLAIM frame url -----")
+	batch_claims := make([]BatchMessage, 0)
+	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
+		[]string{"id", MY_ID_STR},
+		[]string{"id", "3"},
+		[]string{"postfix", ""},
+	}})
+	batch_claims = append(batch_claims, BatchMessage{"claim", [][]string{
+		[]string{"id", MY_ID_STR},
+		[]string{"id", "3"},
+		[]string{"text", "camera"},
+		[]string{"text", CAMERA_ID},
+		[]string{"text", "frame"},
+		[]string{"text", "at"},
+		[]string{"text", "http://" + GetOutboundIP().String() + ":8090/frame"},
+	}})
+	batch_claim_str, _ := json.Marshal(batch_claims)
+	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
+	log.Println("Sending ", msg)
+	_, err := client.SendMessage(msg)
+	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+	if err != nil {
+		log.Println("ERROR!")
+		log.Println(err)
+		// panic(err)
+	}
 }
 
 func get8400(fileName string) []string {
