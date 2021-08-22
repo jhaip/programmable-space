@@ -13,50 +13,138 @@
       height: 20px;
       background-color: red;
       color: yellow;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .select-corner {
+      display: inline-block;
+      width: 80px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 30px;
+      background-color: #CCC;
+      color: black;
+      padding: 20px 0;
+    }
+    .selected0 #corner0, .selected1 #corner1, .selected2 #corner2, .selected3 #corner3 {
+      background-color: blue;
+    }
+    .selected0 #select-0, .selected1 #select-1, .selected2 #select-2, .selected3 #select-3 {
+      background-color: blue;
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 10000px;
+      height: 10000px;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <img id="frame" />
-  <div id="corner0" class="corner" >1</div>
-  <div id="corner1" class="corner" >2</div>
-  <div id="corner2" class="corner" >3</div>
-  <div id="corner3" class="corner" >4</div>
+  <svg>
+    <line id="lines0" x1="50" y1="50" x2="350" y2="350" stroke="blue"/>
+    <line id="lines1" x1="50" y1="50" x2="350" y2="350" stroke="blue"/>
+    <line id="lines2" x1="50" y1="50" x2="350" y2="350" stroke="blue"/>
+    <line id="lines3" x1="50" y1="50" x2="350" y2="350" stroke="blue"/>
+  </svg>
+  <div id="controls">
+    <div id="corner0" class="corner">1</div>
+    <div id="corner1" class="corner">2</div>
+    <div id="corner2" class="corner">3</div>
+    <div id="corner3" class="corner">4</div>
+    <div>
+      <div id="select-0" class="select-corner" onclick="updateSelection(0);">1</div>
+      <div id="select-1" class="select-corner" onclick="updateSelection(1);">2</div>
+      <div id="select-2" class="select-corner" onclick="updateSelection(2);">3</div>
+      <div id="select-3" class="select-corner" onclick="updateSelection(3);">4</div>
+    </div>
+    <select id="cameras" onchange="onCameraSelectionChanged();"></select>
+  </div>
   <script>
+    var CAMERA_ID = undefined;
+    var CAMERA_DATA = {};
     var selectingIndex = 0;
+    updateSelection(0);
+    var allCamerasCalibrationData = {};
     var cal = [0, 0, 0, 0, 0, 0, 0, 0];
-    async function loop() {
+
+    function onCameraSelectionChanged() {
+      CAMERA_ID = `${document.getElementById("cameras").value}`;
+      fetchCameraData();
+    }
+
+    function updateListOfCameras(data) {
+      console.log(data);
+      document.getElementById("cameras").innerHTML = data.map(
+        x => `<option value="${x.cameraId}">${x.cameraId}</option>`
+      ).join("\n");
+      CAMERA_DATA = data.reduce((acc, x) => {
+        acc[x.cameraId] = x;
+        return acc;
+      }, {});
+      if (data.length > 0) {
+        CAMERA_ID = data[0].cameraId;
+      }
+    }
+
+    async function init() {
       try {
-        const response = await fetch('/frame')
+        const calResponse = await fetch('/status');
+        let status = await calResponse.json();
+        console.log(status);
+        updateListOfCameras(status.cameras);
+        if (status.cameras.length > 0) {
+          fetchCameraData();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    async function fetchCameraData() {
+      if (typeof CAMERA_ID === 'undefined' || !CAMERA_DATA || !CAMERA_DATA[CAMERA_ID]) {
+        alert("unknown camera id");
+        return;
+      }
+      try {
+        const response = await fetch(`/frame?id=${CAMERA_ID}`);
         const myBlob = await response.blob();
         document.getElementById("frame").src = URL.createObjectURL(myBlob);
         const calResponse = await fetch('/cal');
-        cal = await calResponse.json();
-        console.log(cal);
-        updateCorners();
-        if (longPollingActive) {
-          setTimeout(function () {
-            loop();
-          }, 1000);
+        allCamerasCalibrationData = await calResponse.json();
+        console.log(allCamerasCalibrationData);
+        if (allCamerasCalibrationData && allCamerasCalibrationData[CAMERA_ID]) {
+          cal = allCamerasCalibrationData[CAMERA_ID];
+          updateCorners();
+        } else {
+          console.log("no calibration data for that camera id");
         }
       } catch (error) {
         console.error(error);
       }
     }
     
-    loop();
+    init();
 
     async function sendNewCalibration() {
       const response = await fetch('/cal', {
         method: 'POST',
-        mode: 'no-cors',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        redirect: 'follow',
-        body: JSON.stringify(cal)
+        body: JSON.stringify({
+          cameraId: CAMERA_ID,
+          cal: cal
+        })
       });
-      console.log(response.json());
+    }
+
+    function updateSelection(i) {
+      selectingIndex = i;
+      document.getElementById("controls").className = `selected${i}`;
     }
 
     function updateCorners() {
@@ -64,6 +152,22 @@
       updateCornerLocation(1, cal[2], cal[3]);
       updateCornerLocation(2, cal[4], cal[5]);
       updateCornerLocation(3, cal[6], cal[7]);
+      document.getElementById(`lines0`).setAttribute("x1", cal[0]);
+      document.getElementById(`lines0`).setAttribute("y1", cal[1]);
+      document.getElementById(`lines0`).setAttribute("x2", cal[2]);
+      document.getElementById(`lines0`).setAttribute("y2", cal[3]);
+      document.getElementById(`lines1`).setAttribute("x1", cal[2]);
+      document.getElementById(`lines1`).setAttribute("y1", cal[3]);
+      document.getElementById(`lines1`).setAttribute("x2", cal[4]);
+      document.getElementById(`lines1`).setAttribute("y2", cal[5]);
+      document.getElementById(`lines2`).setAttribute("x1", cal[4]);
+      document.getElementById(`lines2`).setAttribute("y1", cal[5]);
+      document.getElementById(`lines2`).setAttribute("x2", cal[6]);
+      document.getElementById(`lines2`).setAttribute("y2", cal[7]);
+      document.getElementById(`lines3`).setAttribute("x1", cal[6]);
+      document.getElementById(`lines3`).setAttribute("y1", cal[7]);
+      document.getElementById(`lines3`).setAttribute("x2", cal[0]);
+      document.getElementById(`lines3`).setAttribute("y2", cal[1]);
     }
 
     function updateCornerLocation(index, x, y) {
@@ -71,9 +175,9 @@
     }
     
     function printMousePos(event) {
-      console.log("clientX: " + event.clientX, "clientY: " + event.clientY);
-      cal[selectingIndex*2] = event.clientX;
-      cal[selectingIndex*2 + 1] = event.clientY;
+      console.log("X: " + event.pageX, "Y: " + event.pageY);
+      cal[selectingIndex*2] = event.pageX;
+      cal[selectingIndex*2 + 1] = event.pageY;
       updateCorners();
       sendNewCalibration();
     }
@@ -85,7 +189,7 @@ document.onkeypress = function(evt) {
     var charStr = String.fromCharCode(charCode);
     console.log(charStr);
     if (charStr === '1' || charStr === '2' || charStr === '3' || charStr === '4') {
-      selectingIndex = (+charStr)-1;
+      updateSelection((+charStr)-1);
     }
 };
       </script>
