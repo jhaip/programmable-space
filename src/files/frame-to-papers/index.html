@@ -73,6 +73,7 @@
 
     function onCameraSelectionChanged() {
       CAMERA_ID = `${document.getElementById("cameras").value}`;
+      window.location.search = `cam=${CAMERA_ID}`;
       fetchCameraData();
     }
 
@@ -85,8 +86,9 @@
         acc[x.cameraId] = x;
         return acc;
       }, {});
-      if (data.length > 0) {
+      if (data.length > 0 && typeof CAMERA_ID === 'undefined') {
         CAMERA_ID = data[0].cameraId;
+        window.location.search = `cam=${CAMERA_ID}`;
       }
     }
 
@@ -95,6 +97,11 @@
         const calResponse = await fetch('/status');
         let status = await calResponse.json();
         console.log(status);
+        let searchParams = new URLSearchParams(window.location.search);
+        let queryParamCam = searchParams.get("cam");
+        if (queryParamCam) {
+          CAMERA_ID = queryParamCam;
+        }
         updateListOfCameras(status.cameras);
         if (status.cameras.length > 0) {
           fetchCameraData();
