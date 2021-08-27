@@ -2,14 +2,15 @@ const { room, myId, run } = require('../helpers/helper')(__filename);
 
 var C = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 var CS = {}
+var cam_display_map = {}
 
 room.on(`camera $cam calibration for $display is $M1 $M2 $M3 $M4 $M5 $M6 $M7 $M8 $M9`,
         results => {
   room.subscriptionPrefix(1);
   if (!!results && results.length > 0) {
     results.forEach(({ cam, display, M1, M2, M3, M4, M5, M6, M7, M8, M9 }) => {
-CS[display] = [+M1, +M2, +M3, +M4, +M5, +M6, +M7, +M8, +M9]
-
+CS[`${cam}`] = [+M1, +M2, +M3, +M4, +M5, +M6, +M7, +M8, +M9]
+cam_display_map[`${cam}`] = display
     });
   }
   room.subscriptionPostfix();
@@ -32,9 +33,9 @@ ill.fill(255, 255, 255)
 ill.stroke(255, 0, 0);
 ill.ellipse(+x-20, +y-20, 40, 40)
 if (!!CS[cam]) {
-  room.draw(ill, cam)
+  room.draw(ill, cam_display_map[`${cam}`])
 } else {
-  room.draw(ill, "1997")
+  room.draw(ill, "1993")
 }
 
 
