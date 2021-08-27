@@ -11,6 +11,7 @@ import http.server
 import socketserver
 import threading
 import socket
+from io import BytesIO
 
 lock = threading.RLock()
 
@@ -18,12 +19,13 @@ CAMERA_ID = "9999"
 if len(sys.argv) - 1 > 0:
     CAMERA_ID = sys.argv[1]
 
-CAM_WIDTH = 1920
-CAM_HEIGHT = 1080
+CAM_WIDTH = 960
+CAM_HEIGHT = 540
 THRESHOLD = 40
 PORT = 8000
 DEBUG = False
 saved_frame_file_path = dot_codes_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'files/cv-frame.jpg')
+cached_image = BytesIO()
 last_data = []
 
 capture = WebcamVideoStream(src=0)
@@ -76,7 +78,7 @@ def init_claim():
     batch(claims)
 
 def detect(background):
-    global lock
+    global lock, cached_image
     image = capture.read()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     diff = cv2.subtract(image, background)
@@ -87,7 +89,9 @@ def detect(background):
         cv2.imshow("Subtract", diff)
         cv2.imshow("Threshold", threshold_image)
     with lock:
-        cv2.imwrite(saved_frame_file_path, threshold_image)
+        is_success, buffer = cv2.imencode(".jpg", threshold_image)
+        cached_image = BytesIO(buffer)
+        # cv2.imwrite(saved_frame_file_path, threshold_image)
     return contours
 
 
@@ -130,13 +134,17 @@ def sub_threshold_callback(results):
         THRESHOLD = int(result["threshold"])
 
 def create_server():
-    global lock, PORT
+    global lock, PORT, cached_image
     class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             with lock:
-                if self.path == '/':
-                    self.path = 'index.html'
-                return http.server.SimpleHTTPRequestHandler.do_GET(self)
+                # if self.path == '/':
+                #     self.path = 'index.html'
+                # return http.server.SimpleHTTPRequestHandler.do_GET(self)
+                self.send_response(200)
+                self.send_header('Content-type','image/jpeg')
+                self.end_headers()
+                self.wfile.write(cached_image.read())
     handler_object = MyHttpRequestHandler
     my_server = socketserver.TCPServer(("", PORT), handler_object)
     my_server.serve_forever()
