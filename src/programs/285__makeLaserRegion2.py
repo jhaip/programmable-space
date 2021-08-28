@@ -126,7 +126,7 @@ def sub_callback_keyboard(results):
                 ["integer", str(regionPoints[3][1])],
                 ["text", "on"],
                 ["text", "camera"],
-                ["text", str(CURRENT_CAMERA_TARGET)],
+                ["integer", str(CURRENT_CAMERA_TARGET)],
             ]})
             regionPoints = [None, None, None, None]
         logging.info("MODE: {}, region points: {}".format(MODE, regionPoints))
