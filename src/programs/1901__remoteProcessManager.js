@@ -28,6 +28,7 @@ setInterval(async () => {
     if (!serverPrevListening) {
       serverPrevListening = true;
       console.log("server reconnected, reinitializing subscriptions")
+      room.cleanupOtherSource(MY_ID_STR);
       initSubscriptions();
     }
   } catch (err) {
