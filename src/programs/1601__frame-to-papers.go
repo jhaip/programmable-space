@@ -12,9 +12,12 @@ import (
 	"image/color"
 	"github.com/nfnt/resize"
 	"image/png"
+	"image/jpeg"
 	"io"
 	"log"
 	"math"
+	"net"
+	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -35,6 +38,7 @@ const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
 var CAMERA_ID = "1"
 var webcamMutex sync.Mutex
+var cachedFrame image.Image
 
 type Vec struct {
 	X int `json:"x"`
@@ -143,6 +147,19 @@ func initZeroMQ(MY_ID_STR string) *zmq.Socket {
 	return client
 }
 
+func shareFrame(w http.ResponseWriter, req *http.Request) {
+	buffer := new(bytes.Buffer)
+	if err := jpeg.Encode(buffer, *cachedFrame, nil); err != nil {
+		log.Println("unable to encode image.")
+	}
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+	if _, err := w.Write(buffer.Bytes()); err != nil {
+		log.Println("unable to write image.")
+	}
+}
+
 func main() {
 	MY_ID_STR := os.Getenv("CV_PROGRAM_ID")
 	if MY_ID_STR == "" {
@@ -249,6 +266,13 @@ func main() {
 		go drainFrames(deviceID, webcam, drainImg)
 	}
 
+	http.HandleFunc("/frame", serveFilesFrame)
+	go func() {
+		http.ListenAndServe(":8090", nil)
+	}()
+
+	claimFrameLocation(client, MY_ID_STR);
+
 	for {
 		start := time.Now()
 
@@ -267,6 +291,9 @@ func main() {
 			checkErr(errors.New("DEVICE_CLOSED"))
 		}
 		webcamMutex.Unlock()
+		var toImgErr error
+		cachedFrame, toImgErr = img.ToImage()
+		checkErr(toImgErr)
 
 		points, dotKeyPoints, dotError := getDots(bdp, img)
 		log.Println("got dots")
@@ -372,14 +399,16 @@ func main() {
 		}
 		// show the image in the window, and wait
 		if HEADLESS == false {
-			window.IMShow(simpleKP)
-			// this also limits the FPS - 1000 / 250 = 4 fps
-			keyId := window.WaitKey(lag)
-			if keyId == 27 {
-				return
-			} else if keyId == 99 {
-				// 99 == c key
-				claimBase64Screenshot(client, MY_ID_STR, img)
+			if simpleKP.Empty() == false && simpleKP.Size()[0] > 0 && simpleKP.Size()[1] > 0 {
+				window.IMShow(simpleKP)
+				// this also limits the FPS - 1000 / 250 = 4 fps
+				keyId := window.WaitKey(lag)
+				if keyId == 27 {
+					return
+				} else if keyId == 99 {
+					// 99 == c key
+					claimBase64Screenshot(client, MY_ID_STR, img)
+				}
 			}
 		} else {
 			// claim base64 screenshot every X frames
@@ -414,17 +443,18 @@ func getLag(client *zmq.Socket, MY_ID_STR string, lag_sub_id string) (bool, int)
 		val := trimLeftChars(reply, len(sub_prefix)+13)
 		json_val := make([]map[string][]string, 0)
 		json.Unmarshal([]byte(val), &json_val)
-		if len(json_val) > 0 {
-			json_result := json_val[0]
-			rawLag, err := strconv.Atoi(json_result["lag"][1])
-			checkErr(err)
-			MIN_LOOP_DELAY := 200
-			MAX_LOOP_DELAY := 5000
-			lag := rawLag*5 + MIN_LOOP_DELAY
-			if lag > MAX_LOOP_DELAY {
-				lag = MAX_LOOP_DELAY
+		for _, json_result := range json_val {
+			if strings.Contains(reply, lag_sub_id) {
+				rawLag, err := strconv.Atoi(json_result["lag"][1])
+				checkErr(err)
+				MIN_LOOP_DELAY := 200
+				MAX_LOOP_DELAY := 5000
+				lag := rawLag*5 + MIN_LOOP_DELAY
+				if lag > MAX_LOOP_DELAY {
+					lag = MAX_LOOP_DELAY
+				}
+				return true, lag
 			}
-			return true, lag
 		}
 	}
 	return false, 0
@@ -1018,6 +1048,44 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	}
 	log.Println("post send message! 2")
 	log.Println(s)
+}
+
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+			log.Fatal(err)
+	}
+	defer conn.Close()
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	return localAddr.IP
+}
+
+func claimFrameLocation(client *zmq.Socket, MY_ID_STR string) {
+	batch_claims := make([]BatchMessage, 0)
+	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
+		[]string{"id", MY_ID_STR},
+		[]string{"id", "3"},
+		[]string{"postfix", ""},
+	}})
+	batch_claims = append(batch_claims, BatchMessage{"claim", [][]string{
+		[]string{"id", MY_ID_STR},
+		[]string{"id", "3"},
+		[]string{"text", "camera"},
+		[]string{"text", CAMERA_ID},
+		[]string{"text", "frame"},
+		[]string{"text", "at"},
+		[]string{"text", "http://" + GetOutboundIP().String() + ":8090/frame"},
+	}})
+	batch_claim_str, _ := json.Marshal(batch_claims)
+	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
+	log.Println("Sending ", msg)
+	_, err := client.SendMessage(msg)
+	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+	if err != nil {
+		log.Println("ERROR!")
+		log.Println(err)
+		// panic(err)
+	}
 }
 
 func get8400(fileName string) []string {

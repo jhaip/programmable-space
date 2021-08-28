@@ -61,7 +61,7 @@ app.put('/region/:regionId', (req, res) => {
     }
     if (typeof data.x1 !== "undefined") {
         room.retractAll(`region "${regionId}" at %`);
-        room.assert(`region "${regionId}" at ${data.x1} ${data.y1} ${data.x2} ${data.y2} ${data.x3} ${data.y3} ${data.x4} ${data.y4} on camera`, ["text", "1997"]);
+        room.assert(`region "${regionId}" at ${data.x1} ${data.y1} ${data.x2} ${data.y2} ${data.x3} ${data.y3} ${data.x4} ${data.y4} on camera`, ["text", "1998"]);
     }
     room.flush();
     res.status(200).send('OK');
@@ -100,7 +100,7 @@ app.post('/highlight', (req, res) => {
     res.status(200).send('OK');
 })
 
-room.on(`region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 on camera "1997"`,
+room.on(`region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 on camera $`,
     results => {
         room.subscriptionPrefix(2);
         if (!!results) {
@@ -173,6 +173,22 @@ room.on(`region $id has name $name`,
     })
 
 room.onRaw(`#0280 $ draw graphics $graphics on $`,
+    results => {
+        room.subscriptionPrefix(1);
+        if (!!results) {
+            results.forEach(({ graphics }) => {
+                let parsedGraphics = JSON.parse(graphics)
+                parsedGraphics.forEach(g => {
+                    if (g["type"] === "text") {
+                        newRegionStatus = g.options.text;
+                    }
+                })
+            });
+        }
+        room.subscriptionPostfix();
+    })
+
+room.onRaw(`#0285 $ draw graphics $graphics on $`,
     results => {
         room.subscriptionPrefix(1);
         if (!!results) {
