@@ -29,7 +29,7 @@ def sub_callback_calibration_points(results):
                 ["id", get_my_id_str()],
                 ["id", "0"],
                 ["text", "camera"],
-                ["text", str(result["cam"])],
+                ["integer", str(result["cam"])],
                 ["text", "calibration"],
                 ["text", "for"],
                 ["text", str(result["display"])],
@@ -62,21 +62,17 @@ def sub_callback_calibration_points(results):
                 [result["rx3"], result["ry3"]] # notice the order is not clock-wise
             ])
             dst = np.float32([
-                [0, 0],
-                [1920, 0],
-                [0, 1080],
-                [1920, 1080]
-                # [result["sx1"], result["sy1"]],
-                # [result["sx2"], result["sy2"]],
-                # [result["sx4"], result["sy4"]],
-                # [result["sx3"], result["sy3"]] # notice the order is not clock-wise
+                [result["sx1"], result["sy1"]],
+                [result["sx2"], result["sy2"]],
+                [result["sx4"], result["sy4"]],
+                [result["sx3"], result["sy3"]] # notice the order is not clock-wise
             ])
             homography_matrix = cv2.getPerspectiveTransform(src, dst)
             claims.append({"type": "claim", "fact": [
                 ["id", get_my_id_str()],
                 ["id", "1"],
                 ["text", "camera"],
-                ["text", str(result["cam"])],
+                ["integer", str(result["cam"])],
                 ["text", "calibration"],
                 ["text", "for"],
                 ["text", str(result["display"])],

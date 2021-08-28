@@ -4,8 +4,8 @@ import cv2
 import logging
 
 # our choice of the size of the size of the region in display px
-SCREEN_REGION_WIDTH_PX = 1280
-SCREEN_REGION_HEIGHT_PX = 720
+SCREEN_REGION_WIDTH_PX = 1920
+SCREEN_REGION_HEIGHT_PX = 1080
 projection_matrixes = {}
 camera_to_display_map = {}
 
@@ -57,7 +57,7 @@ def sub_callback_calibration_points(results):
                 ["id", get_my_id_str()],
                 ["id", "0"],
                 ["text", str(result["regionName"])],
-                ["text", str(result["cameraId"])],
+                ["integer", str(result["cameraId"])],
                 ["text", "calibration"],
                 ["text", "for"],
                 ["text", str(camera_to_display_map[str(result["cameraId"])])],

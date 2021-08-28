@@ -49,7 +49,7 @@ def init_claim():
             ["id", get_my_id_str()],
             ["id", "0"],
             ["text", "camera"],
-            ["text", str(CAMERA_ID)],
+            ["integer", str(CAMERA_ID)],
             ["text", "has"],
             ["text", "resolution"],
             ["integer", str(CAM_WIDTH)],
@@ -59,7 +59,7 @@ def init_claim():
             ["id", get_my_id_str()],
             ["id", "0"],
             ["text", "camera"],
-            ["text", str(CAMERA_ID)],
+            ["integer", str(CAMERA_ID)],
             ["text", "cv"],
             ["text", "threshold"],
             ["text", "is"],
@@ -69,7 +69,7 @@ def init_claim():
             ["id", get_my_id_str()],
             ["id", "0"],
             ["text", "camera"],
-            ["text", str(CAMERA_ID)],
+            ["integer", str(CAMERA_ID)],
             ["text", "frame"],
             ["text", "at"],
             ["text", "http://{}:{}/src/files/cv-frame.jpg".format(get_host_ip(), PORT)],
@@ -123,7 +123,7 @@ def claim_data(data):
             ["integer", str(currentTimeMs)],
             ["text", "on"],
             ["text", "camera"],
-            ["text", CAMERA_ID],
+            ["integer", CAMERA_ID],
         ]})
     batch(claims)
 
