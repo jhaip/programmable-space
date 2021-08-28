@@ -35,7 +35,7 @@ ill.ellipse(+x-20, +y-20, 40, 40)
 if (!!CS[`${cam}`]) {
   room.draw(ill, cam_display_map[`${cam}`])
 } else {
-  room.draw(ill, "1993")
+  room.draw(ill)
 }
 
 
