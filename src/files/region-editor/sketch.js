@@ -17,6 +17,7 @@ let sketchMaker = function (regionData, regionPointChanged) {
     let draggingIndex = -1;
     let offsetX, offsetY;
     let indexToCornerName = {0: "TL", 1: "TR", 2: "BR", 3: "BL"}
+    let cameraId = regionData.camId;
 
     p.setup = function () {
       p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -30,7 +31,7 @@ let sketchMaker = function (regionData, regionPointChanged) {
         if (i === draggingIndex) {
           locations[i][0] = p.mouseX + offsetX;
           locations[i][1] = p.mouseY + offsetY;
-          regionPointChanged(regionData.id, locations);
+          regionPointChanged(regionData.id, locations, cameraId);
         }
         p.noStroke();
         if (i === draggingIndex) {
@@ -73,7 +74,7 @@ let sketchMaker = function (regionData, regionPointChanged) {
 var lastLoggedRegionTime = (new Date()).getTime();
 var THROTTLE_TIME_MS = 1000 * 0.5;
 
-function regionPointChanged(regionId, regionPoints) {
+function regionPointChanged(regionId, regionPoints, cameraId) {
   let currentTime = (new Date()).getTime();
   if (currentTime - lastLoggedRegionTime > THROTTLE_TIME_MS) {
     lastLoggedRegionTime = currentTime;
@@ -92,7 +93,8 @@ function regionPointChanged(regionId, regionPoints) {
         'x3': Math.floor(regionPoints[2][0] * SCALE_FACTOR),
         'y3': Math.floor(regionPoints[2][1] * SCALE_FACTOR),
         'x4': Math.floor(regionPoints[3][0] * SCALE_FACTOR),
-        'y4': Math.floor(regionPoints[3][1] * SCALE_FACTOR)
+        'y4': Math.floor(regionPoints[3][1] * SCALE_FACTOR),
+        'camId': cameraId,
       })
     }).then(
       response => console.log(response)

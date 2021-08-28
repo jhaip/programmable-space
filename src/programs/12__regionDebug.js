@@ -9,19 +9,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static('./src/files/region-editor'))
 
-var regionData = [{
-    'id': '9df78dc0-9e97-4a63-851e-b5bd61ba55c6',
-    'name': 'pl1health',
-    'x1': 20 * 6,
-    'y1': 20 * 6,
-    'x2': 100 * 6,
-    'y2': 20 * 6,
-    'x3': 100 * 6,
-    'y3': 100 * 6,
-    'x4': 20 * 6,
-    'y4': 100 * 6,
-    'toggleable': true
-}];
+var regionData = [];
 var newRegionStatus = '';
 var highlightAllStatus = false;
 
@@ -61,7 +49,7 @@ app.put('/region/:regionId', (req, res) => {
     }
     if (typeof data.x1 !== "undefined") {
         room.retractAll(`region "${regionId}" at %`);
-        room.assert(`region "${regionId}" at ${data.x1} ${data.y1} ${data.x2} ${data.y2} ${data.x3} ${data.y3} ${data.x4} ${data.y4} on camera`, ["text", "1998"]);
+        room.assert(`region "${regionId}" at ${data.x1} ${data.y1} ${data.x2} ${data.y2} ${data.x3} ${data.y3} ${data.x4} ${data.y4} on camera ${data.camId}`);
     }
     room.flush();
     res.status(200).send('OK');
@@ -100,7 +88,7 @@ app.post('/highlight', (req, res) => {
     res.status(200).send('OK');
 })
 
-room.on(`region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 on camera $`,
+room.on(`region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 on camera $camId`,
     results => {
         room.subscriptionPrefix(2);
         if (!!results) {
