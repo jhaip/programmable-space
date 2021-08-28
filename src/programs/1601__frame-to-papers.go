@@ -37,7 +37,6 @@ const NOT_SEEN_PAPER_COUNT_THRESHOLD = 2
 const PER_CORNER_DISTANCE_DIFF_THRESHOLD = 5
 const TOTAL_CORNER_DISTANCE_SQ_DIFF_THESHOLD = 4 * PER_CORNER_DISTANCE_DIFF_THRESHOLD * PER_CORNER_DISTANCE_DIFF_THRESHOLD
 var CAMERA_ID = "1"
-var cal = []int{0,0,0,0,0,0,0,0};
 var webcamMutex sync.Mutex
 var cachedFrame image.Image
 
@@ -108,7 +107,7 @@ func GetBasePath() string {
 	} else if runtime.GOOS == "plan9" {
 		env = "home"
 	}
-	return os.Getenv(env) + "/Personal/programmable-space/src/"
+	return os.Getenv(env) + "/programmable-space/src/"
 }
 
 // Copied from https://play.golang.org/p/4FkNSiUDMg
@@ -148,47 +147,17 @@ func initZeroMQ(MY_ID_STR string) *zmq.Socket {
 	return client
 }
 
-func make_get_calibration(client *zmq.Socket, MY_ID_STR string) func(w http.ResponseWriter, req *http.Request) {
-	return func(w http.ResponseWriter, req *http.Request) {
-		if req.Method == "GET" {
-			msg, _ := json.Marshal(cal)
-			fmt.Fprintf(w, fmt.Sprintf("%s\n", msg))
-		} else if req.Method == "POST" {
-			decoder := json.NewDecoder(req.Body)
-			var t []int
-			err := decoder.Decode(&t)
-			checkErr(err)
-			fmt.Println("GOT NEW CAL", t)
-			cal = t
-			claimCalibration(client, MY_ID_STR, cal)
-		}
-	}
-}
-
-func writeImage(w http.ResponseWriter, img *image.Image) {
+func shareFrame(w http.ResponseWriter, req *http.Request) {
 	buffer := new(bytes.Buffer)
-	if err := jpeg.Encode(buffer, *img, nil); err != nil {
-			log.Println("unable to encode image.")
+	if err := jpeg.Encode(buffer, *cachedFrame, nil); err != nil {
+		log.Println("unable to encode image.")
 	}
 
 	w.Header().Set("Content-Type", "image/jpeg")
 	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 	if _, err := w.Write(buffer.Bytes()); err != nil {
-			log.Println("unable to write image.")
+		log.Println("unable to write image.")
 	}
-}
-
-func shareFrame(w http.ResponseWriter, req *http.Request) {
-	writeImage(w, &cachedFrame)
-}
-
-func serveFiles(w http.ResponseWriter, r *http.Request) {
-	p := GetBasePath() + "files/frame-to-papers/index.html"
-	http.ServeFile(w, r, p)
-}
-func serveFilesFrame(w http.ResponseWriter, r *http.Request) {
-	p := GetBasePath() + "files/frame-to-papers/frame.jpg"
-	http.ServeFile(w, r, p)
 }
 
 func main() {
@@ -289,13 +258,6 @@ func main() {
 		client.SendMessage(lag_sub_msg)
 	}
 
-	cal_sub_id, cal_sub_id_err := newUUID()
-	checkErr(cal_sub_id_err)
-	cal_sub_query := map[string]interface{}{"id": cal_sub_id, "facts": []string{"$ $ camera " + CAMERA_ID + " has projector calibration TL ($x1, $y1) TR ($x2, $y2) BR ($x3, $y3) BL ($x4, $y4) @ $"}}
-	cal_sub_query_msg, _ := json.Marshal(cal_sub_query)
-	cal_sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, cal_sub_query_msg)
-	client.SendMessage(cal_sub_msg)
-
 	papers_cache := make(map[string]PaperCache)
 
 	if HEADLESS {
@@ -304,9 +266,7 @@ func main() {
 		go drainFrames(deviceID, webcam, drainImg)
 	}
 
-	http.HandleFunc("/cal", make_get_calibration(client, MY_ID_STR))
 	http.HandleFunc("/frame", serveFilesFrame)
-	http.HandleFunc("/static", serveFiles)
 	go func() {
 		http.ListenAndServe(":8090", nil)
 	}()
@@ -316,14 +276,12 @@ func main() {
 	for {
 		start := time.Now()
 
-		hasNewLag, newLag, hasNewCal, newCal := getSubscriptionUpdates(client, MY_ID_STR, lag_sub_id, cal_sub_id)
-		if (hasNewLag) {
-			log.Println("**UPDATED LAG", newLag)
-			lag = newLag
-		}
-		if (hasNewCal) {
-			cal = newCal
-			fmt.Println("**UPDATED CAL", cal)
+		if HEADLESS == false {
+			hasNewLag, newLag := getLag(client, MY_ID_STR, lag_sub_id)
+			if (hasNewLag) {
+				log.Println("**UPDATED LAG", newLag)
+				lag = newLag
+			}
 		}
 
 		log.Println("waiting for dots")
@@ -440,7 +398,6 @@ func main() {
 				gocv.FontHersheyPlain, 1.2, color.RGBA{0, 0, 255, 0}, 2)
 		}
 		// show the image in the window, and wait
-		gocv.IMWrite(GetBasePath() + "files/frame-to-papers/frame.jpg", img)
 		if HEADLESS == false {
 			if simpleKP.Empty() == false && simpleKP.Size()[0] > 0 && simpleKP.Size()[1] > 0 {
 				window.IMShow(simpleKP)
@@ -478,7 +435,7 @@ func trimLeftChars(s string, n int) string {
 	return s[:0]
 }
 
-func getSubscriptionUpdates(client *zmq.Socket, MY_ID_STR string, lag_sub_id string, cal_sub_id string) (bool, int, bool, []int) {
+func getLag(client *zmq.Socket, MY_ID_STR string, lag_sub_id string) (bool, int) {
 	sub_prefix := fmt.Sprintf("%s%s", MY_ID_STR, lag_sub_id)
 	rawReply, err := client.RecvMessage(zmq.DONTWAIT)
 	if err == nil {
@@ -486,8 +443,6 @@ func getSubscriptionUpdates(client *zmq.Socket, MY_ID_STR string, lag_sub_id str
 		val := trimLeftChars(reply, len(sub_prefix)+13)
 		json_val := make([]map[string][]string, 0)
 		json.Unmarshal([]byte(val), &json_val)
-		// TODO
-		fmt.Printf("%v\n", json_val)
 		for _, json_result := range json_val {
 			if strings.Contains(reply, lag_sub_id) {
 				rawLag, err := strconv.Atoi(json_result["lag"][1])
@@ -498,29 +453,11 @@ func getSubscriptionUpdates(client *zmq.Socket, MY_ID_STR string, lag_sub_id str
 				if lag > MAX_LOOP_DELAY {
 					lag = MAX_LOOP_DELAY
 				}
-				return true, lag, false, []int{}
-			} else if strings.Contains(reply, cal_sub_id) {
-				x1, err := strconv.Atoi(json_result["x1"][1])
-				checkErr(err)
-				x2, err := strconv.Atoi(json_result["x2"][1])
-				checkErr(err)
-				x3, err := strconv.Atoi(json_result["x3"][1])
-				checkErr(err)
-				x4, err := strconv.Atoi(json_result["x4"][1])
-				checkErr(err)
-				y1, err := strconv.Atoi(json_result["y1"][1])
-				checkErr(err)
-				y2, err := strconv.Atoi(json_result["y2"][1])
-				checkErr(err)
-				y3, err := strconv.Atoi(json_result["y3"][1])
-				checkErr(err)
-				y4, err := strconv.Atoi(json_result["y4"][1])
-				checkErr(err)
-				return false, 0, true, []int{x1, y1, x2, y2, x3, y3, x4, y4};
+				return true, lag
 			}
 		}
 	}
-	return false, 0, false, []int{}
+	return false, 0
 }
 
 func projectMissingCorner(orderedCorners []PaperCorner, missingCornerId int) PaperCorner {
@@ -1113,75 +1050,17 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	log.Println(s)
 }
 
-func claimCalibration(client *zmq.Socket, MY_ID_STR string, cal []int) {
-	log.Println("CLAIM CALIBRATION -----")
-	batch_claims := make([]BatchMessage, 0)
-	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
-		[]string{"id", MY_ID_STR},
-		[]string{"id", "2"},
-		[]string{"postfix", ""},
-	}})
-	batch_claims = append(batch_claims, BatchMessage{"claim", [][]string{
-		[]string{"id", MY_ID_STR},
-		[]string{"id", "2"},
-		[]string{"text", "camera"},
-		[]string{"text", CAMERA_ID},
-		[]string{"text", "has"},
-		[]string{"text", "projector"},
-		[]string{"text", "calibration"},
-		[]string{"text", "TL"},
-		[]string{"text", "("},
-		[]string{"integer", strconv.Itoa(cal[0])},
-		[]string{"text", ","},
-		[]string{"integer", strconv.Itoa(cal[1])},
-		[]string{"text", ")"},
-		[]string{"text", "TR"},
-		[]string{"text", "("},
-		[]string{"integer", strconv.Itoa(cal[2])},
-		[]string{"text", ","},
-		[]string{"integer", strconv.Itoa(cal[3])},
-		[]string{"text", ")"},
-		[]string{"text", "BR"},
-		[]string{"text", "("},
-		[]string{"integer", strconv.Itoa(cal[4])},
-		[]string{"text", ","},
-		[]string{"integer", strconv.Itoa(cal[5])},
-		[]string{"text", ")"},
-		[]string{"text", "BL"},
-		[]string{"text", "("},
-		[]string{"integer", strconv.Itoa(cal[6])},
-		[]string{"text", ","},
-		[]string{"integer", strconv.Itoa(cal[7])},
-		[]string{"text", ")"},
-		[]string{"text", "@"},
-		[]string{"integer", strconv.Itoa(1)},
-	}})
-	batch_claim_str, _ := json.Marshal(batch_claims)
-	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
-	log.Println("Sending ", msg)
-	_, err := client.SendMessage(msg)
-	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
-	if err != nil {
-		log.Println("ERROR!")
-		log.Println(err)
-		// panic(err)
-	}
-}
-
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
 			log.Fatal(err)
 	}
 	defer conn.Close()
-
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
 	return localAddr.IP
 }
 
 func claimFrameLocation(client *zmq.Socket, MY_ID_STR string) {
-	log.Println("CLAIM frame url -----")
 	batch_claims := make([]BatchMessage, 0)
 	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
 		[]string{"id", MY_ID_STR},
