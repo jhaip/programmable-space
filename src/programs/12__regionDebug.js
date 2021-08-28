@@ -100,7 +100,7 @@ app.post('/highlight', (req, res) => {
     res.status(200).send('OK');
 })
 
-room.on(`region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 on camera "1998"`,
+room.on(`region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 on camera $`,
     results => {
         room.subscriptionPrefix(2);
         if (!!results) {
