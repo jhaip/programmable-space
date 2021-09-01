@@ -24,7 +24,6 @@ CAM_HEIGHT = 540
 THRESHOLD = 40
 PORT = 8000
 DEBUG = False
-saved_frame_file_path = dot_codes_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'files/cv-frame.jpg')
 cached_image = BytesIO()
 last_data = []
 
@@ -91,7 +90,6 @@ def detect(background):
     with lock:
         is_success, buffer = cv2.imencode(".jpg", threshold_image)
         cached_image = BytesIO(buffer)
-        # cv2.imwrite(saved_frame_file_path, threshold_image)
     return contours
 
 

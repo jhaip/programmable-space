@@ -8,16 +8,68 @@ import time
 import logging
 import base64
 import cv2.aruco as aruco
+import sys
+import http.server
+import socketserver
+import threading
+import socket
+from io import BytesIO
 
-CAMERA_ID = 1994
+lock = threading.RLock()
+
+CAMERA_ID = "1994"
+if len(sys.argv) - 1 > 0:
+    CAMERA_ID = sys.argv[1]
+
+PORT = 8000
 DEBUG = False
-last_screenshot_claimed = time.time()
-capture = WebcamVideoStream(src=6)
+cached_image = BytesIO()
+
+capture = WebcamVideoStream(src=0)
 capture.start()
 time.sleep(2)
 
-init(__file__, skipListening=True)
+def get_host_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
 
+def init_claim():
+    claims = [
+        {"type": "retract", "fact": [["id", get_my_id_str()], ["postfix", ""]]},
+        {"type": "claim", "fact": [
+            ["id", get_my_id_str()],
+            ["id", "0"],
+            ["text", "camera"],
+            ["integer", str(CAMERA_ID)],
+            ["text", "frame"],
+            ["text", "at"],
+            ["text", "http://{}:{}/src/files/cv-frame.jpg".format(get_host_ip(), PORT)],
+        ]},
+    ]
+    batch(claims)
+
+def create_server():
+    global lock, PORT, cached_image
+    class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
+        def do_GET(self):
+            with lock:
+                # if self.path == '/':
+                #     self.path = 'index.html'
+                # return http.server.SimpleHTTPRequestHandler.do_GET(self)
+                self.send_response(200)
+                self.send_header('Content-type','image/jpeg')
+                self.end_headers()
+                self.wfile.write(cached_image.read())
+    handler_object = MyHttpRequestHandler
+    my_server = socketserver.TCPServer(("", PORT), handler_object)
+    my_server.serve_forever()
+
+init(__file__, skipListening=True)
+init_claim()
+threading.Thread(target=create_server).start()
 while True:
     claims = [
         {"type": "retract", "fact": [["id", get_my_id_str()], ["id", "0"], ["postfix", ""]]}
@@ -40,7 +92,7 @@ while True:
                 ["integer", str(CAMERA_ID)],
                 ["text", "sees"],
                 ["text", "aruco"],
-                ["text", str(ids[i][0])],
+                ["integer", str(ids[i][0])],
                 ["text", "at"],
                 ["integer", str(int(tag_corners[0][0]))],
                 ["integer", str(int(tag_corners[0][1]))],
@@ -53,27 +105,13 @@ while True:
                 ["text", "@"],
                 ["integer", str(currentTimeMs)]
             ]})
-    if time.time() - last_screenshot_claimed > 1: # seconds
-        last_screenshot_claimed = time.time()
-        debugFrame = aruco.drawDetectedMarkers(frame, corners)
-        resized = cv2.resize(debugFrame, (192, 108),
-                            interpolation=cv2.INTER_NEAREST)
-        retval, buffer = cv2.imencode('.jpg', resized)
-        jpg_as_text = base64.b64encode(buffer)
-        claims.append({"type": "claim", "fact": [
-            ["id", get_my_id_str()],
-            ["id", "0"],
-            ["text", "camera"],
-            ["integer", str(CAMERA_ID)],
-            ["text", "aruco"],
-            ["text", "sees"],
-            ["text", str(jpg_as_text, "utf-8")],
-            ["text", "@"],
-            ["integer", str(currentTimeMs)]
-        ]})
+    debugFrame = aruco.drawDetectedMarkers(frame, corners)
+    with lock:
+        is_success, buffer = cv2.imencode(".jpg", debugFrame)
+        cached_image = BytesIO(buffer)
     batch(claims)
     logging.error("Time to capture and claim: {}".format(time.time() - start))
     if DEBUG:
-        cv2.imshow("Original", image)
-        logging.info(jpg_as_text)
+        cv2.imshow("Original", debugFrame)
+        cv2.waitKey(0)
     time.sleep(0.2)
