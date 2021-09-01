@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    /* body {
+      margin: 0;
+      padding: 0;
+    } */
+  </style>
+</head>
+<body>
+  <h2>Seen ArUco Tags:</h2>
+  <ol id="seenArucoTags"></ol>
+  <h2>Tag to Program Map</h2>
+  <button id="updateMap" onclick="updateMap()">Update Map</button>
+  <ul id="tagToProgramMap"></ul>
+  <script>
+    var seenArucoTags = [];
+    var arucoToProgramMap = {};
+
+    function updateSeenTags() {
+      document.getElementById("seenArucoTags").innerHTML = seenArucoTags.map(
+        x => `<li>${x.id} on camera ${x.camId} at (${x.x1}, ${x.y1}), (${x.x2}, ${x.y2}), (${x.x3}, ${x.y3}), (${x.x4}, ${x.y4})</li>`
+      ).join("\n");
+    }
+
+    function updateArucoToProgramMap() {
+      document.getElementById("tagToProgramMap").innerHTML = [...Array(1000).keys()].map(
+        (v, i) => {
+          return `<li><span>${i}:</span><input type="text" id="tagProgramId${i}"></li>`;
+        }
+      ).join("\n");
+      for (arucoId in arucoToProgramMap) {;
+        document.getElementById(`tagProgramId${arucoId}`).value = arucoToProgramMap[arucoId];
+      }
+    }
+
+    async function init() {
+      try {
+        const calResponse = await fetch('/status');
+        let status = await calResponse.json();
+        console.log(status);
+        seenArucoTags = status.seenArucoTags;
+        arucoToProgramMap = status.arucoToProgramMap;
+        updateSeenTags();
+        updateArucoToProgramMap();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    
+    init();
+
+    async function updateMap() {
+      [...Array(1000).keys()].forEach((v) => {
+        const val = document.getElementById(`tagProgramId${v}`).value;
+        const safeVal = `${val}`.trim();
+        if (safeVal.length > 0) {
+          arucoToProgramMap[v] = +safeVal;
+        }
+      })
+      sendNewMap();
+    }
+
+    async function sendNewMap() {
+      const response = await fetch('/map', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(arucoToProgramMap)
+      });
+    }
+      </script>
+</body>
+</html>
