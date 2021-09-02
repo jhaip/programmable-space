@@ -1,5 +1,5 @@
 from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str, rpc_url
-from imutils.video import WebcamVideoStream
+from imutils.video import WebcamVideoStream, VideoStream
 import numpy as np
 import cv2
 import imutils
@@ -25,7 +25,8 @@ PORT = 8000
 DEBUG = False
 cached_image = BytesIO()
 
-capture = WebcamVideoStream(src=0)
+# capture = WebcamVideoStream(src=0)
+capture = VideoStream(usePiCamera=True, resolution=(1640, 1232))
 capture.start()
 time.sleep(2)
 
