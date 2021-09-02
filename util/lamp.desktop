@@ -1,5 +1,6 @@
 [Desktop Entry]
 Type=Application
-Exec=/home/pi/programmable-space/jig camerastart
+Exec=/home/pi/programmable-space/jig camerastart3
+# Exec=/home/pi/programmable-space/jig camerastart
 # Exec=/home/pi/programmable-space/jig lampstart2
 # Copy this file to ~/.config/autostart/lamp.desktop
