@@ -71,7 +71,7 @@ room.on(`program $programId is aruco $arucoId`,
           return acc;
         }, {});
         room.subscriptionPostfix();
-        fs.writeFile(savedDataLocation, json.dumps(arucoToProgramMap), function (err) {
+        fs.writeFile(savedDataLocation, JSON.stringify(arucoToProgramMap), function (err) {
           if (err) return console.log(err)
           console.log("The file was saved!");
         });
