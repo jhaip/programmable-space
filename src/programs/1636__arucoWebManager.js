@@ -8,8 +8,33 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('./src/files/arucoWebManager'))
 
+const savedDataLocation = path.join(__dirname, '..', 'files', 'arucoMap.txt')
 var seenArucoTags = [];
 var arucoToProgramMap = {};
+
+fs.readFile(savedDataLocation, 'utf8', function(err, contents) {
+  if (err) {
+    console.log("No saved data")
+    console.error(err);
+  } else {
+    console.log("loaded data:")
+    console.log(contents);
+    let savedArucoToProgramMap = undefined;
+    try {
+      savedArucoToProgramMap = JSON.parse(contents);
+    } catch(e) {
+      console.error(e);
+    }
+    if (savedArucoToProgramMap) {
+      arucoToProgramMap = savedArucoToProgramMap;
+      room.retractAll(`program $ is aruco $`);
+      for (const [arucoId, programId] of Object.entries(arucoToProgramMap)) {
+        room.assert(`program ${programId} is aruco ${arucoId}`);
+      }
+      room.flush();
+    }
+  }
+});
 
 app.get('/status', (req, res) => {
     res.status(200).send({
@@ -45,6 +70,10 @@ room.on(`program $programId is aruco $arucoId`,
           return acc;
         }, {});
         room.subscriptionPostfix();
+        fs.writeFile(savedDataLocation, json.dumps(arucoToProgramMap), function (err) {
+          if (err) return console.log(err)
+          console.log("The file was saved!");
+        });
     })
 
 room.on(`camera $camId sees aruco $arucoId at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 @ $`,
