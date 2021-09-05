@@ -1,4 +1,4 @@
-from helper import init, subscription, batch, MY_ID_STR, check_server_connection, get_my_id_str, rpc_url
+from helper import init, subscription, batch, MY_ID_STR, get_my_id_str, rpc_url, override_my_id
 from imutils.video import WebcamVideoStream, VideoStream
 import numpy as np
 import cv2
@@ -20,13 +20,18 @@ lock = threading.RLock()
 CAMERA_ID = "1994"
 if len(sys.argv) - 1 > 0:
     CAMERA_ID = sys.argv[1]
+    if len(sys.argv) - 2 > 0:
+        M = int(sys.argv[2])
+        MY_ID = str(M)
+        MY_ID_STR = MY_ID
+        override_my_id(MY_ID)
 
 PORT = 8000
 DEBUG = False
 cached_image = BytesIO()
 
-# capture = WebcamVideoStream(src=0)
-capture = VideoStream(usePiCamera=True, resolution=(1640, 1232))
+capture = WebcamVideoStream(src=0)
+# capture = VideoStream(usePiCamera=True, resolution=(1640, 1232))
 capture.start()
 time.sleep(2)
 
@@ -57,9 +62,6 @@ def create_server():
     class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             with lock:
-                # if self.path == '/':
-                #     self.path = 'index.html'
-                # return http.server.SimpleHTTPRequestHandler.do_GET(self)
                 self.send_response(200)
                 self.send_header('Content-type','image/jpeg')
                 self.end_headers()
@@ -73,7 +75,7 @@ init_claim()
 threading.Thread(target=create_server).start()
 while True:
     claims = [
-        {"type": "retract", "fact": [["id", get_my_id_str()], ["id", "0"], ["postfix", ""]]}
+        {"type": "retract", "fact": [["id", get_my_id_str()], ["id", "1"], ["postfix", ""]]}
     ]
     start = time.time()
     frame = capture.read()
@@ -88,7 +90,7 @@ while True:
             tag_corners = _tag_corners[0]
             claims.append({"type": "claim", "fact": [
                 ["id", get_my_id_str()],
-                ["id", "0"],
+                ["id", "1"],
                 ["text", "camera"],
                 ["integer", str(CAMERA_ID)],
                 ["text", "sees"],
