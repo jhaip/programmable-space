@@ -30,7 +30,12 @@ PORT = 8000
 DEBUG = False
 cached_image = BytesIO()
 
+CAM_WIDTH = 1920
+CAM_HEIGHT = 1080
 capture = WebcamVideoStream(src=0)
+capture.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
+capture.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
+capture.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'P', 'E', 'G'))
 # capture = VideoStream(usePiCamera=True, resolution=(1640, 1232))
 capture.start()
 time.sleep(2)
