@@ -10,7 +10,9 @@ app.use(express.json());
 app.use(express.static('./src/files/arucoWebManager'))
 
 const savedDataLocation = path.join(__dirname, '..', 'files', 'arucoMap.txt')
+const N_FRAMES_UNTIL_DEATH = 3;
 var seenArucoTags = [];
+var seenArucoCountdown = {};
 var arucoToProgramMap = {};
 
 fs.readFile(savedDataLocation, 'utf8', function(err, contents) {
@@ -56,10 +58,21 @@ app.post('/map', (req, res) => {
   res.status(200).send('OK');
 })
 
-room.on(`camera $camId sees aruco $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 @ $`,
+room.on(`camera $camId sees aruco $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 @ $t`,
     results => {
         room.subscriptionPrefix(1);
         seenArucoTags = results || [];
+        seenArucoTags.forEach((v, i) => {
+          seenArucoCountdown[v.id] = N_FRAMES_UNTIL_DEATH+1;
+        })
+        for (const arucoId in seenArucoCountdown) {
+          seenArucoCountdown[arucoId] -= 1;
+          if (seenArucoCountdown[arucoId] <= 0) {
+            delete seenArucoCountdown[arucoId];
+          } else if (arucoToProgramMap[arucoId]) {
+            room.assert(`wish ${arucoToProgramMap[arucoId]} would be running`); 
+          }
+        }
         room.subscriptionPostfix();
     })
 
@@ -75,18 +88,6 @@ room.on(`program $programId is aruco $arucoId`,
           if (err) return console.log(err)
           console.log("The file was saved!");
         });
-    })
-
-room.on(`camera $camId sees aruco $arucoId at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 @ $`,
-    `program $programId is aruco $arucoId`,
-    results => {
-        room.subscriptionPrefix(3);
-        if (!!results) {
-          results.forEach(({ programId }) => {
-            room.assert(`wish ${programId} would be running`); 
-          });
-        }
-        room.subscriptionPostfix();
     })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
