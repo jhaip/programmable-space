@@ -33,5 +33,7 @@ room.assert('wish 826 would be running') // run seen papers
 room.assert('wish 11 would be running') // latency monitor
 room.assert('wish 1636 would be running') // arucowebmanager
 
+room.assert('wish 1631 would be running')
+
 
 run();
