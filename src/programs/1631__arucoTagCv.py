@@ -35,7 +35,7 @@ CAM_HEIGHT = 1080
 capture = WebcamVideoStream(src=0)
 capture.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
 capture.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
-capture.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'P', 'E', 'G'))
+capture.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 # capture = VideoStream(usePiCamera=True, resolution=(1640, 1232))
 capture.start()
 time.sleep(2)
