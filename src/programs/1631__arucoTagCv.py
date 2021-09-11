@@ -29,9 +29,10 @@ if len(sys.argv) - 1 > 0:
 PORT = 8000
 DEBUG = False
 cached_image = BytesIO()
+last_image_update = time.time()
 
-CAM_WIDTH = 1920
-CAM_HEIGHT = 1080
+CAM_WIDTH = 1280
+CAM_HEIGHT = 720
 capture = WebcamVideoStream(src=0)
 capture.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_WIDTH)
 capture.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAM_HEIGHT)
@@ -113,13 +114,15 @@ while True:
                 ["text", "@"],
                 ["integer", str(currentTimeMs)]
             ]})
-    debugFrame = aruco.drawDetectedMarkers(frame, corners)
-    with lock:
-        is_success, buffer = cv2.imencode(".jpg", debugFrame)
-        cached_image = BytesIO(buffer)
+    if time.time() - last_image_update > 1.0:
+        debugFrame = aruco.drawDetectedMarkers(frame, corners)
+        with lock:
+            is_success, buffer = cv2.imencode(".jpg", debugFrame)
+            cached_image = BytesIO(buffer)
+        last_image_update = time.time()
     batch(claims)
     logging.error("Time to capture and claim: {}".format(time.time() - start))
     if DEBUG:
         cv2.imshow("Original", debugFrame)
         cv2.waitKey(0)
-    time.sleep(0.2)
+    time.sleep(0.25)
