@@ -70,19 +70,19 @@ room.on(`camera $camId sees aruco $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 @ $t`,
           if (seenArucoCountdown[arucoId].countdown <= 0) {
             delete seenArucoCountdown[arucoId];
           } else if (arucoToProgramMap[arucoId]) {
-            const r = arucoToProgramMap[arucoId];
+            const r = seenArucoCountdown[arucoId];
             const currentTimeMs = (new Date()).getTime();
             // assume paper is 4 times the size of the aruco card, extended in the -X and -Y direction.
             // so we use (x2, y2) as the origin (the top right corner)
             const scale = 4;
-            const px1 = r.x2 + scale*(r.x1 - r.x2);
-            const py1 = r.y2 + scale*(r.y1 - r.y2);
-            const px2 = r.x2;
-            const py2 = r.y2;
-            const px3 = r.x2 + scale*(r.x3 - r.x2);
-            const py3 = r.y2 + scale*(r.y3 - r.y2);
-            const px4 = r.x2 + scale*(r.x1 - r.x2) + scale*(r.x3 - r.x2);
-            const py4 = r.y2 + scale*(r.y1 - r.y2) + scale*(r.y3 - r.y2);
+            const px1 = +r.x2 + scale*(+r.x1 - +r.x2);
+            const py1 = +r.y2 + scale*(+r.y1 - +r.y2);
+            const px2 = +r.x2;
+            const py2 = +r.y2;
+            const px3 = +r.x2 + scale*(+r.x3 - +r.x2);
+            const py3 = +r.y2 + scale*(+r.y3 - +r.y2);
+            const px4 = +r.x2 + scale*(+r.x1 - +r.x2) + scale*(+r.x3 - +r.x2);
+            const py4 = +r.y2 + scale*(+r.y1 - +r.y2) + scale*(+r.y3 - +r.y2);
             room.assert(`camera ${r.camId} sees paper ${arucoToProgramMap[arucoId]} at TL ( ${px1} , ${py1} ) TR ( ${px2} , ${py2} ) BR ( ${px3} , ${py3} ) BL ( ${px4} , ${py4} ) @ ${currentTimeMs}`)
           }
         }
