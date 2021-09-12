@@ -14,7 +14,7 @@ const savedDataLocation = path.join(__dirname, '..', 'files', 'webProjectorCailb
 var availableCameras = [];
 var allCamerasCalibrationData = {};
 
-room.assert(`camera 1998 should calibrate to 0 0 1920 0 1920 1080 0 1080 on display 1993`)
+room.assert(`camera 1994 should calibrate to 0 0 1920 0 1920 1080 0 1080 on display 1993`)
 
 fs.readFile(savedDataLocation, 'utf8', function(err, contents) {
   if (err) {
