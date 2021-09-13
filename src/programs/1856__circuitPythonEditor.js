@@ -8,7 +8,9 @@ const request = require('request');
 const gamepad = require("gamepad");
 const app = express();
 
-const CODE_FILENAME = `/media/${os.userInfo().username}/CIRCUITPY/code.py`; // needs to work across platforms
+// const CODE_FILENAME = `/media/${os.userInfo().username}/CIRCUITPY/code.py`; // breaks when running as root
+// const CODE_FILENAME = `/media/pi/CIRCUITPY/code.py`;
+const CODE_FILENAME = `/media/jacob/CIRCUITPY/code.py`;
 
 app.use(express.static('./src/files/circuitPythonEditor'))
 
