@@ -16,7 +16,7 @@ var myCodeMirror = CodeMirror(getElement("editor"), {
   scrollbarStyle: "simple",
   theme: 'ayu-dark',
 });
-const ws = new WebSocket('ws://localhost:3030');
+const ws = new WebSocket(`ws://${location.hostname}:3030`);
 ws.onopen = () => { 
   console.log('Now connected'); 
 };
