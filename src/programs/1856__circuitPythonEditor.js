@@ -3,11 +3,12 @@ const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
 const fs = require('fs');
+const os = require("os");
 const request = require('request');
 const gamepad = require("gamepad");
 const app = express();
 
-const CODE_FILENAME = "/media/pi/CIRCUITPY/code.py";
+const CODE_FILENAME = `/media/${os.userInfo().username}/CIRCUITPY/code.py`; // needs to work across platforms
 
 app.use(express.static('./src/files/circuitPythonEditor'))
 
