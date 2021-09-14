@@ -40,6 +40,22 @@ sudo PROG_SPACE_SERVER_URL='192.168.1.34' node /home/pi/programmable-space/src/p
 sudo -E python3 /home/pi/programmable-space/src/programs/792__deepspeech.py -m /home/pi/deepspeech-0.7.4-models.tflite -s /home/pi/deepspeech-0.7.4-models.scorer &
 `,
 
+"haippi7": `
+pkill -f "processing/graphics"
+pkill -f "python3"
+v4l2-ctl \
+  --set-ctrl=brightness=10 \
+  --set-ctrl=contrast=0 \
+  --set-ctrl=saturation=-100 \
+  --set-ctrl=sharpness=128 \
+  --set-ctrl=exposure_absolute=50
+export DISPLAY=:0
+export PROG_SPACE_SERVER_URL="192.168.1.34"
+unclutter -idle 0 &
+python3 src/programs/1620__seeLaser.py 1998 &
+/home/pi/processing-3.5.3/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --present 1993
+`,
+
 "haippi9": `
 sudo pkill -f '1855__thermalPrinterEscpos.py'
 sudo -E python3 src/programs/1855__thermalPrinterEscpos.py &
