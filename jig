@@ -148,6 +148,7 @@ function cmd() {
   elif [ "$1" == "anybeampicam2" ]
   then
     pkill -f "processing/graphics"
+    pkill -f "python3"
     v4l2-ctl \
       --set-ctrl=brightness=10 \
       --set-ctrl=contrast=0 \
