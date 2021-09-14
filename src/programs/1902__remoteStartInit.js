@@ -53,7 +53,7 @@ export DISPLAY=:0
 export PROG_SPACE_SERVER_URL="192.168.1.34"
 unclutter -idle 0 &
 python3 src/programs/1620__seeLaser.py 1998 &
-/home/pi/processing-3.5.3/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --present 1993
+/home/pi/processing-3.5.3/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --present 1998
 `,
 
 "haippi9": `
