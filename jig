@@ -493,7 +493,6 @@ function cmd() {
     cd src/programs
     /usr/local/go/bin/go run 1382__print-paper.go &
     cd ../..
-    /usr/local/bin/ngrok start masterlist web2 -config=./util/ngrok/rfideditorstart2.conf & > /dev/null
     echo -e "booting"
   elif [ "$1" == "test" ]
   then
