@@ -376,7 +376,7 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
     - print out an ArUco marker and tape it to a piece of paper
     - write "1014 Web Editor" on the paper
     - Place that paper and marker where the webcam can see it
-- Make a card for XXXX, a web graphical output and place it in view of the webcam
+- Make a card for 1246, a web graphical output and place it in view of the webcam
 - Make a hello world card:
     - Create a new program using the 1014 web editor at `localhost:3020`
     - Put in this code:
@@ -404,11 +404,6 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
 - `./jig log` to see the broker log
 - `ps aux | grep programs/` to see what programs are running
 - `tail -f src/programs/logs/YOUR_PROGRAM_NAME.log` to see the logs from a particular program.
-
-#### Projection mapping calibration
-
-Open `1601`'s desktop application. Press `1` and then click on the top left corner of the projection region.
-Repeat for `2`, `3`, and `4` in a clock-wise order. Press ` to stop editing corners.
 
 # Getting Involved
 
