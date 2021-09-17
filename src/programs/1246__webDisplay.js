@@ -12,45 +12,17 @@ app.use(express.static('./src/files/web-display'))
 const expressWs = enableWs(app)
 
 var graphicsCache = [];
-var calibration = null;
 
 app.get('/status', (req, res) => {
-    res.status(200).send({
-        'calibration': calibration,
-        'graphics': graphicsCache
-    });
+    res.status(200).send({'graphics': graphicsCache});
 })
 
 app.ws('/echo', (ws, req) => {
-    ws.on('message', msg => {
-        console.log("received message");
-    })
-
-    ws.on('close', () => {
-        console.log('WebSocket was closed')
-    })
+    ws.on('message', msg => console.log("received message"))
+    ws.on('close', () => console.log('WebSocket was closed'))
 })
 
-room.on(
-    `region $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4`,
-    `region $id has name calibration`,
-    results => {
-        room.subscriptionPrefix(1);
-        if (!!results) {
-            results.forEach(({x1, y1, x2, y2, x3, y3, x4, y4}) => {
-                calibration = [x1, y1, x2, y2, x3, y3, x4, y4];
-            });
-            expressWs.getWss().clients.forEach(client => {
-                client.send(JSON.stringify({
-                    'calibration': calibration,
-                    'graphics': graphicsCache
-                }));
-            });
-        }
-        room.subscriptionPostfix();
-    })
-
-room.on(`draw graphics $graphics on $`,
+room.on(`draw graphics $graphics on web`,
     results => {
         room.subscriptionPrefix(2);
         if (!!results) {
@@ -61,7 +33,6 @@ room.on(`draw graphics $graphics on $`,
             });
             expressWs.getWss().clients.forEach(client => {
                 client.send(JSON.stringify({
-                    'calibration': calibration,
                     'graphics': graphicsCache
                 }));
             })
