@@ -355,23 +355,45 @@ For moving windows around programmatically `sudo apt install xdotool` is needed.
 
 ## Starting the broker, boot programs, and sensing programs
 
-**Starting the broker**:
+In this demo, programs are represented by printed ArUco markers taped to pieces of paper. The ArUco markers are detected by the 1631__arucoTagCv.py program that processes frames from a webcam.
 
-- Run `./jig start`. This starts the broker and `0__boot.js`
+#### Hardware Setup
 
-**Paper sensing**:
+- Print out ArUco tags (from the 6x6 dictionary) and tape them to papers to represent programs: https://chev.me/arucogen/
+- Set up the webcam to point down at a table (or at a wall) where the paper programs will be.
 
-1. Grab a frame from the webcam and detect papers (#1601)
-2. Get the list of visible papers and wish that the corresponding program stored on a computer be running. (#826)
-3. Get all wishes for programs that should be running and run them on a computer. (#1900)
+#### Start
 
-**Projection**:
+- Run `./jig arucostart`. This starts the broker and `112__arucoEditorBoot.js`
+    - This starts a few key programs that deal with running programs, editing programs, debug views, the ArUco CV program (1631), and the ArUco to program web manager (1636, running at `localhost:3023`)
+- Open `localhost:3000` in your browser to see the broker's fact table
 
-1. A process listens for the locations of all papers and each papers wishes for graphics to be drawn on them. Additionally it listens for a projector-camera calibration so the display is able to perform the projection mapping. (`src/programs/graphics.lua`)
+#### Basic papers to add to the table to start:
 
-**Program editing**:
+- Associate ArUco cards to programs at `localhost:3023`
+- Make a card for 1014, a web text editor:
+    - print out an ArUco marker and tape it to a piece of paper
+    - write "1014 Web Editor" on the paper
+    - Place that paper and marker where the webcam can see it
+- Make a card for XXXX, a web graphical output and place it in view of the webcam
+- Make a hello world card:
+    - Create a new program using the 1014 web editor at `localhost:3020`
+    - Put in this code:
+      ```
+      let ill = room.newIllumination();
+      ill.text(0, 0, "Hello World!");
+      room.draw(ill);
+      ```
+    - Save
+    - Print out an ArUco ID and tape it to a paper. Write "hello world" on it. You'll need to know the ID of the aruco card.
+    - Open `localhost:3023` to associate the aruco card ID to the program you just created.
+    - Now when you place your card on the desk, it should show hello world. When you remove the card, it shows it.
 
-The `1013` program is used to edit the source code of programs in the room. It edits the code of whatever program it is pointing at. The code being edited is projected onto the text editor program.
+#### Editing papers
+
+- Associate 1014__webEditor.js to an aruco card and place that card on your desk.
+- Edit, create papers, and print papers at `localhost:3020`
+- For new programs, you'll need to associate them to an aruco card at `localhost:3023` after saving.
 
 [Read more about source code editing here](/docs/editing-source-code.md).
 
