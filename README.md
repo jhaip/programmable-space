@@ -227,6 +227,7 @@ The bidirectional communiation between programs and the broker is handled via Ze
 
 # Gallery
 
+- [CircuitPython Editor](https://haiperspace.com/writing/21-04-19-circuitpython-editor/). 2021-04-25
 - [Musical Posters](https://twitter.com/jhaip/status/1299815186493300740). 2020-08-29
 - [Voice Assistant reimagined](https://vimeo.com/438758942). 2020-07-15
 - [Recreation of the "Dangling String"](https://twitter.com/jhaip/status/1246211983269126146). 2020-04-03
