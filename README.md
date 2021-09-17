@@ -292,7 +292,7 @@ Operating system:
 Golang:
 
 - For the broker and a few core programs
-- [Golang 1.12](https://golang.org/)
+- [Golang 1.12+](https://golang.org/)
 - Dependencies are tracked in the `broker/go.mod` file and will be automatically downloaded and installed when running a Go program for the first time.
 - When building the Go files, you may need to copy the `broker/go.mod` and `broker/go.sum` files to the root folder of this repo in order for the `src/programs/` Go files to be build properly.
 
@@ -311,6 +311,16 @@ Python:
 - For UI of `1600` and `1700`: [wxPython4](https://wxpython.org/)
 - For playing MIDI sounds `777` and capturing keyboard input `648` [pyGame 1.9.5+](https://www.pygame.org)
 
+Processing for graphical output:
+
+Install Processing 3 from https://processing.org/ and then install the [Video library](https://processing.org/reference/libraries/video/index.html). The video library can be installed after opening Processing by going to "Sketch" > "Import Library" > "Add Library".
+
+Printing Papers:
+
+- [`lpr`](http://man7.org/linux/man-pages/man1/lpr.1.html) with a default printer configured.
+
+### Optional Requirements:
+
 Lua/Love2D:
 
 - Used for graphical output `src/programs/graphics.lua`
@@ -323,10 +333,6 @@ Lua/Love2D:
   - `sudo luarocks install lzmq`
 - `sudo luarocks install uuid`
 - `sudo luarocks install lua-cjson`
-
-Printing Papers:
-
-- [`lpr`](http://man7.org/linux/man-pages/man1/lpr.1.html) with a default printer configured.
 
 For moving windows around programmatically `sudo apt install xdotool` is needed.
 
