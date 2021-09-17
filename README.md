@@ -313,7 +313,8 @@ Python:
 
 Processing for graphical output:
 
-Install Processing 3 from https://processing.org/ and then install the [Video library](https://processing.org/reference/libraries/video/index.html). The video library can be installed after opening Processing by going to "Sketch" > "Import Library" > "Add Library".
+- Install Processing 3 from https://processing.org/
+- Then install the [Video library](https://processing.org/reference/libraries/video/index.html) by opening Processing and going to "Sketch" > "Import Library" > "Add Library".
 
 Printing Papers:
 
