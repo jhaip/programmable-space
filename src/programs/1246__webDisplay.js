@@ -22,7 +22,7 @@ app.ws('/echo', (ws, req) => {
     ws.on('close', () => console.log('WebSocket was closed'))
 })
 
-room.on(`draw graphics $graphics on web`,
+room.on(`draw graphics $graphics on $`,
     results => {
         room.subscriptionPrefix(2);
         if (!!results) {
