@@ -15,6 +15,7 @@ room.onRaw(
             let newresults = JSON.parse(JSON.stringify(results));
             newresults = newresults.sort((a, b) => a.x1 < b.x1);
             let stack = newresults.map(v => v.cardType);
+            stack = [...new Set(stack)];
             console.log("NEW STACK:")
             console.log(stack);
             if (JSON.stringify(stack) !== JSON.stringify(lastStack)) {
