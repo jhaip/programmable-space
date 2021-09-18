@@ -1,25 +1,18 @@
 const { room, myId, run } = require('../helpers/helper')(__filename);
-const sensorOrder = [4, 5, 3, 1];
 
 var lastStack = [];
 var turtles = [];
 var emitters = [];
 
-room.onRaw(`$ $ ArgonBLE read $value on sensor $sensorId`,
-    `$ $ paper $paperNumber has RFID $value`,
+room.onRaw(
+    `camera $ sees paper $programId at TL ( $x1 , $y1 ) TR ( $x2 , $y2 ) BR ( $x3 , $y3 ) BL ( $x4 , $y4 ) @ $`,
     `$ $ paper $paperNumber has id $programId`,
     `$programId $ I am a $cardType card`,
     results => {
         room.subscriptionPrefix(1);
         if (!!results) {
-            let cards = ["", "", "", ""];
-            results.forEach(({ value, sensorId, paperNumber, programId, cardType }) => {
-                const cardPosition = sensorOrder.indexOf(sensorId);
-                if (cardPosition >= 0) {
-                    cards[cardPosition] = cardType;
-                }
-            });
-            let stack = cards.filter(card => card !== "");
+            // sort by the X position of the papers to determine the "stack" order
+            let stack = results.sort((a, b) => a.x1 < b.x1).map(v => v.cardType);
             console.log("NEW STACK:")
             console.log(stack);
             if (JSON.stringify(stack) !== JSON.stringify(lastStack)) {
@@ -63,7 +56,7 @@ room.onRaw(`$ $ ArgonBLE read $value on sensor $sensorId`,
             }
         }
         room.subscriptionPostfix();
-    })
+    });
 
 function HSVtoRGB(h, s, v) {
     var r, g, b, i, f, p, q, t;
@@ -190,7 +183,7 @@ setInterval(() => {
         ill.ellipse(emitters[i].x - 10, emitters[i].y - 10, 20, 20);
     }
     ill.pop();
-    room.draw(ill, "web2")
+    room.draw(ill)
     room.flush();
 }, 250);
 
