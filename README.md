@@ -381,9 +381,14 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
     - Create a new program using the 1014 web editor at `localhost:3020`
     - Put in this code:
       ```
-      let ill = room.newIllumination();
-      ill.text(0, 0, "Hello World!");
+      const { room, myId, run } = require('../helpers/helper')(__filename);
+
+      let ill = room.newIllumination()
+      ill.fontcolor(255, 0, 0);
+      ill.text(0, 0, "Hello World!")
       room.draw(ill);
+
+      run();
       ```
     - Save
     - Print out an ArUco ID and tape it to a paper. Write "hello world" on it. You'll need to know the ID of the aruco card.
