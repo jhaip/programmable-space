@@ -143,7 +143,7 @@ function update(calibration, graphics, calendarRegion) {
 // You ALWAYS need to provide absolute address
 // I mean, you can't just use relative path like /echo
 const socketProtocol = (window.location.protocol === 'https:' ? 'wss:' : 'ws:')
-const echoSocketUrl = socketProtocol + '//' + window.location.hostname + '/echo/'
+const echoSocketUrl = socketProtocol + '//' + window.location.host + '/echo/'
 const socket = new WebSocket(echoSocketUrl);
 
 socket.onopen = () => {
