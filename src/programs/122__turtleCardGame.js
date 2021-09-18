@@ -5,7 +5,7 @@ var turtles = [];
 var emitters = [];
 
 room.onRaw(
-    `camera $ sees paper $programId at TL ( $x1 , $y1 ) TR ( $x2 , $y2 ) BR ( $x3 , $y3 ) BL ( $x4 , $y4 ) @ $`,
+    `$ $ camera $ sees paper $programId at TL ( $x1 , $y1 ) TR ( $x2 , $y2 ) BR ( $x3 , $y3 ) BL ( $x4 , $y4 ) @ $`,
     `$ $ paper $paperNumber has id $programId`,
     `$programId $ I am a $cardType card`,
     results => {
