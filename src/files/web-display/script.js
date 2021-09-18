@@ -151,7 +151,7 @@ socket.onopen = () => {
 }
 
 socket.onmessage = e => {
-    const myJsonString = event.data;
+    const myJsonString = e.data;
     const myJson = JSON.parse(myJsonString);
     if (myJsonString !== previousResultJSONString) {
         if (ignore_next_update) {
