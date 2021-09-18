@@ -363,6 +363,8 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
 - Print out ArUco tags (from the 6x6 dictionary) and tape them to papers to represent programs: https://chev.me/arucogen/
 - Set up the webcam to point down at a table (or at a wall) where the paper programs will be.
 
+![Basic Desk Setup](docs/basic_desk_setup.jpg)
+
 #### Start
 
 - Run `./jig arucostart`. This starts the broker and `112__arucoEditorBoot.js`
@@ -394,6 +396,8 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
     - Print out an ArUco ID and tape it to a paper. Write "hello world" on it. You'll need to know the ID of the aruco card.
     - Open `localhost:3023` to associate the aruco card ID to the program you just created.
     - Now when you place your card on the desk, it should show hello world. When you remove the card, it shows it.
+
+![Basic Desk Setup](docs/hello_world_aruco.gif)
 
 #### Editing papers
 
