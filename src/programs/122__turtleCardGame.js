@@ -6,16 +6,13 @@ var emitters = [];
 
 room.onRaw(
     `$ $ camera $ sees paper $programNumber at TL ( $x1 , $y1 ) TR ( $x2 , $y2 ) BR ( $x3 , $y3 ) BL ( $x4 , $y4 ) @ $`,
-    `$ $ paper $paperNumber has id $programId`,
+    `$ $ paper $programNumber has id $programId`,
     `$programId $ I am a $cardType card`,
     results => {
         room.subscriptionPrefix(1);
         if (!!results) {
             // sort by the X position of the papers to determine the "stack" order
-            let newresults = JSON.parse(JSON.stringify(results));
-            newresults = newresults.sort((a, b) => a.x1 < b.x1);
-            let stack = newresults.map(v => v.cardType);
-            stack = [...new Set(stack)];
+            let stack = results.sort((a, b) => a.x1 < b.x1).map(v => v.cardType);
             console.log("NEW STACK:")
             console.log(stack);
             if (JSON.stringify(stack) !== JSON.stringify(lastStack)) {
