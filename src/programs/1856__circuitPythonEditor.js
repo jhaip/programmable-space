@@ -342,6 +342,16 @@ portPaths.forEach(portPath => {
   parser.on('data', data =>{
     console.log('got word from arduino:', data);
     updateUiWithCode({'type': 'SERIAL', 'data': data});
+    
+    if (data.includes("sending ")) {
+      let activeRFID = data.replace("sending ").trim();
+      console.log(`NEW RFID VALUE: ${activeRFID}`);
+      updateUiWithCode({'type': 'RFID', 'data': {'rfid': activeRFID, 'nameAndCode': rfidToCode[activeRFID] || null}});
+      if (rfidToCode[activeRFID]) {
+        // save code to board is RFID card is changed
+        saveCodeToBoard(rfidToCode[activeRFID][1]);
+      }
+    }
   });
 });
 
