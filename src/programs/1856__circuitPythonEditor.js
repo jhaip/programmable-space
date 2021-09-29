@@ -5,8 +5,11 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const os = require("os");
 const request = require('request');
-const gamepad = require("gamepad");
 const app = express();
+
+// Notes: to run this program without sudo, add your user to the user group that of the /dev/ttyACM* entries
+// For me this was the command: sudo adduser jacob dialout
+// and then do a reboot to make sure the changes took effect
 
 // const CODE_FILENAME = `/media/${os.userInfo().username}/CIRCUITPY/code.py`; // breaks when running as root
 // const CODE_FILENAME = `/media/pi/CIRCUITPY/code.py`;
@@ -64,28 +67,6 @@ function saveCodeToBoard(newCode) {
     } catch (err) {
       console.error(err)
     }
-    // const smallDelay = 5;
-    // fs.open(CODE_FILENAME, 'w+', function(err, fd) {
-    //   if (err) {
-    //     console.log("could not open file", err);
-    //     fs.close(fd, function() {
-    //       console.log("closed file after error");
-    //     });
-    //   } else {
-    //     setTimeout(() => {
-    //       fs.writeFileSync(fd, newCode, {flag: 'w', encoding: 'utf8'}, err => {
-    //         if (err) {
-    //           console.log("Error saving code!", err);
-    //         }
-    //         setTimeout(() => {
-    //           fs.close(fd, function() {
-    //             console.log("done saving.")
-    //           });
-    //         }, smallDelay);
-    //       });
-    //     }, smallDelay);
-    //   }
-    // });
   } else {
     console.log("cannot save to board because board not connected");
   }
@@ -117,85 +98,6 @@ socketServer.on('connection', (socketClient) => {
   socketClient.on('close', (socketClient) => {
     console.log('closed');
     console.log('Number of clients: ', socketServer.clients.size);
-  });
-});
-
-/////////////////////////////////////////////////////////////
-// Gamepad stuff
-/////////////////////////////////////////////////////////////
-
-var joystickValues = ["", "", "", ""];
-var activeRFID = "";
-// Initialize the library
-gamepad.init()
- 
-// List the state of all currently attached devices
-for (var i = 0, l = gamepad.numDevices(); i < l; i++) {
-  console.log(i, gamepad.deviceAtIndex());
-}
- 
-// Create a game loop and poll for events
-setInterval(gamepad.processEvents, 16);
-// Scan for new gamepads as a slower rate
-setInterval(gamepad.detectDevices, 500);
- 
-// Listen for move events on all gamepads
-gamepad.on("move", function (id, axis, value) {
-  console.log("move", {
-    id: id,
-    axis: axis,
-    value: value,
-  });
-  // RFID values are encoded using the x,y,z,r_z joystick values that range from -127 to 127
-  // Note: This -127 to 127 is less than a full byte so any RFID value that includes "FF" cannot be used
-  // And the middle value "7f7f7f7f" is used an the "no rfid card present" value
-  // For some reason the "gamepad" library labels them axis 3,4,5,6 and converts the range to 0-1
-  // .toString(16) converts the value to hex, which we want to two characters with '0' if needed
-  if (process.platform === "darwin") {
-    axis = axis - 3;
-  }
-  joystickValues[axis] = ('0' + (Math.round(value * 127) + 127).toString(16)).slice(-2);
-  if (
-    joystickValues[0] !== "" &&
-    joystickValues[1] !== "" &&
-    joystickValues[2] !== "" &&
-    joystickValues[3] !== ""
-  ) {
-    activeRFID = joystickValues.join("");
-    joystickValues = ["", "", "", ""];
-    if (activeRFID === "7f7f7f7f") {
-      activeRFID = "";
-    }
-    console.log(`NEW RFID VALUE: ${activeRFID}`);
-    updateUiWithCode({'type': 'RFID', 'data': {'rfid': activeRFID, 'nameAndCode': rfidToCode[activeRFID] || null}});
-    if (rfidToCode[activeRFID]) {
-      // save code to board is RFID card is changed
-      saveCodeToBoard(rfidToCode[activeRFID][1]);
-    }
-  }
-});
- 
-// Listen for button up events on all gamepads
-gamepad.on("up", function (id, num) {
-  console.log("up", {
-    id: id,
-    num: num,
-  });
-  const buttonNumber = process.platform === "darwin" ? num - 897: num;
-  if (buttonNumber === 0) {
-    printFront();
-  } else if (buttonNumber === 1) {
-    if (activeRFID in rfidToCode) {
-      generate_and_upload_code_image(rfidToCode[activeRFID][1]);
-    }
-  }
-});
- 
-// Listen for button down events on all gamepads
-gamepad.on("down", function (id, num) {
-  console.log("down", {
-    id: id,
-    num: num,
   });
 });
 
@@ -313,6 +215,8 @@ function generate_and_upload_code_front_image(programId) {
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
+var activeRFID = "";
+
 var portPaths = ['/dev/ttyACM0', '/dev/ttyACM1'];
 if (process.platform === "darwin") {
   portPaths = ['/dev/tty.usbmodem144101'];
@@ -356,6 +260,18 @@ portPaths.forEach(portPath => {
       if (rfidToCode[activeRFID]) {
         // save code to board is RFID card is changed
         saveCodeToBoard(rfidToCode[activeRFID][1]);
+      }
+    } else {
+      const found = data.match(/button (\d) pressed/);
+      if (found) {
+        const buttonNumber = +found[1];
+        if (buttonNumber === 0) {
+          printFront();
+        } else if (buttonNumber === 1) {
+          if (activeRFID in rfidToCode) {
+            generate_and_upload_code_image(rfidToCode[activeRFID][1]);
+          }
+        }
       }
     }
   });
