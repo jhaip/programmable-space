@@ -344,7 +344,7 @@ portPaths.forEach(portPath => {
     updateUiWithCode({'type': 'SERIAL', 'data': data});
     
     if (data.includes("sending ")) {
-      activeRFID = data.replace("sending ").trim();
+      activeRFID = data.replace("sending ", "").trim();
       console.log(`NEW RFID VALUE: ${activeRFID}`);
       updateUiWithCode({'type': 'RFID', 'data': {'rfid': activeRFID, 'nameAndCode': rfidToCode[activeRFID] || null}});
       if (rfidToCode[activeRFID]) {
