@@ -486,7 +486,7 @@ function cmd() {
     cd ..
     sleep 2
     echo -e "done sleeping"
-    /home/jacob/.nvm/versions/node/v10.6.0/bin/node src/programs/112__arucoEditorBoot.js &
+    node src/programs/112__arucoEditorBoot.js &
     echo -e "done running 1"
     sleep 2
     echo -e "done sleeping 2"

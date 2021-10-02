@@ -387,7 +387,8 @@ func GetBasePath() string {
 func NewLogger() (*zap.Logger, error) {
 	cfg := zap.NewDevelopmentConfig()  // zap.NewProductionConfig()
 	cfg.OutputPaths = []string{
-		GetBasePath() + "broker/broker.log",
+		// GetBasePath() + "broker/broker.log",
+		"broker.log",
 	}
 	// cfg.OutputPaths = []string{"/var/log/programmable-space-broker.log"} // need to figure out permission issues
 	return cfg.Build()
