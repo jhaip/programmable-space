@@ -406,6 +406,7 @@ func main() {
 	client, zmqCreationErr := zmq.NewSocket(zmq.ROUTER)
 	checkErr(zmqCreationErr)
 	defer client.Close()
+	client.SetRcvtimeo(time.Duration(1) * time.Millisecond)
 	client.Bind("tcp://*:5570")
 	zap.L().Info("Connecting to ZMQ")
 
@@ -427,10 +428,9 @@ func main() {
 	zap.L().Info("listening...")
 	for {
 		zmqClient.Lock()
-		rawMsg, recvErr := client.RecvMessage(zmq.DONTWAIT)
+		rawMsg, recvErr := client.RecvMessage(0)
 		if recvErr != nil {
 			zmqClient.Unlock()
-			time.Sleep(time.Duration(1) * time.Millisecond)
 			continue;
 		}
 		rawMsgId := rawMsg[0]
