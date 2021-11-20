@@ -10,21 +10,17 @@ app.use(bodyParser.json());
 app.use(express.static('./src/files/web-debugger'))
 
 app.get('/db', (req, res) => {
-    room.select(`%fact`, results => {
-        console.log(results);
-        res.send(results);
-    })
     // res.send('Hello World!')
-    // fs.readFile('./broker/db_view_base64.txt', 'utf8', function (err, contents) {
-    //     console.log(contents);
-    //     const l = contents.split("\n");
-    //     console.log(l);
-    //     res.send(l);
-    // });
+    fs.readFile('./broker/db_view_base64.txt', 'utf8', function (err, contents) {
+        console.log(contents);
+        const l = contents.split("\n");
+        console.log(l);
+        res.send(l);
+    });
 })
 
-app.post('/select', (req, res) => {
-    const query_strings = req.body.query;
+app.get('/select', (req, res) => {
+    const query_strings = req.query.query;
     let didSendRes = false;
     if (!query_strings) {
         res.status(400).send('Missing query')
@@ -32,14 +28,10 @@ app.post('/select', (req, res) => {
     console.log("query strings:");
     
     console.log(query_strings);
-    room.on(...query_strings,
+    room.select(...query_strings,
         results => {
             console.log("RESULTS:")
             console.log(results);
-            // cleanup also removes the subscription in the fact database
-            room.cleanup();
-            room.flush();
-            console.log("sending results:")
             if (!didSendRes) {
                 // this is a race condition.
                 // didSendRes could have been sent to true after the conditional above
