@@ -2,6 +2,7 @@ $refreshButton = document.getElementById("refresh-button");
 $selectInput = document.getElementById("select-input");
 $results = document.getElementById("results");
 
+$selectInput.value = "%fact";
 $refreshButton.onclick = (evt) => {
     evt.preventDefault();
     refresh();
@@ -20,7 +21,8 @@ function render(data) {
 
 async function refresh() {
     const query = $selectInput.value.trim();
-    const response = await fetch(`/select?query=${encodeURIComponent(query)}`);
+    const squery = JSON.stringify([query]);
+    const response = await fetch(`/select?query=${encodeURIComponent(squery)}`);
     const myJson = await response.json();
     render(myJson);
 }

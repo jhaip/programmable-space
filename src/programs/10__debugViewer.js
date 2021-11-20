@@ -28,7 +28,7 @@ app.get('/select', (req, res) => {
     console.log("query strings:");
     
     console.log(query_strings);
-    room.select(...query_strings,
+    room.select(...JSON.parse(query_strings),
         results => {
             console.log("RESULTS:")
             console.log(results);
