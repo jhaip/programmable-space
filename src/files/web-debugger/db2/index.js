@@ -19,15 +19,15 @@ function render(data) {
         let dataBySource = {};
         data.forEach((d) => {
             if (!(d.source in dataBySource)) {
-                dataBySource[d.source] = [];
+                dataBySource[d.source[1]] = [];
             }
-            dataBySource[d.source].push(d.fact);
+            dataBySource[d.source[1]].push(d.fact);
         });
         Object.keys(dataBySource).forEach(function (source) {
             decodedDataHTML += `<h4>${source}</h4>`
             decodedDataHTML += dataBySource[source].map(function (data) {
                 const innerContents = data.map(function (d) {
-                    return `<div class="val-type">${d}</div>`
+                    return `<div class="val-type">${d[1]}</div>`
                 }).join("")
                 return `<li>${innerContents}</li>`
             }).join('\n');

@@ -5,22 +5,40 @@
     <meta charset="UTF-8">
     <title>title</title>
     <style type="text/css">
+    .val-type {
+        min-width: 0.4rem;
+        min-height: 0.5rem;
+        display: inline-block;
+        margin-right: 0.4rem;
+        font-family: monospace;
+    }
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        height: 1.5rem;
+        width: 100vw;
+    }
     #select-input {
         background-color: #EEE;
+        height: 100%;
         font-family: monospace;
+        flex-grow: 1;
         margin: 0;
+        padding: 0.5rem;
         border: none;
-        padding: 1rem;
         font-weight: bold;
-        font-size: 16px;
-        outline: none;
     }
     </style>
 </head>
 
 <body>
-    <button id="refresh-button">Refresh</button>
-    <textarea id="select-input" placeholder="%fact"></textarea>
+    <div class="navbar">
+        <button id="refresh-button">Refresh</button>
+        <textarea id="select-input" placeholder="%fact"></textarea>
+    </div>
     <ol id="results"></ol>
     <script src="index.js"></script>
 </body>
