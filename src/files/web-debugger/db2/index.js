@@ -1,4 +1,5 @@
 var longPollingActive = false;
+var latestRequest = 0;
 $refreshButton = document.getElementById("refresh-button");
 $selectInput = document.getElementById("select-input");
 $results = document.getElementById("results");
@@ -7,12 +8,12 @@ $longpoll = document.getElementById("longpoll");
 $selectInput.value = "$source %fact";
 $refreshButton.onclick = (evt) => {
     evt.preventDefault();
-    refresh();
+    refresh((new Date()).getTime());
 }
 $longpoll.addEventListener('change', (event) => {
     if (event.currentTarget.checked) {
         longPollingActive = true;
-        refresh();
+        refresh((new Date()).getTime());
     } else {
         longPollingActive = true;
     }
@@ -52,17 +53,22 @@ function render(data) {
     $results.innerHTML = decodedDataHTML;
 }
 
-async function refresh() {
+async function refresh(requestTime) {
+    const thisRequestTime = +requestTime;
+    latestRequest = +requestTime;
     const query = $selectInput.value.trim();
     const squery = JSON.stringify([query]);
     const response = await fetch(`/select?query=${encodeURIComponent(squery)}`);
     const myJson = await response.json();
+    if (latestRequest > thisRequestTime) {
+        return; // a newer request is going so throw away these results
+    }
     render(myJson);
     if (longPollingActive) {
         setTimeout(function () {
-            refresh();
+            refresh((new Date()).getTime());
         }, 1000);
     }
 }
 
-refresh();
+refresh((new Date()).getTime());
