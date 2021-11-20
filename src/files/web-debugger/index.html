@@ -5,79 +5,62 @@
     <meta charset="UTF-8">
     <title>title</title>
     <style type="text/css">
-        .val-type {
-            min-width: 0.4rem;
-            min-height: 0.5rem;
-            display: inline-block;
-            margin-right: 0.4rem;
-            font-family: monospace;
-        }
-        .val-type--id {
-            background-color: rgb(255, 208, 0);
-        }
-        .val-type--integer {
-            background-color: rgb(164, 245, 245);
-        }
-        .val-type--float {
-            background-color: rgb(203, 144, 238);
-        }
-        .val-type--variable {
-            background-color: rgb(83, 10, 32);
-            color: white;
-            min-height: 1rem;
-        }
-        .val-type--postfix {
-            background-color: rgb(21, 10, 83);
-            color: white;
-            min-height: 1rem;
-        }
-        .val-type--text {
-            background-color: rgb(179, 255, 191);
-        }
-        .results.short-values .val-type {
-            max-width: 25rem;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            display: flex;
-            flex-wrap: nowrap;
-            height: 1.5rem;
-            width: 100vw;
-        }
-        .long-poll-button {
-            height: 100%;
-            padding: 0.5rem;
-            background-color: grey;
-            cursor: pointer;
-        }
-        .long-poll-button--active {
-            background-color: greenyellow;
-        }
-        .select-input {
-            background-color: #EEE;
-            height: 100%;
-            font-family: monospace;
-            flex-grow: 1;
-            margin: 0;
-            padding: 0.5rem;
-            border: none;
-            font-weight: bold;
-        }
+    .val-type {
+        min-width: 0.4rem;
+        min-height: 0.5rem;
+        display: inline-block;
+        margin-right: 0.4rem;
+        font-family: monospace;
+    }
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        width: 100vw;
+        z-index: 1000;
+    }
+    #results {
+        margin-top: 4rem;
+    }
+    #select-input {
+        background-color: #EEE;
+        height: 100%;
+        font-family: monospace;
+        flex-grow: 1;
+        margin: 0;
+        padding: 0.5rem;
+        border: none;
+        font-weight: bold;
+    }
+    ol li {
+    counter-increment: list;
+    list-style-type: none;
+    position: relative;
+    }
+
+    ol li:before {
+    color: #999;
+    content: counter(list) ".";
+    left: -32px;
+    position: absolute;
+    text-align: right;
+    width: 26px;
+    }
+    #longpoll {
+        flex-basis: 50px;
+    }
     </style>
 </head>
 
 <body>
     <div class="navbar">
-        <div class="long-poll-button long-poll-button--active">Poll</div>
-        <input class="select-input" />
+        <button id="refresh-button">Refresh</button>
+        <input id="select-input" placeholder="%fact"></input>
+        <input type="checkbox" id="longpoll"></input>
     </div>
-    <ol class="results short-values"></ol>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+    <ol id="results"></ol>
     <script src="index.js"></script>
 </body>
 

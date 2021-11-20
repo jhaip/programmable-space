@@ -1,79 +1,72 @@
-let longPollingActive = true;
+var longPollingActive = false;
+var latestRequest = 0;
+$refreshButton = document.getElementById("refresh-button");
+$selectInput = document.getElementById("select-input");
+$results = document.getElementById("results");
+$longpoll = document.getElementById("longpoll");
 
-function updateLongPolling(newValue) {
-    if (newValue && !longPollingActive) {
-        poll();
-    }
-    longPollingActive = newValue;
+$selectInput.value = "$source %fact";
+$refreshButton.onclick = (evt) => {
+    evt.preventDefault();
+    refresh((new Date()).getTime());
+}
+$longpoll.addEventListener('change', (event) => {
+    longPollingActive = !!event.currentTarget.checked;
     if (longPollingActive) {
-        $(".long-poll-button").addClass("long-poll-button--active")
-    } else {
-        $(".long-poll-button").removeClass("long-poll-button--active")
+        refresh((new Date()).getTime());
     }
-}
+  })
 
-$(".long-poll-button").click(function () {
-    updateLongPolling(!longPollingActive);
-})
-
-function b64DecodeUnicode(str) {
-    // Going backwards: from bytestream, to percent-encoding, to original string.
-    return decodeURIComponent(atob(str).split('').map(function (c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-}
-
-function poll() {
-    $.get("/db", function (data) {
-        if (!longPollingActive) {
-            return;
-        }
-        // console.log(data)
-        const lastValSlice = data.slice(-1)
-        if (lastValSlice.length === 1 && lastValSlice[0] == "") {
-            data = data.slice(0, -1)
-        }
-        // console.log(data)
-        var decodedData = data.map(function (datum) {
-            // console.log(datum);
-            const parsedDatum = JSON.parse(datum).map(function (d) {
-                if (d[0] === "text") {
-                    return [d[0], b64DecodeUnicode(d[1])]
-                }
-                return d;
-            });
-            return parsedDatum;
-        })
-        // console.log(decodedData)
-        // var decodedData = data.map(b64DecodeUnicode)
-        var dataJoinedBySource = {}
-        decodedData.forEach(function (data) {
-            var firstWord = data[0][1]; // value of the first datum
-            if (!(firstWord in dataJoinedBySource)) {
-                dataJoinedBySource[firstWord] = []    
+function render(data) {
+    if (!data || data.length === 0) {
+        $results.innerHTML = "<li>No results</li>"
+        return
+    }
+    let decodedDataHTML = "";
+    const groupBySource = !!data[0].source && !!data[0].fact;
+    if (groupBySource) {
+        let dataBySource = {};
+        data.forEach((d) => {
+            const source = d.source[1];
+            if (!(source in dataBySource)) {
+                dataBySource[source] = [];
             }
-            dataJoinedBySource[firstWord].push(data)
-        })
-        // console.log(decodedData)
-
-        var decodedDataHTML = ""
-        Object.keys(dataJoinedBySource).forEach(function (source) {
+            dataBySource[source].push(d.fact);
+        });
+        Object.keys(dataBySource).forEach(function (source) {
             decodedDataHTML += `<h4>${source}</h4>`
-            decodedDataHTML += dataJoinedBySource[source].map(function (data) {
-                const innerContents = data.map(function (d) {
-                    return `<div class="val-type val-type--${d[0]}">${d[1]}</div>`
-                }).join("")
-                return `<li>${innerContents}</li>`
+            decodedDataHTML += dataBySource[source].map(function (data) {
+                return `<li><div class="val-type">#${source} ${data[1]}</div></li>`
             }).join('\n');
         })
-        $(".results").html(decodedDataHTML);
-
-        if (longPollingActive) {
-            setTimeout(function () {
-                poll();
-            }, 1000);
-        }
-    });
+    } else if (!!data[0].fact) {
+        decodedDataHTML = data.map(function (datum) {
+            return `<li><div class="val-type">${datum.fact[1]}</div></li>`
+        }).join("\n")
+    } else {
+        decodedDataHTML = data.map(function (datum) {
+            return `<li><div class="val-type">${JSON.stringify(datum)}</div></li>`
+        }).join("\n")
+    }
+    $results.innerHTML = decodedDataHTML;
 }
 
-poll();
+async function refresh(requestTime) {
+    const thisRequestTime = +requestTime;
+    latestRequest = +requestTime;
+    const query = $selectInput.value.trim();
+    const squery = JSON.stringify([query]);
+    const response = await fetch(`/select?query=${encodeURIComponent(squery)}`);
+    const myJson = await response.json();
+    if (latestRequest > thisRequestTime) {
+        return; // a newer request is going so throw away these results
+    }
+    render(myJson);
+    if (longPollingActive) {
+        setTimeout(function () {
+            refresh((new Date()).getTime());
+        }, 1000);
+    }
+}
+
+refresh((new Date()).getTime());
