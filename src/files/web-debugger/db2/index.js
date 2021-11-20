@@ -18,10 +18,11 @@ function render(data) {
     if (groupBySource) {
         let dataBySource = {};
         data.forEach((d) => {
-            if (!(d.source in dataBySource)) {
-                dataBySource[d.source[1]] = [];
+            const source = d.source[1];
+            if (!(source in dataBySource)) {
+                dataBySource[source] = [];
             }
-            dataBySource[d.source[1]].push(d.fact);
+            dataBySource[source].push(d.fact);
         });
         Object.keys(dataBySource).forEach(function (source) {
             decodedDataHTML += `<h4>${source}</h4>`
