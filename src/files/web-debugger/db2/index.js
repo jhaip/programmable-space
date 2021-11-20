@@ -2,7 +2,7 @@ $refreshButton = document.getElementById("refresh-button");
 $selectInput = document.getElementById("select-input");
 $results = document.getElementById("results");
 
-$selectInput.value = "%fact";
+$selectInput.value = "$source %fact";
 $refreshButton.onclick = (evt) => {
     evt.preventDefault();
     refresh();
@@ -13,10 +13,31 @@ function render(data) {
         $results.innerHTML = "<li>No results</li>"
         return
     }
-    const mappedData = data.map(function (datum) {
-        return `<li>${JSON.stringify(datum)}</li>`
-    }).join("\n")
-    $results.innerHTML = mappedData;
+    let decodedDataHTML = "";
+    const groupBySource = !!data[0].source && !!data[0].fact;
+    if (groupBySource) {
+        let dataBySource = {};
+        data.forEach((d) => {
+            if (!(d.source in dataBySource)) {
+                dataBySource[d.source] = [];
+            }
+            dataBySource[d.source].push(d.fact);
+        });
+        Object.keys(dataBySource).forEach(function (source) {
+            decodedDataHTML += `<h4>${source}</h4>`
+            decodedDataHTML += dataBySource[source].map(function (data) {
+                const innerContents = data.map(function (d) {
+                    return `<div class="val-type">${d}</div>`
+                }).join("")
+                return `<li>${innerContents}</li>`
+            }).join('\n');
+        })
+    } else {
+        decodedDataHTML = data.map(function (datum) {
+            return `<li>${JSON.stringify(datum)}</li>`
+        }).join("\n")
+    }
+    $results.innerHTML = decodedDataHTML;
 }
 
 async function refresh() {
