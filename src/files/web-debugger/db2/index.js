@@ -11,11 +11,9 @@ $refreshButton.onclick = (evt) => {
     refresh((new Date()).getTime());
 }
 $longpoll.addEventListener('change', (event) => {
-    if (event.currentTarget.checked) {
-        longPollingActive = true;
+    longPollingActive = !!event.currentTarget.checked;
+    if (longPollingActive) {
         refresh((new Date()).getTime());
-    } else {
-        longPollingActive = true;
     }
   })
 
