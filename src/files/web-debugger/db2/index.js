@@ -30,6 +30,10 @@ function render(data) {
                 return `<li><div class="val-type">${data[1]}</div></li>`
             }).join('\n');
         })
+    } else if (!!data[0].fact) {
+        decodedDataHTML = data.map(function (datum) {
+            return `<li>${JSON.stringify(datum.fact[1])}</li>`
+        }).join("\n")
     } else {
         decodedDataHTML = data.map(function (datum) {
             return `<li>${JSON.stringify(datum)}</li>`
@@ -45,3 +49,5 @@ async function refresh() {
     const myJson = await response.json();
     render(myJson);
 }
+
+refresh();
