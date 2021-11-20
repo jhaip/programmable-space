@@ -9,7 +9,7 @@ $refreshButton.onclick = (evt) => {
     evt.preventDefault();
     refresh();
 }
-$$longpoll.addEventListener('change', (event) => {
+$longpoll.addEventListener('change', (event) => {
     if (event.currentTarget.checked) {
         longPollingActive = true;
         refresh();
