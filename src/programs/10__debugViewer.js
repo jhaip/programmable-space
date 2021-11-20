@@ -10,13 +10,17 @@ app.use(bodyParser.json());
 app.use(express.static('./src/files/web-debugger'))
 
 app.get('/db', (req, res) => {
+    room.select(`%fact`, results => {
+        console.log(results);
+        res.send(results);
+    })
     // res.send('Hello World!')
-    fs.readFile('./broker/db_view_base64.txt', 'utf8', function (err, contents) {
-        console.log(contents);
-        const l = contents.split("\n");
-        console.log(l);
-        res.send(l);
-    });
+    // fs.readFile('./broker/db_view_base64.txt', 'utf8', function (err, contents) {
+    //     console.log(contents);
+    //     const l = contents.split("\n");
+    //     console.log(l);
+    //     res.send(l);
+    // });
 })
 
 app.post('/select', (req, res) => {

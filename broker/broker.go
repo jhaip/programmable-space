@@ -370,6 +370,26 @@ func batch_worker(batch_messages <-chan string, subscriptions_notifications chan
 	}
 }
 
+func select_worker(select_messages <-chan string, notifications chan<- Notification, db *map[string]Fact) {
+	event_type_len := 9
+	source_len := 4
+	for msg := range select_messages {
+		zap.L().Debug("SELECT SHOULD PARSE MESSAGE", zap.String("msg", msg))
+		source := msg[event_type_len:(event_type_len + source_len)]
+		val := msg[(event_type_len + source_len):]
+		subscription_data := SubscriptionData{}
+		err := json.Unmarshal([]byte(val), &subscription_data)
+		checkErr(err)
+		query := make([]Fact, len(subscription_data.Facts))
+		for i, fact_string := range subscription_data.Facts {
+			query[i] = Fact{parse_fact_string(fact_string)}
+		}
+		results := select_facts(copyDatabase(db), query)
+		results_as_str := marshal_query_result(results)
+		notifications <- Notification{source, subscription_data.Id, results_as_str, "select"}
+	}
+}
+
 func GetBasePath() string {
 	envBasePath := os.Getenv("DYNAMIC_ROOT")
 	if envBasePath != "" {
@@ -418,12 +438,14 @@ func main() {
 	notifications := make(chan Notification, 1000)
 	batch_messages := make(chan string, 1000)
 	metrics_messages := make(chan Metric, 1000)
+	select_messages := make(chan string, 1000)
 
 	go subscribe_worker(subscription_messages, subscriptions_notifications, &subscriptions, notifications, metrics_messages, &factDatabase)
 	go notification_worker(notifications, client, metrics_messages)
-	go debug_database_observer(&factDatabase)
+	// go debug_database_observer(&factDatabase)
 	go batch_worker(batch_messages, subscriptions_notifications, &factDatabase, &subscriptions)
 	go metrics_worker(metrics_messages)
+	go select_worker(select_messages, notifications, &factDatabase)
 
 	zap.L().Info("listening...")
 	for {
@@ -450,6 +472,8 @@ func main() {
 		} else if event_type == "....BATCH" {
 			batch_messages <- msg
 			metrics_messages <- Metric{"BATCH", source, ""}
+		} else if event_type == "...SELECT" {
+			select_messages <- msg
 		}
 		time.Sleep(time.Duration(1) * time.Microsecond)
 	}
