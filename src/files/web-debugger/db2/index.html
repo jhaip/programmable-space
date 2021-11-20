@@ -19,9 +19,10 @@
         display: flex;
         flex-wrap: nowrap;
         width: 100vw;
+        z-index: 1000;
     }
     #results {
-        margin-top: 2rem;
+        margin-top: 4rem;
     }
     #select-input {
         background-color: #EEE;
@@ -33,7 +34,19 @@
         border: none;
         font-weight: bold;
     }
-    #refresh-button {
+    ol li {
+    counter-increment: list;
+    list-style-type: none;
+    position: relative;
+    }
+
+    ol li:before {
+    color: #999;
+    content: counter(list) ".";
+    left: -32px;
+    position: absolute;
+    text-align: right;
+    width: 26px;
     }
     </style>
 </head>
@@ -42,6 +55,7 @@
     <div class="navbar">
         <button id="refresh-button">Refresh</button>
         <input id="select-input" placeholder="%fact"></input>
+        <input type="checkbox" id="longpoll"></input>
     </div>
     <ol id="results"></ol>
     <script src="index.js"></script>
