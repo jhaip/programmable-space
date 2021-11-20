@@ -39,17 +39,17 @@ app.put('/region/:regionId', (req, res) => {
     const data = req.body;
     if (typeof data.name !== "undefined") {
         room.retractAll(`region "${regionId}" has name $`);
-        room.assert(`region "${regionId}" has name "${data.name}"`);
+        room.assertForOtherSource("0", `region "${regionId}" has name "${data.name}"`);
     }
     if (typeof data.toggleable !== "undefined") {
         room.retractAll(`region "${regionId}" is toggleable`);
         if (data.toggleable) {
-            room.assert(`region "${regionId}" is toggleable`);
+            room.assertForOtherSource("0", `region "${regionId}" is toggleable`);
         }
     }
     if (typeof data.x1 !== "undefined") {
         room.retractAll(`region "${regionId}" at %`);
-        room.assert(`region "${regionId}" at ${data.x1} ${data.y1} ${data.x2} ${data.y2} ${data.x3} ${data.y3} ${data.x4} ${data.y4} on camera ${data.camId}`);
+        room.assertForOtherSource("0", `region "${regionId}" at ${data.x1} ${data.y1} ${data.x2} ${data.y2} ${data.x3} ${data.y3} ${data.x4} ${data.y4} on camera ${data.camId}`);
     }
     room.flush();
     res.status(200).send('OK');
