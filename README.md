@@ -395,6 +395,7 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
     - Save
     - Print out an ArUco ID and tape it to a paper. Write "hello world" on it. You'll need to know the ID of the aruco card.
     - Open `localhost:3023` to associate the aruco card ID to the program you just created.
+    - Open `localhost:3012` to view the web graphical output.
     - Now when you place your card on the desk, it should show hello world. When you remove the card, it shows it.
 
 ![Basic Desk Setup](docs/hello_world_aruco.gif)
