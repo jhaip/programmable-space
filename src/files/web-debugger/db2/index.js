@@ -26,10 +26,7 @@ function render(data) {
         Object.keys(dataBySource).forEach(function (source) {
             decodedDataHTML += `<h4>${source}</h4>`
             decodedDataHTML += dataBySource[source].map(function (data) {
-                const innerContents = data.map(function (d) {
-                    return `<div class="val-type">${d[1]}</div>`
-                }).join("")
-                return `<li>${innerContents}</li>`
+                return `<li><div class="val-type">${data[1]}</div></li>`
             }).join('\n');
         })
     } else {
