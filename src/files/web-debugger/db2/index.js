@@ -18,7 +18,7 @@ function render(data) {
     $results.innerHTML = mappedData;
 }
 
-function refresh() {
+async function refresh() {
     const query = $selectInput.value.trim();
     const response = await fetch(`/select?query=${encodeURIComponent(query)}`);
     const myJson = await response.json();
