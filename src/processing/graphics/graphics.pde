@@ -119,6 +119,7 @@ final int sourceCanvasHeight = 1080;
 int[] DEFAULT_PROJECTOR_CALIBRATION;
 int[] PROJECTOR_CALIBRATION;
 String myId;
+boolean inDebugMode;
 
 PImage DecodePImageFromBase64(String i_Image64) throws IOException {
    PImage result = null;
@@ -251,10 +252,14 @@ void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
  
 void settings() {
   myId = "1999";
+  inDebugMode = false;
   if (args != null) {
     println(args);
     if (args.length == 1) {
       myId = args[0];
+    } else if (args.length == 2) {
+      myId = args[0];
+      inDebugMode = true;
     }
   }
   println(myId);
@@ -402,13 +407,15 @@ void draw() {
   //                 PROJECTOR_CALIBRATION[6], PROJECTOR_CALIBRATION[7]);
   //qgrid.drawGrid(this);
   image(uncalibratedScene, 0, 0);
-  fill(255, 255, 0);
-  text(frameRate, 25, 25);
-  text(recvCount, 25, 50);
-  long finalTime = System.currentTimeMillis() - start;
-  text(listenTime, 25, 75);
-  text(drawPapersTime, 25, 100);
-  text(finalTime, 25, 125);
+  if (inDebugMode) {
+    fill(255, 255, 0);
+    text(frameRate, 25, 25);
+    text(recvCount, 25, 50);
+    long finalTime = System.currentTimeMillis() - start;
+    text(listenTime, 25, 75);
+    text(drawPapersTime, 25, 100);
+    text(finalTime, 25, 125);
+  }
 }
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
