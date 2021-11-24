@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
+	github.com/gorilla/websocket v1.4.2
 	// github.com/mattn/go-ciede2000 v0.0.0-20170301095244-782e8c62fec3
 	github.com/jkl1337/go-chromath v0.0.0-20140428033135-240283655afd
 	github.com/jung-kurt/gofpdf v1.5.2
