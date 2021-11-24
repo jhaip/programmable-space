@@ -389,7 +389,6 @@ func echo(
 	}
 	defer c.Close()
 	notifications := make(chan Notification, 1000)
-	// TODO!!!!!!!!!!!! cleanup this goroutine when connection closes
 	go notifier(notifications, c, metrics_messages)
 	source := ""
 	for {
@@ -397,6 +396,8 @@ func echo(
 		_, message, err := c.ReadMessage()
 		if err != nil {
 			zap.L().Info("read websockets error:", zap.Error(err))
+			// TODO: add a fallback to close this channel?
+			close(notifications)
 			if source != "" {
 				on_source_death(source, db, subscriptions)
 			}
@@ -431,6 +432,7 @@ func echo(
 			notifications <- Notification{source, subscription_data_id, results_as_str, "select"}
 		}
 	}
+	close(notifications)
 }
 
 func main() {
