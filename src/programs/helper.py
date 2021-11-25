@@ -1,5 +1,5 @@
 import time
-import zmq
+# import zmq
 import logging
 import json
 import uuid
@@ -8,6 +8,10 @@ import os
 import sys
 import math
 import shlex
+import websocket
+import threading
+from queue import Queue, Empty
+from threading import Thread
 
 context = zmq.Context()
 rpc_url = os.getenv('PROG_SPACE_SERVER_URL', "localhost")
@@ -24,9 +28,14 @@ subscription_ids = {}
 py_subscriptions = []
 py_prehook = None
 
+outq = Queue()
+in_q = Queue()
+
+
 def get_my_id_str():
     global MY_ID_STR
     return MY_ID_STR
+
 
 def get_my_id_pre_init(root_filename):
     global MY_ID, MY_ID_STR
@@ -46,18 +55,18 @@ def override_my_id(id):
 
 
 def claim(fact_string):
-    client.send_multipart(["....CLAIM{}{}".format(
-        MY_ID_STR, fact_string)], zmq.NOBLOCK)
+    outq.put("....CLAIM{}{}".format(
+        MY_ID_STR, fact_string))
 
 
 def batch(batch_claims):
-    client.send_multipart(["....BATCH{}{}".format(
-        MY_ID_STR, json.dumps(batch_claims)).encode()], zmq.NOBLOCK)
+    outq.put("....BATCH{}{}".format(
+        MY_ID_STR, json.dumps(batch_claims)).encode())
 
 
 def retract(fact_string):
-    client.send_multipart(["..RETRACT{}{}".format(
-        MY_ID_STR, fact_string)], zmq.NOBLOCK)
+    outq.put("..RETRACT{}{}".format(
+        MY_ID_STR, fact_string))
 
 
 def select(query_strings, callback):
@@ -70,7 +79,7 @@ def select(query_strings, callback):
     select_ids[select_id] = callback
     msg = "...SELECT{}{}".format(MY_ID_STR, query_msg)
     logging.debug(msg)
-    client.send_multipart([msg], zmq.NOBLOCK)
+    outq.put(msg)
 
 
 def subscribe(query_strings, callback):
@@ -83,7 +92,7 @@ def subscribe(query_strings, callback):
     subscription_ids[subscription_id] = callback
     msg = "SUBSCRIBE{}{}".format(MY_ID_STR, query_msg)
     logging.debug(msg)
-    client.send_multipart([msg.encode()], zmq.NOBLOCK)
+    outq.put(msg.encode())
 
 
 def parse_results(val):
@@ -142,19 +151,16 @@ def fully_parse_fact(q):
 
 def listen(blocking=True):
     global server_listening, MY_ID
-    flags = 0
-    if not blocking:
-        flags = zmq.NOBLOCK
     try:
-        raw_msg = client.recv_multipart(flags=flags)
-    except zmq.Again:
+        raw_msg = in_q.get(block=blocking)
+    except Empty:
         return False
     string = raw_msg[0].decode()
     source_len = 4
     server_send_time_len = 13
     id = string[source_len:(source_len + SUBSCRIPTION_ID_LEN)]
     val = string[(source_len + SUBSCRIPTION_ID_LEN +
-                server_send_time_len):]
+                  server_send_time_len):]
     if id == init_ping_id:
         server_listening = True
         logging.info("SERVER IS LISTENING {}".format(MY_ID))
@@ -173,43 +179,35 @@ def listen(blocking=True):
 
 
 def check_server_connection():
-    global server_listening, client, init_ping_id, py_subscriptions, py_prehook
-    SERVER_NO_RESPONSE_TIMEOUT_TIME_SECONDS = 2
-    if server_listening:
-        print("checking if server is still listening")
-        server_listening = False
-        init_ping_id = str(uuid.uuid4())
-        listening_start_time = time.time()
-        client.send_multipart([".....PING{}{}".format(MY_ID_STR, init_ping_id).encode()])
-        while not server_listening:
-            listen(blocking=False)
-            # poll quickly went we think the server is already running and should respond
-            time.sleep(0.01)
-            if time.time() - listening_start_time > SERVER_NO_RESPONSE_TIMEOUT_TIME_SECONDS:
-                # no response from server, assume server is dead
-                check_server_connection()
-                break
-    else:
-        print("SERVER DIED, attempting to reconnect")
-        reconnect_check_delay_s = 10
-        init_ping_id = str(uuid.uuid4())
-        listening_start_time = time.time()
-        client.send_multipart([".....PING{}{}".format(MY_ID_STR, init_ping_id).encode()])
-        while not server_listening:
-            print("checking if server is alive")
-            listen(blocking=False)
-            time.sleep(0.5)
-            if time.time() - listening_start_time > SERVER_NO_RESPONSE_TIMEOUT_TIME_SECONDS:
-                print("no response from server, sleeping for a bit...")
-                time.sleep(reconnect_check_delay_s)
-                client.send_multipart([".....PING{}{}".format(MY_ID_STR, init_ping_id).encode()])
-        print("SERVER IS ALIVE!")
-        if py_prehook:
-            py_prehook()
-        for s in py_subscriptions:
-            query = s[0]
-            callback = s[1]
-            subscribe(query, callback)
+    return  # this doesn't matter for websockets?
+
+
+def websocket_worker():
+    global in_q, outq
+
+    def on_message(ws, message):
+        in_q.put(message)
+
+    def on_error(ws, error):
+        print(error)
+
+    def on_close(ws, close_status_code, close_msg):
+        print("### closed ###")
+
+    def on_open(ws):
+        while True:
+            data = outq.get(block=True)
+            ws.send(data)
+
+    # websocket.enableTrace(True)
+    ws = websocket.WebSocketApp("ws://localhost:8080/echo",
+                                on_open=on_open,
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
+
+    # skipping utf validation makes it a little faster
+    ws.run_forever(skip_utf8_validation=True)
 
 
 def init(root_filename, skipListening=False):
@@ -225,18 +223,13 @@ def init(root_filename, skipListening=False):
     print("INSIDE INIT:")
     print(MY_ID)
     print(MY_ID_STR)
-    print("tcp://{0}:5570".format(rpc_url))
+    print(rpc_url)
     # print(logPath)
     # print("-")
-    client.setsockopt(zmq.IDENTITY, MY_ID_STR.encode())
-    client.connect("tcp://{0}:5570".format(rpc_url))
-    print("connected")
-    client.send_multipart([".....PING{}{}".format(MY_ID_STR, init_ping_id).encode()])
-    print("sent ping")
-    listen()  # assumes the first message recv'd will be the PING response
+    threading.Thread(target=websocket_worker).start()
 
     # time.sleep(1.0)
-    
+
     if py_prehook:
         py_prehook()
     # for s in selects:
