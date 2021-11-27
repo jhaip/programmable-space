@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.Base64;
 import javax.imageio.ImageIO;
 import processing.video.*;
+import websockets.*;
 
 import java.io.File;
 import java.net.URLEncoder;
@@ -113,6 +114,7 @@ Map<String, JSONArray> sourceGraphics = new HashMap<String, JSONArray>();
 Map<String, PGraphics> sourcePGraphics = new HashMap<String, PGraphics>();
 PGraphics uncalibratedScene;
 QuadGrid qgrid;
+WebsocketClient wsc;
 Room room;
 final int sourceCanvasWidth = 1920;
 final int sourceCanvasHeight = 1080;
@@ -274,7 +276,9 @@ void settings() {
   colorsMap.put("orange", new int[]{255, 165, 0});
   fullScreen(P3D);
   //size(1280, 600, P3D);
-  room = new Room(myId);
+
+  wsc = new WebsocketClient(this, "ws://192.168.1.34:8080/"); // Room.getServerUrl());
+  room = new Room(wsc, myId);
   
   final PApplet _thisApp = this;
   
@@ -342,16 +346,21 @@ void setup() {
   //DEFAULT_PROJECTOR_CALIBRATION = new int[]{453, 140, 1670, 160, 1646, 889, 443, 858};
   PROJECTOR_CALIBRATION = DEFAULT_PROJECTOR_CALIBRATION;
 }
+
+void webSocketEvent(String msg) {
+  room.parseRecvMessage(msg);
+}
+
+void webSocketConnectEvent(String uid, String ip) {
+  println("Someone connected", uid, ip);
+}
+  
+void webSocketDisconnectEvent(String uid, String ip) {
+  println("Someone disconnected", uid, ip);
+}
  
 void draw() {
   long start = System.currentTimeMillis();
-  boolean recv = room.listen(false);	
-  int recvCount = 0;	
-  while (recv) {	
-    recvCount += 1;	
-    //println(String.format("recv'd more than 1: %s", recvCount));	
-    recv = room.listen(false);	
-  }
   long listenTime = System.currentTimeMillis() - start;
   background(0, 0, 0);
   uncalibratedScene.beginDraw();
@@ -410,7 +419,6 @@ void draw() {
   if (inDebugMode) {
     fill(255, 255, 0);
     text(frameRate, 25, 25);
-    text(recvCount, 25, 50);
     long finalTime = System.currentTimeMillis() - start;
     text(listenTime, 25, 75);
     text(drawPapersTime, 25, 100);

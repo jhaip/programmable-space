@@ -1,45 +1,47 @@
 import processing.core.*;
-import org.zeromq.*;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import processing.data.JSONArray;
 import processing.data.JSONObject;
+import processing.data.StringList;
+import websockets.*;
 
 public final class Room {
   
   public String MY_ID_STR;
+  public String init_ping_id;
   public boolean server_listening;
 
   private final int source_len = 4;
   private final int SUBSCRIPTION_ID_LEN = UUID.randomUUID().toString().length();
   private final int server_send_time_len = 13;
-  private ZMQ.Socket client;
+  private WebsocketClient wsclient;
   private Map<String, SubscriptionCallback> subscription_ids = new HashMap<String, SubscriptionCallback>();
+  private ArrayList<String> queuedMessages;
   
   public static interface SubscriptionCallback {
     public void parseResults(JSONArray results);
   }
-  
-  public Room(String id) {
-    // TODO: parse prog space URL from env vars
-    MY_ID_STR = id;
-    String init_ping_id = UUID.randomUUID().toString();
-    ZMQ.Context context = ZMQ.context(1);
-    client = context.socket(ZMQ.DEALER);
-    client.setIdentity(MY_ID_STR.getBytes(ZMQ.CHARSET));
+
+  public static String getServerUrl() {
     String serverURL= "192.168.1.34"; // "localhost";
     String serverURLoverride = System.getenv("PROG_SPACE_SERVER_URL");
     if (serverURLoverride != null) {
       serverURL = serverURLoverride;
     }
-    client.connect(String.format("tcp://%s:5570", serverURL));
-    ZMsg outMsg = new ZMsg();
-    outMsg.add(new ZFrame(String.format(".....PING%s%s", MY_ID_STR, init_ping_id)));
-    outMsg.send(client);
-    ZMsg inMsg = ZMsg.recvMsg(client, true);
-    server_listening = true;
-    cleanupMyOldStuff();
+    return String.format("ws://%s:8080/", serverURL);
+  }
+  
+  public Room(WebsocketClient in_wsclient, String id) {
+    queuedMessages = new ArrayList<String>();
+    MY_ID_STR = id;
+    init_ping_id = UUID.randomUUID().toString();
+    wsclient = in_wsclient;
+    // StringList headers = new StringList();
+    // wsclient = new WebsocketClient(p5, this, String.format("ws://%s:8080/", serverURL), headers);
+    wsclient.sendMessage(String.format(".....PING%s%s", MY_ID_STR, init_ping_id));
   }
   
   public void subscribe(String[] subscriptionQueryParts, SubscriptionCallback callback) {
@@ -55,9 +57,12 @@ public final class Room {
     
     subscription_ids.put(sub_id, callback);
     
-    ZMsg outMsg = new ZMsg();
-    outMsg.add(new ZFrame(String.format("SUBSCRIBE%s%s", MY_ID_STR, query)));
-    outMsg.send(client);
+    String msg = String.format("SUBSCRIBE%s%s", MY_ID_STR, query.toString().replace("\n", "").replace("  ", ""));
+    if (server_listening) {
+      wsclient.sendMessage(msg);
+    } else {
+      queuedMessages.add(msg);
+    }
   }
   
   public void cleanupMyOldStuff() {
@@ -73,28 +78,30 @@ public final class Room {
     obj.setJSONArray("fact", factArr);
     batch_messages.setJSONObject(0, obj);
   
-    ZMsg outMsg = new ZMsg();
-    outMsg.add(new ZFrame(String.format("....BATCH%s%s", MY_ID_STR, batch_messages)));
-    outMsg.send(client);
+    wsclient.sendMessage(String.format("....BATCH%s%s", MY_ID_STR, batch_messages));
   }
-  
-  public boolean listen(boolean blockWaitForMessage) {
-    ZMsg inMsg = ZMsg.recvMsg(client, blockWaitForMessage);
-    if (inMsg != null) {
-      for (ZFrame f : inMsg) {
-        String rawValue = f.getString(ZMQ.CHARSET);
-        String id = rawValue.substring(source_len, source_len + SUBSCRIPTION_ID_LEN);
-        String val = rawValue.substring(source_len + SUBSCRIPTION_ID_LEN + server_send_time_len);
-        if (subscription_ids.containsKey(id)) {
-          SubscriptionCallback callback = subscription_ids.get(id);
-          callback.parseResults(JSONArray.parse(val));
-        } else {
-          System.out.println(String.format("UNRECOGNIZED ID: %s", id));
-          System.out.println(subscription_ids);
-        }
+
+  public void parseRecvMessage(String rawValue){
+    String id = rawValue.substring(source_len, source_len + SUBSCRIPTION_ID_LEN);
+    String val = rawValue.substring(source_len + SUBSCRIPTION_ID_LEN + server_send_time_len);
+    if (new String(id).equals(init_ping_id)) {
+      System.out.println("ping response");
+      server_listening = true;
+      cleanupMyOldStuff();
+      for (int i=0; i < queuedMessages.size(); i++) {
+        String msg = queuedMessages.get(i);
+        System.out.println(msg);
+        wsclient.sendMessage(msg);
       }
-      return true;
+      queuedMessages.clear();
+    } else if (subscription_ids.containsKey(id)) {
+      System.out.println(val);
+      SubscriptionCallback callback = subscription_ids.get(id);
+      callback.parseResults(JSONArray.parse(val));
+    } else {
+      System.out.println(String.format("UNRECOGNIZED ID: %s", id));
+      System.out.println(subscription_ids);
+      System.out.println(init_ping_id);
     }
-    return false;
   }
 }
