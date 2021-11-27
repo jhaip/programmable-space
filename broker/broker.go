@@ -395,21 +395,21 @@ func echo(
 		// first response from c.ReadMessage() is the message Type: websocket.BinaryMessage or websocket.TextMessage
 		_, message, err := c.ReadMessage()
 		if err != nil {
-			zap.L().Info("read websockets error:", zap.Error(err))
+			zap.L().Info("read websockets error:", zap.String("source", source), zap.Error(err))
 			// TODO: add a fallback to close this channel?
 			close(notifications)
-			if source != "" {
-				on_source_death(source, db, subscriptions)
-			}
+			// if source != "" {
+			// 	on_source_death(source, db, subscriptions)
+			// }
 			break
 		}
-		// zap.L().Info("websockets recv:", zap.String(message))
 		// err = c.WriteMessage(mt, message)
 		// if err != nil {
 		// 	zap.L().Info("write websockets error:", zap.Error(err))
 		// 	break
 		// }
 		msg := string(message)
+		// zap.L().Info("websockets recv:", zap.String("msg", msg))
 		event_type_len := 9
 		source_len := 4
 		event_type := msg[0:event_type_len]
