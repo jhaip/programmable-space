@@ -229,7 +229,7 @@ function init(filename, myOverrideId) {
     });
   });
 
-  client.connect(`ws://${rpc_url}:8080/echo`);
+  client.connect(`ws://${rpc_url}:8080/`);
 
   let init_ping_id = randomId();
   let select_ids = {};

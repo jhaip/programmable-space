@@ -200,7 +200,7 @@ def websocket_worker():
             ws.send(data)
 
     # websocket.enableTrace(True)
-    ws = websocket.WebSocketApp("ws://localhost:8080/echo",
+    ws = websocket.WebSocketApp("ws://{}:8080/".format(rpc_url),
                                 on_open=on_open,
                                 on_message=on_message,
                                 on_error=on_error,
