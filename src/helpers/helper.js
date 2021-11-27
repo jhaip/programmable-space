@@ -6,6 +6,7 @@ var WebSocketClient = require("websocket").client;
 
 var client = new WebSocketClient();
 var connection;
+var disconnectedQueuedSends = [];
 
 const randomId = () => uuidV4();
 
@@ -187,6 +188,9 @@ function init(filename, myOverrideId) {
 
   client.on("connect", function (myconnection) {
     connection = myconnection;
+    disconnectedQueuedSends.forEach((msg) => send(msg));
+    disconnectedQueuedSends = [];
+
     console.log("WebSocket Client Connected");
     connection.on("error", function (error) {
       console.log("Connection Error: " + error.toString());
@@ -283,8 +287,11 @@ function init(filename, myOverrideId) {
   };
 
   const send = (val) => {
-    if (connection.connected) {
+    // queue up messages waiting for the
+    if (connection && connection.connected) {
       connection.sendUTF(val);
+    } else {
+      disconnectedQueuedSends.push(val);
     }
   };
 
