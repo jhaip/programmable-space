@@ -432,7 +432,6 @@ func echo(
 			notifications <- Notification{source, subscription_data_id, results_as_str, "select"}
 		}
 	}
-	close(notifications)
 }
 
 func main() {
