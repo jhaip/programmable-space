@@ -205,7 +205,7 @@ function init(filename, myOverrideId) {
         console.error("NOT UTF8 data!");
         return;
       }
-      const msg = message.utf8Data;
+      const msg = `${message.utf8Data}`;
       // console.log(msg)
       const source_len = 4;
       const SUBSCRIPTION_ID_LEN = randomId().length;
@@ -486,6 +486,8 @@ function init(filename, myOverrideId) {
   const run = async () => {
     await waitForServerListening();
     room.flush();
+    // without this loop, the program could exit
+    while(true) { await sleep(1000); }
   };
 
   const afterServerConnects = async (callback) => {
