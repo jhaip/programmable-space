@@ -1,5 +1,4 @@
 import time
-# import zmq
 import logging
 import json
 import uuid
@@ -13,9 +12,7 @@ import threading
 from queue import Queue, Empty
 from threading import Thread
 
-context = zmq.Context()
 rpc_url = os.getenv('PROG_SPACE_SERVER_URL', "localhost")
-client = context.socket(zmq.DEALER)
 
 MY_ID = None
 MY_ID_STR = None
