@@ -12,7 +12,7 @@ function runPaper(name) {
       "390__initialProgramCode.js",
       "1900__processManager.js",
       "112__arucoEditorBoot.js",
-    ].indexOf(name) !== 0
+    ].indexOf(name) !== -1
   ) {
     console.error(`skipping running boot program`);
     return;
@@ -69,7 +69,7 @@ function stopPaper(name, pid) {
       "390__initialProgramCode.js",
       "1900__processManager.js",
       "112__arucoEditorBoot.js",
-    ].indexOf(name) !== 0
+    ].indexOf(name) !== -1
   ) {
     console.error(`skipping killing boot program`);
     return;
