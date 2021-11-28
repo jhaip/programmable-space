@@ -397,10 +397,12 @@ func echo(
 		if err != nil {
 			zap.L().Info("read websockets error:", zap.String("source", source), zap.Error(err))
 			// TODO: add a fallback to close this channel?
+			// must cleanup notifications otherwise the subscriber will continue
+			// to write notifications to the closed notification channel
+			if source != "" {
+				on_source_death(source, db, subscriptions)
+			}
 			close(notifications)
-			// if source != "" {
-			// 	on_source_death(source, db, subscriptions)
-			// }
 			break
 		}
 		// err = c.WriteMessage(mt, message)
