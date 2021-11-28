@@ -87,7 +87,10 @@ func notifier(notifications <-chan Notification, wsConnection *websocket.Conn, m
 			cache[cache_key] = msg
 			msgWithTime := fmt.Sprintf("%s%s%v%s", notification.Source, notification.Id, makeTimestampMillis(), notification.Result)
 			sendErr := wsConnection.WriteMessage(websocket.TextMessage, []byte(msgWithTime))
-			checkErr(sendErr)
+			if sendErr != nil {
+				fmt.Println(sendErr)
+				zap.L().Error("POTENTIALLY FATAL ERROR", zap.Error(sendErr))
+			}
 			metrics <- Metric{"NOTIFICATION", notification.Source, notification.UpdateSource}
 		}
 	}
