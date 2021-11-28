@@ -191,18 +191,21 @@ def websocket_worker():
 
     def on_close(ws, close_status_code, close_msg):
         logging.info("### closed ###")
-
-    def on_open(ws):
+    
+    def ws_send_worker(ws):
         global outq
-        logging.info("websocket connection opened")
-        ws.send(".....PING{}{}".format(MY_ID_STR, init_ping_id))
-        return # Need to remove this for listens to work
+        logging.info("inside ws send worker")
         while True:
             try:
-                data = outq.get(block=False)
+                data = outq.get(block=True)
                 ws.send(data)
             except Empty:
                 pass
+
+    def on_open(ws):
+        logging.info("websocket connection opened")
+        ws.send(".....PING{}{}".format(MY_ID_STR, init_ping_id))
+        threading.Thread(target=ws_send_worker, arg=[ws]).start()
 
     # websocket.enableTrace(True)
     ws = websocket.WebSocketApp("ws://{}:8080/".format(rpc_url),
