@@ -139,18 +139,18 @@ void movieEvent(Movie m) {
 }
 
 void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
-  //println("Got new results:");
-  //println(results);
+  println("Got new results:");
+  println(results);
   graphicsCache = new JSONArray();
   Map<String, Boolean> referencedVideos = new HashMap<String, Boolean>();
   Map<String, Boolean> referencedImages = new HashMap<String, Boolean>();
   sourceGraphics = new HashMap<String, JSONArray>();
   sourcePosition = new HashMap<String, int[]>();
   // TODO: we could not clear the PGraphics ever time if that is more efficient
-  //sourcePGraphics = new HashMap<String, PGraphics>();
+  // sourcePGraphics = new HashMap<String, PGraphics>();
   for (int i = 0; i < results.size(); i += 1) {
-    //println("Potential graphics:");
-    //println(results.getJSONObject(i).getJSONArray("graphics").getString(1));
+    // println("Potential graphics:");
+    // println(results.getJSONObject(i).getJSONArray("graphics").getString(1));
     JSONObject result = results.getJSONObject(i);
     JSONArray parsedGraphics = JSONArray.parse(result.getJSONArray("graphics").getString(1));
     String source = result.getJSONArray("programNumber").getString(1);
@@ -331,7 +331,13 @@ void settings() {
     String.format("$programNumber $ draw graphics $graphics on %s", myId)
   }, new Room.SubscriptionCallback() {
     public void parseResults(JSONArray results) {
-      parseUpdatedGraphics(_thisApp, results);
+      try {
+        parseUpdatedGraphics(_thisApp, results);
+      } catch (Exception e) {
+        println("EXCEPTION!, skipping");
+        println(e);
+      }
+      
     }
   });
 }
