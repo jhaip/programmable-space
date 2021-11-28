@@ -205,7 +205,7 @@ def websocket_worker():
     def on_open(ws):
         logging.info("websocket connection opened")
         ws.send(".....PING{}{}".format(MY_ID_STR, init_ping_id))
-        threading.Thread(target=ws_send_worker, arg=[ws]).start()
+        threading.Thread(target=ws_send_worker, arg=(ws,)).start()
 
     # websocket.enableTrace(True)
     ws = websocket.WebSocketApp("ws://{}:8080/".format(rpc_url),
