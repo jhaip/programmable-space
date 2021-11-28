@@ -91,6 +91,7 @@ public final class Room {
       for (int i=0; i < queuedMessages.size(); i++) {
         String msg = queuedMessages.get(i);
         System.out.println(msg);
+        delay(1000);
         wsclient.sendMessage(msg);
       }
       queuedMessages.clear();

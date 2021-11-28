@@ -306,6 +306,8 @@ void settings() {
     }
   });
 
+  delay(1000);
+
   room.subscribe(new String[]{
     String.format("$ $ default display for $programNumber is %s", myId),
     "$ $ draw graphics $graphics on $programNumber"
@@ -314,6 +316,8 @@ void settings() {
       parseUpdatedGraphics(_thisApp, results);
     }
   });
+
+  delay(1000);
   
   /*
   room.subscribe(new String[]{
@@ -340,6 +344,8 @@ void settings() {
       
     }
   });
+
+  delay(1000);
 }
  
 void setup() {
