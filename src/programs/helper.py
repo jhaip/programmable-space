@@ -58,7 +58,7 @@ def claim(fact_string):
 
 def batch(batch_claims):
     outq.put("....BATCH{}{}".format(
-        MY_ID_STR, json.dumps(batch_claims)).encode())
+        MY_ID_STR, json.dumps(batch_claims)))
 
 
 def retract(fact_string):
@@ -89,7 +89,7 @@ def subscribe(query_strings, callback):
     subscription_ids[subscription_id] = callback
     msg = "SUBSCRIBE{}{}".format(MY_ID_STR, query_msg)
     logging.debug(msg)
-    outq.put(msg.encode())
+    outq.put(msg)
 
 
 def parse_results(val):
@@ -152,7 +152,7 @@ def listen(blocking=True):
         raw_msg = in_q.get(block=blocking)
     except Empty:
         return False
-    string = raw_msg[0].decode()
+    string = raw_msg
     source_len = 4
     server_send_time_len = 13
     id = string[source_len:(source_len + SUBSCRIPTION_ID_LEN)]
@@ -183,18 +183,26 @@ def websocket_worker():
     global in_q, outq
 
     def on_message(ws, message):
+        logging.debug("on message: {}".format(message))
         in_q.put(message)
 
     def on_error(ws, error):
-        print(error)
+        logging.error(error)
 
     def on_close(ws, close_status_code, close_msg):
-        print("### closed ###")
+        logging.info("### closed ###")
 
     def on_open(ws):
+        global outq
+        logging.info("websocket connection opened")
+        ws.send(".....PING{}{}".format(MY_ID_STR, init_ping_id))
+        return # Need to remove this for listens to work
         while True:
-            data = outq.get(block=True)
-            ws.send(data)
+            try:
+                data = outq.get(block=False)
+                ws.send(data)
+            except Empty:
+                pass
 
     # websocket.enableTrace(True)
     ws = websocket.WebSocketApp("ws://{}:8080/".format(rpc_url),
@@ -203,8 +211,12 @@ def websocket_worker():
                                 on_error=on_error,
                                 on_close=on_close)
 
+    wst = threading.Thread(target=ws.run_forever) #(skip_utf8_validation=True, ping_interval=3))
+    wst.daemon = True
+    wst.start()
     # skipping utf validation makes it a little faster
-    ws.run_forever(skip_utf8_validation=True)
+    # ws.run_forever(skip_utf8_validation=True, ping_interval=3)
+    logging.info("Webocket worker closed")
 
 
 def init(root_filename, skipListening=False):
@@ -223,7 +235,7 @@ def init(root_filename, skipListening=False):
     print(rpc_url)
     # print(logPath)
     # print("-")
-    threading.Thread(target=websocket_worker).start()
+    websocket_worker()
 
     # time.sleep(1.0)
 
