@@ -5,21 +5,22 @@ const { room, myId, scriptName, run, afterServerConnects } =
 
 /*** Start the program that can start all other programs ***/
 console.error("pre--------DONE WITH INITIAL PROGRAM CODE");
-const child0 = execFileSync("node", [
+const child0 = execFile("node", [
 `src/programs/390__initialProgramCode.js`,
 ]);
 console.error("DONE WITH INITIAL PROGRAM CODE");
-const child = execFile(
-"node",
-[`src/programs/1900__processManager.js`],
-(error, stdout, stderr) => {
-    if (error) {
-    console.error("stderr", stderr);
-    console.error(error);
-    }
-    console.log("stdout", stdout);
-}
-);
+setTimeout(() => {
+  const child = execFile(
+  "node",
+  [`src/programs/1900__processManager.js`],
+  (error, stdout, stderr) => {
+      if (error) {
+      console.error("stderr", stderr);
+      console.error(error);
+      }
+      console.log("stdout", stdout);
+  });
+}, 5000);
 
 room.assert("wish 1900 would be running"); // process mananger
 room.assert("wish 112 would be running"); // this program
