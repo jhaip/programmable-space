@@ -93,7 +93,7 @@ public final class Room {
         System.out.println(msg);
         try
         {
-            Thread.sleep(ms);
+            Thread.sleep(1000);
         }
         catch(InterruptedException ex)
         {
