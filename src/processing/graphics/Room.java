@@ -58,11 +58,12 @@ public final class Room {
     subscription_ids.put(sub_id, callback);
     
     String msg = String.format("SUBSCRIBE%s%s", MY_ID_STR, query.toString().replace("\n", "").replace("  ", ""));
-    if (server_listening) {
-      wsclient.sendMessage(msg);
-    } else {
-      queuedMessages.add(msg);
-    }
+    queuedMessages.add(msg);
+    // if (server_listening) {
+    //   wsclient.sendMessage(msg);
+    // } else {
+    //   queuedMessages.add(msg);
+    // }
   }
   
   public void cleanupMyOldStuff() {
