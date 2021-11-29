@@ -340,6 +340,8 @@ void settings() {
       
     }
   });
+
+  room.sendPing();
 }
  
 void setup() {

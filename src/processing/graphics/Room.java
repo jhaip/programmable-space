@@ -37,10 +37,11 @@ public final class Room {
   public Room(WebsocketClient in_wsclient, String id) {
     queuedMessages = new ArrayList<String>();
     MY_ID_STR = id;
-    init_ping_id = UUID.randomUUID().toString();
     wsclient = in_wsclient;
-    // StringList headers = new StringList();
-    // wsclient = new WebsocketClient(p5, this, String.format("ws://%s:8080/", serverURL), headers);
+  }
+
+  public void sendPing() {
+    init_ping_id = UUID.randomUUID().toString();
     wsclient.sendMessage(String.format(".....PING%s%s", MY_ID_STR, init_ping_id));
   }
   
