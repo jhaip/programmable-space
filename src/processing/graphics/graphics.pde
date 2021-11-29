@@ -139,8 +139,8 @@ void movieEvent(Movie m) {
 }
 
 void parseUpdatedGraphics(PApplet thisApp, JSONArray results) {
-  println("Got new results:");
-  println(results);
+  println(String.format("Got new results, size %s", results.size()));
+  // println(results);
   graphicsCache = new JSONArray();
   Map<String, Boolean> referencedVideos = new HashMap<String, Boolean>();
   Map<String, Boolean> referencedImages = new HashMap<String, Boolean>();
