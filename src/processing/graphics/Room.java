@@ -42,7 +42,7 @@ public final class Room {
   }
 
   public void sendPing() {
-    System.out.println("sending ping")
+    System.out.println("sending ping");
     init_ping_id = UUID.randomUUID().toString();
     wsclient.sendMessage(String.format(".....PING%s%s", MY_ID_STR, init_ping_id));
     lastPingTimeMs = System.currentTimeMillis();
