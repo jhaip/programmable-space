@@ -277,7 +277,7 @@ void settings() {
   fullScreen(P3D);
   //size(1280, 600, P3D);
 
-  wsc = new WebsocketClient(this, "ws://192.168.1.34:8080/"); // Room.getServerUrl());
+  wsc = new WebsocketClient(this, Room.getServerUrl());
   room = new Room(wsc, myId);
   
   final PApplet _thisApp = this;
@@ -368,6 +368,7 @@ void webSocketDisconnectEvent(String uid, String ip) {
 }
  
 void draw() {
+  room.sendPingIfNeeded();
   long start = System.currentTimeMillis();
   long listenTime = System.currentTimeMillis() - start;
   background(0, 0, 0);

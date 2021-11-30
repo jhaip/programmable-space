@@ -20,6 +20,7 @@ public final class Room {
   private WebsocketClient wsclient;
   private Map<String, SubscriptionCallback> subscription_ids = new HashMap<String, SubscriptionCallback>();
   private ArrayList<String> queuedMessages;
+  private long lastPingTimeMs;
   
   public static interface SubscriptionCallback {
     public void parseResults(JSONArray results);
@@ -41,8 +42,17 @@ public final class Room {
   }
 
   public void sendPing() {
+    System.out.println("sending ping")
     init_ping_id = UUID.randomUUID().toString();
     wsclient.sendMessage(String.format(".....PING%s%s", MY_ID_STR, init_ping_id));
+    lastPingTimeMs = System.currentTimeMillis();
+  }
+
+  public void sendPingIfNeeded() {
+    // send ping once in a while to keep the ws conection alive
+    if (System.currentTimeMillis() - lastPingTimeMs) > 30*1000 {
+      sendPing();
+    }
   }
   
   public void subscribe(String[] subscriptionQueryParts, SubscriptionCallback callback) {
@@ -88,14 +98,17 @@ public final class Room {
     String val = rawValue.substring(source_len + SUBSCRIPTION_ID_LEN + server_send_time_len);
     if (new String(id).equals(init_ping_id)) {
       System.out.println("ping response");
-      server_listening = true;
-      cleanupMyOldStuff();
-      for (int i=0; i < queuedMessages.size(); i++) {
-        String msg = queuedMessages.get(i);
-        System.out.println(msg);
-        wsclient.sendMessage(msg);
+      if (server_listening == false) {
+        System.out.println(String.format("server_listening now true, sending %s queued messages", queuedMessages.size()));
+        server_listening = true;
+        cleanupMyOldStuff();
+        for (int i=0; i < queuedMessages.size(); i++) {
+          String msg = queuedMessages.get(i);
+          System.out.println(msg);
+          wsclient.sendMessage(msg);
+        }
+        queuedMessages.clear();
       }
-      queuedMessages.clear();
     } else if (subscription_ids.containsKey(id)) {
       System.out.println(val);
       SubscriptionCallback callback = subscription_ids.get(id);
