@@ -50,7 +50,7 @@ public final class Room {
 
   public void sendPingIfNeeded() {
     // send ping once in a while to keep the ws conection alive
-    if (System.currentTimeMillis() - lastPingTimeMs) > 30*1000 {
+    if (System.currentTimeMillis() - lastPingTimeMs > 30*1000) {
       sendPing();
     }
   }
