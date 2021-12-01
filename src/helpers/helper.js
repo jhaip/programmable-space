@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-// const zmq = require("zeromq");
 const uuidV4 = require("uuid/v4");
 var WebSocketClient = require("websocket").client;
 
@@ -178,9 +177,7 @@ function init(filename, myOverrideId) {
 
   const rpc_url = process.env.PROG_SPACE_SERVER_URL || "localhost";
   const MY_ID_STR = getIdStringFromId(myId);
-  // client = zmq.socket('dealer');
-  // client.identity = MY_ID_STR;
-  // client.connect(`tcp://${rpc_url}:5570`);
+
   client.on("connectFailed", function (error) {
     console.log("Connect Error: " + error.toString());
     connection = undefined;
