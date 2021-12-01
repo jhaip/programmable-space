@@ -12,7 +12,6 @@ require (
 	github.com/kokardy/listing v0.0.0-20140516154625-795534c33c5a
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/opentracing/opentracing-go v1.1.0
-	github.com/pebbe/zmq4 v1.0.0
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
