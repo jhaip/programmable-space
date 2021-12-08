@@ -21,7 +21,7 @@ import (
 	"gocv.io/x/gocv"
 	chromath "github.com/jkl1337/go-chromath"
     "github.com/jkl1337/go-chromath/deltae"
-	zmq "github.com/pebbe/zmq4"
+	"github.com/gorilla/websocket"
 )
 
 const dotSize = 15
@@ -106,27 +106,63 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-func initZeroMQ(MY_ID_STR string) *zmq.Socket {
-	log.Println("Connecting to server...")
-	client, zmqCreationErr := zmq.NewSocket(zmq.DEALER)
-	checkErr(zmqCreationErr)
-	setIdentityErr := client.SetIdentity(MY_ID_STR)
-	checkErr(setIdentityErr)
+func initClient(subscription_updates chan<- string) *websocket.Conn {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
 	rpc_url := os.Getenv("PROG_SPACE_SERVER_URL")
 	if rpc_url == "" {
 		rpc_url = "localhost"
 	}
-	connectErr := client.Connect("tcp://" + rpc_url + ":5570")
-	checkErr(connectErr)
+	rpc_url = rpc_url + ":8080"
+	u := url.URL{Scheme: "ws", Host: rpc_url, Path: "/"}
+	log.Printf("connecting to %s", u.String())
 
-	init_ping_id, err := newUUID();
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	checkErr(err)
-	client.SendMessage(fmt.Sprintf(".....PING%s%s", MY_ID_STR, init_ping_id))
-	// block until ping response received
-	_, recvErr := client.RecvMessage(0) 
-	checkErr(recvErr);
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		defer close(subscription_updates)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: %s", message)
+			subscription_updates <- string(message)
+		}
+	}()
+
+	go func() {
+		// cleanup websocket connection nicely
+		for {
+			select {
+			case <-done:
+				return
+			case <-interrupt:
+				log.Println("interrupt")
 	
-	return client
+				// Cleanly close the connection by sending a close message and then
+				// waiting (with timeout) for the server to close the connection.
+				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				if err != nil {
+					log.Println("write close:", err)
+					return
+				}
+				select {
+				case <-done:
+				case <-time.After(time.Second):
+				}
+				return
+			}
+		}
+	}()
+
+	return c
 }
 
 func main() {
@@ -150,7 +186,8 @@ func main() {
 		panic("DID NOT GET 8400 DOT CODES")
 	}
 
-	client := initZeroMQ(MY_ID_STR)
+	subscription_updates := make(chan string)
+	client := initClient(subscription_updates)
 	defer client.Close()
 	fmt.Println("done init")
 
@@ -610,7 +647,7 @@ func getDots(bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint,
 	return res, kp, nil
 }
 
-func claimPapersRunning(client *zmq.Socket, MY_ID_STR string, papers []Paper) {
+func claimPapersRunning(client *websocket.Conn, MY_ID_STR string, papers []Paper) {
 	batch_claims := make([]BatchMessage, 0)
 	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
 		[]string{"id", MY_ID_STR},
@@ -631,11 +668,11 @@ func claimPapersRunning(client *zmq.Socket, MY_ID_STR string, papers []Paper) {
 	batch_claim_str, _ := json.Marshal(batch_claims)
 	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
 	log.Println("Sending ", msg)
-	_, err := client.SendMessage(msg)
-	checkErr(err)
+	writeErr := client.WriteMessage(websocket.TextMessage, []byte(msg))
+	checkErr(writeErr)
 }
 
-func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
+func claimBase64Screenshot(client *websocket.Conn, MY_ID_STR string, img gocv.Mat) {
 	// claim image as base64
 	imgImg, err := img.ToImage()
 	checkErr(err)
@@ -668,8 +705,7 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	batch_claim_str, _ := json.Marshal(batch_claims)
 	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
 	log.Println("Sending ", msg)
-	s, err := client.SendMessage(msg)
-	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+	err := client.WriteMessage(websocket.TextMessage, []byte(msg))
 	if err != nil {
 		log.Println("ERROR!")
 		log.Println(err)

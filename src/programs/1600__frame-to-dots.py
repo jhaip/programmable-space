@@ -6,7 +6,6 @@ import imutils
 import cv2
 import time
 import json
-import zmq
 import logging
 import sys
 import os

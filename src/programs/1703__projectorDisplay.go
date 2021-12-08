@@ -20,7 +20,7 @@ import (
 
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	zmq "github.com/pebbe/zmq4"
+	"github.com/gorilla/websocket"
 )
 
 const MY_ID = 1703
@@ -57,15 +57,21 @@ func trimLeftChars(s string, n int) string {
 	return s[:0]
 }
 
-func get_wishes(client *zmq.Socket, MY_ID_STR string, subscription_id string) (bool, bool) {
-	rawReply, err := client.RecvMessage(zmq.DONTWAIT)
-	if err != nil {
-		// log.Println("get wishes error:")
-		// log.Println(err)
-		// panic(err)
-		return false, false
+func get_wishes(subscription_updates <-chan string, MY_ID_STR string, subscription_id string) (bool, bool) {
+	var reply string;
+	select {
+	case x, ok := <-subscription_updates:
+			if ok {
+					fmt.Printf("Value %d was read.\n", x)
+					reply = x;
+			} else {
+					fmt.Println("Channel closed!")
+					return false, false
+			}
+	default:
+			// fmt.Println("No value ready, moving on.")
+			return false, false
 	}
-	reply := rawReply[0]
 	log.Println("reply:")
 	log.Println(reply)
 	msg_prefix := fmt.Sprintf("%s%s", MY_ID_STR, subscription_id)
@@ -78,22 +84,63 @@ func get_wishes(client *zmq.Socket, MY_ID_STR string, subscription_id string) (b
 	return true, len(json_val) > 0
 }
 
-func initZeroMQ(MY_ID_STR string) *zmq.Socket {
-	log.Println("Connecting to server...")
-	client, zmqCreationErr := zmq.NewSocket(zmq.DEALER)
-	checkErr(zmqCreationErr)
-	setIdentityErr := client.SetIdentity(MY_ID_STR)
-	checkErr(setIdentityErr)
-	connectErr := client.Connect("tcp://192.168.1.34:5570")
-	checkErr(connectErr)
+func initClient(subscription_updates chan<- string) *websocket.Conn {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
 
-	init_ping_id := "61034e37-df61-42ca-a60d-045e93b156ae"; // just a random ID
-	client.SendMessage(fmt.Sprintf(".....PING%s%s", MY_ID_STR, init_ping_id))
-	// block until ping response received
-	_, recvErr := client.RecvMessage(0) 
-	checkErr(recvErr);
+	rpc_url := os.Getenv("PROG_SPACE_SERVER_URL")
+	if rpc_url == "" {
+		rpc_url = "localhost"
+	}
+	rpc_url = rpc_url + ":8080"
+	u := url.URL{Scheme: "ws", Host: rpc_url, Path: "/"}
+	log.Printf("connecting to %s", u.String())
+
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	checkErr(err)
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		defer close(subscription_updates)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: %s", message)
+			subscription_updates <- string(message)
+		}
+	}()
+
+	go func() {
+		// cleanup websocket connection nicely
+		for {
+			select {
+			case <-done:
+				return
+			case <-interrupt:
+				log.Println("interrupt")
 	
-	return client
+				// Cleanly close the connection by sending a close message and then
+				// waiting (with timeout) for the server to close the connection.
+				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				if err != nil {
+					log.Println("write close:", err)
+					return
+				}
+				select {
+				case <-done:
+				case <-time.After(time.Second):
+				}
+				return
+			}
+		}
+	}()
+
+	return c
 }
 
 // Copied from https://play.golang.org/p/4FkNSiUDMg
@@ -110,7 +157,7 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-func initWishSubscription(client *zmq.Socket, MY_ID_STR string) string {
+func initWishSubscription(client *websocket.Conn, MY_ID_STR string) string {
 	subscription_id, sub_id_err := newUUID()
 	checkErr(sub_id_err)
 	sub_query := map[string]interface{}{
@@ -122,8 +169,8 @@ func initWishSubscription(client *zmq.Socket, MY_ID_STR string) string {
 	sub_query_msg, jsonMarshallErr := json.Marshal(sub_query)
 	checkErr(jsonMarshallErr)
 	sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, sub_query_msg)
-	_, sendErr := client.SendMessage(sub_msg)
-	checkErr(sendErr)
+	writeErr := client.WriteMessage(websocket.TextMessage, []byte(sub_msg))
+	checkErr(writeErr)
 	return subscription_id
 }
 
@@ -163,10 +210,12 @@ func main() {
 
 	MY_ID_STR := fmt.Sprintf("%04d", MY_ID)
 
-	client := initZeroMQ(MY_ID_STR)
+	subscription_updates := make(chan string)
+	client := initClient(subscription_updates)
 	defer client.Close()
+	
 	subscription_id := initWishSubscription(client, MY_ID_STR)
-	log.Println("done with ZMQ init")
+	log.Println("done with broker init")
 	
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -193,7 +242,7 @@ func main() {
 
 	setupScene()
 	for !window.ShouldClose() {
-		gotStuff, wishToShow := get_wishes(client, MY_ID_STR, subscription_id)
+		gotStuff, wishToShow := get_wishes(subscription_updates, MY_ID_STR, subscription_id)
 		if (gotStuff) {
 			lastWishToShow = wishToShow
 		}

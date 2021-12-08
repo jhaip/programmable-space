@@ -16,11 +16,10 @@ Main loop:
 
 Notification Sender:
 
-- Owns the ZeroMQ DEALER socket
 - Keep cache of the last value send to a (source, subscription ID)
 - For all notifications (source, subscription ID, list of results)
   - if (source, subscription ID) not in cache or if list of results is different than cached value:
-    - Send ZeroMQ message to {source}
+    - Send message to {source}
 
 Batch Worker
 

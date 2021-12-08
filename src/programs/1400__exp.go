@@ -9,6 +9,8 @@ import (
 	zmq "github.com/pebbe/zmq4"
 )
 
+// this file was used to test the ZeroMQ based broker. It is deprecated as of December 2021
+
 func RandomString(len int) string {
       bytes := make([]byte, len)
      for i := 0; i < len; i++ {

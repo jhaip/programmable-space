@@ -29,7 +29,7 @@ import (
 	// ciede2000 "github.com/mattn/go-ciede2000"
 	chromath "github.com/jkl1337/go-chromath"
     "github.com/jkl1337/go-chromath/deltae"
-	zmq "github.com/pebbe/zmq4"
+	"github.com/gorilla/websocket"
 )
 
 const dotSize = 15
@@ -124,27 +124,63 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-func initZeroMQ(MY_ID_STR string) *zmq.Socket {
-	log.Println("Connecting to server...")
-	client, zmqCreationErr := zmq.NewSocket(zmq.DEALER)
-	checkErr(zmqCreationErr)
-	setIdentityErr := client.SetIdentity(MY_ID_STR)
-	checkErr(setIdentityErr)
+func initClient(subscription_updates chan<- string) *websocket.Conn {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
 	rpc_url := os.Getenv("PROG_SPACE_SERVER_URL")
 	if rpc_url == "" {
 		rpc_url = "localhost"
 	}
-	connectErr := client.Connect("tcp://" + rpc_url + ":5570")
-	checkErr(connectErr)
+	rpc_url = rpc_url + ":8080"
+	u := url.URL{Scheme: "ws", Host: rpc_url, Path: "/"}
+	log.Printf("connecting to %s", u.String())
 
-	init_ping_id, err := newUUID();
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	checkErr(err)
-	client.SendMessage(fmt.Sprintf(".....PING%s%s", MY_ID_STR, init_ping_id))
-	// block until ping response received
-	_, recvErr := client.RecvMessage(0) 
-	checkErr(recvErr);
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		defer close(subscription_updates)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: %s", message)
+			subscription_updates <- string(message)
+		}
+	}()
+
+	go func() {
+		// cleanup websocket connection nicely
+		for {
+			select {
+			case <-done:
+				return
+			case <-interrupt:
+				log.Println("interrupt")
 	
-	return client
+				// Cleanly close the connection by sending a close message and then
+				// waiting (with timeout) for the server to close the connection.
+				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				if err != nil {
+					log.Println("write close:", err)
+					return
+				}
+				select {
+				case <-done:
+				case <-time.After(time.Second):
+				}
+				return
+			}
+		}
+	}()
+
+	return c
 }
 
 func shareFrame(w http.ResponseWriter, req *http.Request) {
@@ -188,7 +224,8 @@ func main() {
 		panic("DID NOT GET 8400 DOT CODES")
 	}
 
-	client := initZeroMQ(MY_ID_STR)
+	subscription_updates := make(chan string)
+	client := initClient(subscription_updates)
 	defer client.Close()
 
 	if len(os.Args) < 2 {
@@ -255,7 +292,8 @@ func main() {
 		lag_sub_query := map[string]interface{}{"id": lag_sub_id, "facts": []string{"$ $ measured latency $lag ms at $"}}
 		lag_sub_query_msg, _ := json.Marshal(lag_sub_query)
 		lag_sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, lag_sub_query_msg)
-		client.SendMessage(lag_sub_msg)
+		writeErr := client.WriteMessage(websocket.TextMessage, []byte(lag_sub_msg))
+		checkErr(writeErr)
 	}
 
 	papers_cache := make(map[string]PaperCache)
@@ -277,7 +315,7 @@ func main() {
 		start := time.Now()
 
 		if HEADLESS == false {
-			hasNewLag, newLag := getLag(client, MY_ID_STR, lag_sub_id)
+			hasNewLag, newLag := getLag(subscription_updates, MY_ID_STR, lag_sub_id)
 			if (hasNewLag) {
 				log.Println("**UPDATED LAG", newLag)
 				lag = newLag
@@ -435,26 +473,36 @@ func trimLeftChars(s string, n int) string {
 	return s[:0]
 }
 
-func getLag(client *zmq.Socket, MY_ID_STR string, lag_sub_id string) (bool, int) {
+func getLag(subscription_updates <-chan string, MY_ID_STR string, lag_sub_id string) (bool, int) {
 	sub_prefix := fmt.Sprintf("%s%s", MY_ID_STR, lag_sub_id)
-	rawReply, err := client.RecvMessage(zmq.DONTWAIT)
-	if err == nil {
-		reply := rawReply[0]
-		val := trimLeftChars(reply, len(sub_prefix)+13)
-		json_val := make([]map[string][]string, 0)
-		json.Unmarshal([]byte(val), &json_val)
-		for _, json_result := range json_val {
-			if strings.Contains(reply, lag_sub_id) {
-				rawLag, err := strconv.Atoi(json_result["lag"][1])
-				checkErr(err)
-				MIN_LOOP_DELAY := 200
-				MAX_LOOP_DELAY := 5000
-				lag := rawLag*5 + MIN_LOOP_DELAY
-				if lag > MAX_LOOP_DELAY {
-					lag = MAX_LOOP_DELAY
-				}
-				return true, lag
+	var reply string;
+	select {
+	case x, ok := <-subscription_updates:
+			if ok {
+					fmt.Printf("Value %d was read.\n", x)
+					reply = x;
+			} else {
+					fmt.Println("Channel closed!")
+					return false, 0
 			}
+	default:
+			// fmt.Println("No value ready, moving on.")
+			return false, 0
+	}
+	val := trimLeftChars(reply, len(sub_prefix)+13)
+	json_val := make([]map[string][]string, 0)
+	json.Unmarshal([]byte(val), &json_val)
+	for _, json_result := range json_val {
+		if strings.Contains(reply, lag_sub_id) {
+			rawLag, err := strconv.Atoi(json_result["lag"][1])
+			checkErr(err)
+			MIN_LOOP_DELAY := 200
+			MAX_LOOP_DELAY := 5000
+			lag := rawLag*5 + MIN_LOOP_DELAY
+			if lag > MAX_LOOP_DELAY {
+				lag = MAX_LOOP_DELAY
+			}
+			return true, lag
 		}
 	}
 	return false, 0
@@ -892,7 +940,7 @@ func getDots(bdp gocv.SimpleBlobDetector, img gocv.Mat) ([]Dot, []gocv.KeyPoint,
 	return res, kp, nil
 }
 
-func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache map[string]PaperCache, corners []Corner) {
+func claimPapersAndCorners(client *websocket.Conn, MY_ID_STR string, papers_cache map[string]PaperCache, corners []Corner) {
 	papers := make([]Paper, 0)
 	for _, cached_paper := range papers_cache {
 		papers = append(papers, cached_paper.Paper)
@@ -994,8 +1042,7 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache ma
 	batch_claim_str, _ := json.Marshal(batch_claims)
 	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
 	log.Println("Sending ", msg)
-	s, err := client.SendMessage(msg)
-	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+	err := client.WriteMessage(websocket.TextMessage, []byte(msg))
 	if err != nil {
 		log.Println("ERROR!")
 		log.Println(err)
@@ -1006,7 +1053,7 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers_cache ma
 	// fmt.Printf("Seen papers: %v", seenPaperIds)
 }
 
-func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
+func claimBase64Screenshot(client *websocket.Conn, MY_ID_STR string, img gocv.Mat) {
 	// claim image as base64
 	imgImg, err := img.ToImage()
 	checkErr(err)
@@ -1039,8 +1086,7 @@ func claimBase64Screenshot(client *zmq.Socket, MY_ID_STR string, img gocv.Mat) {
 	batch_claim_str, _ := json.Marshal(batch_claims)
 	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
 	log.Println("Sending ", msg)
-	s, err := client.SendMessage(msg)
-	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+	err = client.WriteMessage(websocket.TextMessage, []byte(msg))
 	if err != nil {
 		log.Println("ERROR!")
 		log.Println(err)
@@ -1060,7 +1106,7 @@ func GetOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-func claimFrameLocation(client *zmq.Socket, MY_ID_STR string) {
+func claimFrameLocation(client *websocket.Conn, MY_ID_STR string) {
 	batch_claims := make([]BatchMessage, 0)
 	batch_claims = append(batch_claims, BatchMessage{"retract", [][]string{
 		[]string{"id", MY_ID_STR},
@@ -1079,8 +1125,8 @@ func claimFrameLocation(client *zmq.Socket, MY_ID_STR string) {
 	batch_claim_str, _ := json.Marshal(batch_claims)
 	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
 	log.Println("Sending ", msg)
-	_, err := client.SendMessage(msg)
-	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
+
+	err := client.WriteMessage(websocket.TextMessage, []byte(msg))
 	if err != nil {
 		log.Println("ERROR!")
 		log.Println(err)

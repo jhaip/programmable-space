@@ -65,8 +65,5 @@ const loadModulesInFolder = folder => {
 }
 
 loadModulesInFolder('.');
-// TODO: remove this HACK
-// need a way to exit the node program after all promises have returned
-setTimeout(() => {
-  process.exit()
-}, 5000)
+
+run();

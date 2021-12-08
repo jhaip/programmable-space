@@ -7,8 +7,14 @@ const { room, myId, run, MY_ID_STR, getIdFromProcessName, getIdStringFromId } = 
 let nameToProcessIdCache = {};
 
 function runPaper(name) {
-  if (name === '390__initialProgramCode.js') {
-    console.error(`skipping running 390__initialProgramCode.js`)
+  if (
+    [
+      "390__initialProgramCode.js",
+      "1900__processManager.js",
+      "112__arucoEditorBoot.js",
+    ].indexOf(name) !== -1
+  ) {
+    console.error(`skipping running boot program`);
     return;
   }
   console.error(`making ${name} be running!`)
@@ -58,8 +64,14 @@ function runPaper(name) {
 }
 
 function stopPaper(name, pid) {
-  if (name === '390__initialProgramCode.js') {
-    console.error(`skipping killing 390__initialProgramCode.js`)
+  if (
+    [
+      "390__initialProgramCode.js",
+      "1900__processManager.js",
+      "112__arucoEditorBoot.js",
+    ].indexOf(name) !== -1
+  ) {
+    console.error(`skipping killing boot program`);
     return;
   }
   if (name.indexOf(".go") !== -1) {

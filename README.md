@@ -217,7 +217,7 @@ When a program is stopped, all the facts and subscriptions it made in the shared
 The broker should be "local" to the programs in the room and only serve about as many programs that can fit in a single "space" or "room". For larger spaces or to connect multiple rooms together, facts can be explicitly shared to other brokers and computers. In this way data and programs are federated. Federation is useful both technically (because a single broker cannot hold all the facts in the universe) and to aid in the understanding of the people working in a space. For example, the position of a paper on a table is very important to someone reading the paper at the same table, but the position of a paper in a different room is irrelevant unless the person at the table has some special reason they care about something going on somewhere else.
 
 Programs have been implemented in multiple programming languages (Python, Node.js, Golang, Lua, an experiemental custom langauge).
-The bidirectional communiation between programs and the broker is handled via ZeroMQ TCP sockets (ROUTER/DEALER pattern).
+The bidirectional communiation between programs and the broker is handled via Websockets.
 
 ## Topic Deep Dives:
 

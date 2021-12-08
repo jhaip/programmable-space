@@ -3,21 +3,20 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"net/http"
 	"os"
 	"runtime"
-	"sort"
+	// "sort"
 	"strconv"
 	"sync"
 	"time"
-	zmq "github.com/pebbe/zmq4"
 	"go.uber.org/zap"
-	b64 "encoding/base64"
+	"github.com/gorilla/websocket"
 )
 
 var dbMutex sync.RWMutex
 var subscriberMutex sync.RWMutex
-var zmqClient sync.Mutex
+var upgrader = websocket.Upgrader{} // use default options
 
 type Term struct {
 	Type  string
@@ -78,7 +77,7 @@ func makeTimestampMillis() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func notification_worker(notifications <-chan Notification, client *zmq.Socket, metrics chan<- Metric) {
+func notifier(notifications <-chan Notification, wsConnection *websocket.Conn, metrics chan<- Metric) {
 	cache := make(map[string]string)
 	for notification := range notifications {
 		msg := fmt.Sprintf("%s%s%s", notification.Source, notification.Id, notification.Result)
@@ -87,10 +86,11 @@ func notification_worker(notifications <-chan Notification, client *zmq.Socket, 
 		if cache_hit == false || cache_value != msg {
 			cache[cache_key] = msg
 			msgWithTime := fmt.Sprintf("%s%s%v%s", notification.Source, notification.Id, makeTimestampMillis(), notification.Result)
-			zmqClient.Lock()
-			_, sendErr := client.SendMessage(notification.Source, msgWithTime)
-			checkErr(sendErr)
-			zmqClient.Unlock()
+			sendErr := wsConnection.WriteMessage(websocket.TextMessage, []byte(msgWithTime))
+			if sendErr != nil {
+				fmt.Println(sendErr)
+				zap.L().Error("POTENTIALLY FATAL ERROR", zap.Error(sendErr))
+			}
 			metrics <- Metric{"NOTIFICATION", notification.Source, notification.UpdateSource}
 		}
 	}
@@ -149,8 +149,7 @@ func marshal_query_result(query_results []QueryResult) string {
 	return string(marshalled_results)
 }
 
-func subscribe_worker(subscription_messages <-chan string,
-	subscriptions_notifications chan<- bool,
+func subscribe_worker(msg string,
 	subscriptions *Subscriptions,
 	notifications chan<- Notification,
 	metrics chan<- Metric,
@@ -158,47 +157,43 @@ func subscribe_worker(subscription_messages <-chan string,
 
 	event_type_len := 9
 	source_len := 4
-	for msg := range subscription_messages {
-		zap.L().Debug("SUBSCRIPTION SHOULD PARSE MESSAGE", zap.String("msg", msg))
-		event_type := msg[0:event_type_len]
-		source := msg[event_type_len:(event_type_len + source_len)]
-		val := msg[(event_type_len + source_len):]
-		if event_type == "SUBSCRIBE" {
-			subscription_data := SubscriptionData{}
-			err := json.Unmarshal([]byte(val), &subscription_data)
-			checkErr(err)
-			query := make([][]Term, 0)
-			batch_messages := make([]BatchMessage, len(subscription_data.Facts))
-			for i, fact_string := range subscription_data.Facts {
-				fact := parse_fact_string(fact_string)
-				query = append(query, fact)
-				subscription_fact := append([]Term{Term{"text", "subscription"}, Term{"id", source}, Term{"text", subscription_data.Id}, Term{"integer", strconv.Itoa(i)}}, fact...)
-				dbMutex.Lock()
-				claim(db, Fact{subscription_fact})
-				dbMutex.Unlock()
-				// prepare a batch message for the new subscription fact
-				batch_message_facts := make([][]string, len(subscription_fact))
-				for k, subscription_fact_term := range subscription_fact {
-					batch_message_facts[k] = []string{subscription_fact_term.Type, subscription_fact_term.Value}
-				}
-				batch_messages[i] = BatchMessage{"claim", batch_message_facts}
+	zap.L().Debug("SUBSCRIPTION SHOULD PARSE MESSAGE", zap.String("msg", msg))
+	event_type := msg[0:event_type_len]
+	source := msg[event_type_len:(event_type_len + source_len)]
+	val := msg[(event_type_len + source_len):]
+	if event_type == "SUBSCRIBE" {
+		subscription_data := SubscriptionData{}
+		err := json.Unmarshal([]byte(val), &subscription_data)
+		checkErr(err)
+		query := make([][]Term, 0)
+		batch_messages := make([]BatchMessage, len(subscription_data.Facts))
+		for i, fact_string := range subscription_data.Facts {
+			fact := parse_fact_string(fact_string)
+			query = append(query, fact)
+			subscription_fact := append([]Term{Term{"text", "subscription"}, Term{"id", source}, Term{"text", subscription_data.Id}, Term{"integer", strconv.Itoa(i)}}, fact...)
+			dbMutex.Lock()
+			claim(db, Fact{subscription_fact})
+			dbMutex.Unlock()
+			// prepare a batch message for the new subscription fact
+			batch_message_facts := make([][]string, len(subscription_fact))
+			for k, subscription_fact_term := range subscription_fact {
+				batch_message_facts[k] = []string{subscription_fact_term.Type, subscription_fact_term.Value}
 			}
-			newSubscription := Subscription{source, subscription_data.Id, query, make(chan []BatchMessage, 1000), &sync.WaitGroup{}, &sync.WaitGroup{}}
-			newSubscription.dead.Add(1)
-			newSubscription.warmed.Add(1)
-			subscriberMutex.Lock()
-			(*subscriptions).Subscriptions = append(
-				(*subscriptions).Subscriptions,
-				newSubscription,
-			)
-			for _, subscription := range (*subscriptions).Subscriptions {
-				subscription.batch_messages <- batch_messages
-			}
-			subscriberMutex.Unlock()
-			// go startSubscriber(newSubscription, notifications, copyDatabase(db))
-			go startSubscriberV3(newSubscription, notifications, copyDatabase(db), metrics)
-			// subscriptions_notifications <- true // is this still needed?
+			batch_messages[i] = BatchMessage{"claim", batch_message_facts}
 		}
+		newSubscription := Subscription{source, subscription_data.Id, query, make(chan []BatchMessage, 1000), &sync.WaitGroup{}, &sync.WaitGroup{}}
+		newSubscription.dead.Add(1)
+		newSubscription.warmed.Add(1)
+		subscriberMutex.Lock()
+		(*subscriptions).Subscriptions = append(
+			(*subscriptions).Subscriptions,
+			newSubscription,
+		)
+		for _, subscription := range (*subscriptions).Subscriptions {
+			subscription.batch_messages <- batch_messages
+		}
+		subscriberMutex.Unlock()
+		go startSubscriberV3(newSubscription, notifications, copyDatabase(db), metrics)
 	}
 }
 
@@ -213,41 +208,6 @@ func copyDatabase(db *map[string]Fact) map[string]Fact {
 	}
 	dbMutex.RUnlock()
 	return dbCopy
-}
-
-func debug_database_observer(db *map[string]Fact) {
-	for {
-		dbCopy := copyDatabase(db)
-		dbAsSstring := []byte("\033[H\033[2J") // clear terminal output on MacOS
-		dbAsBase64Strings := ""
-		var keys []string
-		for k, _ := range dbCopy {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, fact_string := range keys {
-			dbAsSstring = append(dbAsSstring, []byte(fact_string)...)
-			dbAsSstring = append(dbAsSstring, '\n')
-			dbAsBase64Strings += "["
-			for i, term := range dbCopy[fact_string].Terms {
-				if i > 0 {
-					dbAsBase64Strings += ","
-				}
-				if term.Type == "text" {
-					dbAsBase64Strings += fmt.Sprintf("[\"%s\", \"%s\"]", term.Type, b64.StdEncoding.EncodeToString([]byte(term.Value)))
-				} else {
-					dbAsBase64Strings += fmt.Sprintf("[\"%s\", \"%v\"]", term.Type, term.Value)
-				}
-			}
-			dbAsBase64Strings += "]\n"
-		}
-		dbAsBase64Strings += fmt.Sprintf("[[\"id\", \"0\"], [\"text\", \"%s\"]]\n", b64.StdEncoding.EncodeToString([]byte(time.Now().String())))
-		err := ioutil.WriteFile("./db_view.txt", dbAsSstring, 0644)
-		checkErr(err)
-		err2 := ioutil.WriteFile("./db_view_base64.txt", []byte(dbAsBase64Strings), 0644)
-		checkErr(err2)
-		time.Sleep(1.0 * time.Second)
-	}
 }
 
 func on_source_death(dying_source string, db *map[string]Fact, subscriptions *Subscriptions) {
@@ -319,7 +279,7 @@ func on_subscription_death(source string, subscriptionId string, db *map[string]
 	subscriberMutex.Unlock()
 }
 
-func batch_worker(batch_messages <-chan string, subscriptions_notifications chan<- bool, db *map[string]Fact, subscriptions *Subscriptions) {
+func batch_worker(batch_messages <-chan string, db *map[string]Fact, subscriptions *Subscriptions) {
 	event_type_len := 9
 	source_len := 4
 	for msg := range batch_messages {
@@ -361,13 +321,24 @@ func batch_worker(batch_messages <-chan string, subscriptions_notifications chan
 				on_subscription_death(source, dying_subscription_id, db, subscriptions)
 			}
 		}
-		// subscriptions_notifications <- true
 		subscriberMutex.RLock()
 		for _, subscription := range (*subscriptions).Subscriptions {
 			subscription.batch_messages <- batch_messages
 	}
 		subscriberMutex.RUnlock()
 	}
+}
+
+func perform_select(val string, db *map[string]Fact) (string, string) {
+	subscription_data := SubscriptionData{}
+	err := json.Unmarshal([]byte(val), &subscription_data)
+	checkErr(err)
+	query := make([]Fact, len(subscription_data.Facts))
+	for i, fact_string := range subscription_data.Facts {
+		query[i] = Fact{parse_fact_string(fact_string)}
+	}
+	results := select_facts(copyDatabase(db), query)
+	return subscription_data.Id, marshal_query_result(results)
 }
 
 func select_worker(select_messages <-chan string, notifications chan<- Notification, db *map[string]Fact) {
@@ -377,16 +348,8 @@ func select_worker(select_messages <-chan string, notifications chan<- Notificat
 		zap.L().Debug("SELECT SHOULD PARSE MESSAGE", zap.String("msg", msg))
 		source := msg[event_type_len:(event_type_len + source_len)]
 		val := msg[(event_type_len + source_len):]
-		subscription_data := SubscriptionData{}
-		err := json.Unmarshal([]byte(val), &subscription_data)
-		checkErr(err)
-		query := make([]Fact, len(subscription_data.Facts))
-		for i, fact_string := range subscription_data.Facts {
-			query[i] = Fact{parse_fact_string(fact_string)}
-		}
-		results := select_facts(copyDatabase(db), query)
-		results_as_str := marshal_query_result(results)
-		notifications <- Notification{source, subscription_data.Id, results_as_str, "select"}
+		subscription_data_id, results_as_str := perform_select(val, db)
+		notifications <- Notification{source, subscription_data_id, results_as_str, "select"}
 	}
 }
 
@@ -414,6 +377,68 @@ func NewLogger() (*zap.Logger, error) {
 	return cfg.Build()
 }
 
+func echo(
+	batch_messages chan<- string,
+	metrics_messages chan<- Metric,
+	db *map[string]Fact,
+	subscriptions *Subscriptions,
+	w http.ResponseWriter,
+	r *http.Request) {
+
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		zap.L().Info("upgrade websockets error:", zap.Error(err))
+		return
+	}
+	defer c.Close()
+	notifications := make(chan Notification, 1000)
+	go notifier(notifications, c, metrics_messages)
+	source := ""
+	for {
+		// first response from c.ReadMessage() is the message Type: websocket.BinaryMessage or websocket.TextMessage
+		_, message, err := c.ReadMessage()
+		if err != nil {
+			zap.L().Info("read websockets error:", zap.String("source", source), zap.Error(err))
+			// TODO: add a fallback to close this channel?
+			// must cleanup notifications otherwise the subscriber will continue
+			// to write notifications to the closed notification channel
+			if source != "" {
+				on_source_death(source, db, subscriptions)
+			}
+			close(notifications)
+			break
+		}
+		// err = c.WriteMessage(mt, message)
+		// if err != nil {
+		// 	zap.L().Info("write websockets error:", zap.Error(err))
+		// 	break
+		// }
+		msg := string(message)
+		// zap.L().Info("websockets recv:", zap.String("msg", msg))
+		event_type_len := 9
+		source_len := 4
+		event_type := msg[0:event_type_len]
+		source = msg[event_type_len:(event_type_len + source_len)]
+		val := msg[(event_type_len + source_len):]
+		if event_type == ".....PING" {
+			zap.L().Debug("got PING", zap.String("source", source), zap.String("value", val))
+			notifications <- Notification{source, val, "", "ping"} // TODO: replace with own notifications
+			metrics_messages <- Metric{"PING", source, ""}
+		} else if event_type == "SUBSCRIBE" {
+			// TODO!!!!! cleanup created subscriptions when connection dies?
+			subscribe_worker(msg, subscriptions, notifications, metrics_messages, db)
+			metrics_messages <- Metric{"SUBSCRIBE", source, ""}
+		} else if event_type == "....BATCH" {
+			batch_messages <- msg
+			metrics_messages <- Metric{"BATCH", source, ""}
+		} else if event_type == "...SELECT" {
+			zap.L().Debug("SELECT SHOULD PARSE MESSAGE", zap.String("msg", msg))
+			subscription_data_id, results_as_str := perform_select(val, db)
+			notifications <- Notification{source, subscription_data_id, results_as_str, "select"}
+		}
+	}
+}
+
 func main() {
 	logger, loggerCreateError := NewLogger() // zap.NewDevelopment()
 	checkErr(loggerCreateError)
@@ -422,59 +447,15 @@ func main() {
 	factDatabase := make_fact_database()
 
 	subscriptions := Subscriptions{}
-	
-	client, zmqCreationErr := zmq.NewSocket(zmq.ROUTER)
-	checkErr(zmqCreationErr)
-	defer client.Close()
-	client.SetRcvtimeo(time.Duration(1) * time.Millisecond)
-	client.Bind("tcp://*:5570")
-	zap.L().Info("Connecting to ZMQ")
 
-	event_type_len := 9
-	source_len := 4
-
-	subscription_messages := make(chan string, 1000)
-	subscriptions_notifications := make(chan bool, 1000)
-	notifications := make(chan Notification, 1000)
 	batch_messages := make(chan string, 1000)
 	metrics_messages := make(chan Metric, 1000)
-	select_messages := make(chan string, 1000)
 
-	go subscribe_worker(subscription_messages, subscriptions_notifications, &subscriptions, notifications, metrics_messages, &factDatabase)
-	go notification_worker(notifications, client, metrics_messages)
-	// go debug_database_observer(&factDatabase)
-	go batch_worker(batch_messages, subscriptions_notifications, &factDatabase, &subscriptions)
+	go batch_worker(batch_messages, &factDatabase, &subscriptions)
 	go metrics_worker(metrics_messages)
-	go select_worker(select_messages, notifications, &factDatabase)
 
-	zap.L().Info("listening...")
-	for {
-		zmqClient.Lock()
-		rawMsg, recvErr := client.RecvMessage(0)
-		if recvErr != nil {
-			zmqClient.Unlock()
-			continue;
-		}
-		rawMsgId := rawMsg[0]
-		msg := rawMsg[1]
-		zmqClient.Unlock()
-		event_type := msg[0:event_type_len]
-		// source := msg[event_type_len:(event_type_len + source_len)]
-		source := rawMsgId
-		val := msg[(event_type_len + source_len):]
-		if event_type == ".....PING" {
-			zap.L().Debug("got PING", zap.String("source", source), zap.String("value", val))
-			notifications <- Notification{source, val, "", "ping"}
-			metrics_messages <- Metric{"PING", source, ""}
-		} else if event_type == "SUBSCRIBE" {
-			subscription_messages <- msg
-			metrics_messages <- Metric{"SUBSCRIBE", source, ""}
-		} else if event_type == "....BATCH" {
-			batch_messages <- msg
-			metrics_messages <- Metric{"BATCH", source, ""}
-		} else if event_type == "...SELECT" {
-			select_messages <- msg
-		}
-		time.Sleep(time.Duration(1) * time.Microsecond)
-	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		echo(batch_messages, metrics_messages, &factDatabase, &subscriptions, w, r)
+	})
+	checkErr(http.ListenAndServe(":8080", nil))
 }

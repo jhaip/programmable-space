@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"math"
+	"net/url"
 	"os"
+	"os/signal"
 	"runtime"
 	"strconv"
 	"strings"
@@ -17,7 +19,7 @@ import (
 
 	"github.com/kokardy/listing"
 	ciede2000 "github.com/mattn/go-ciede2000"
-	zmq "github.com/pebbe/zmq4"
+	"github.com/gorilla/websocket"
 )
 
 const CAM_WIDTH = 1920
@@ -103,27 +105,63 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-func initZeroMQ(MY_ID_STR string) *zmq.Socket {
-	log.Println("Connecting to server...")
-	client, zmqCreationErr := zmq.NewSocket(zmq.DEALER)
-	checkErr(zmqCreationErr)
-	setIdentityErr := client.SetIdentity(MY_ID_STR)
-	checkErr(setIdentityErr)
+func initClient(subscription_updates chan<- string) *websocket.Conn {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
 	rpc_url := os.Getenv("PROG_SPACE_SERVER_URL")
 	if rpc_url == "" {
 		rpc_url = "localhost"
 	}
-	connectErr := client.Connect("tcp://" + rpc_url + ":5570")
-	checkErr(connectErr)
+	rpc_url = rpc_url + ":8080"
+	u := url.URL{Scheme: "ws", Host: rpc_url, Path: "/"}
+	log.Printf("connecting to %s", u.String())
 
-	init_ping_id, err := newUUID();
-	checkErr(err);
-	client.SendMessage(fmt.Sprintf(".....PING%s%s", MY_ID_STR, init_ping_id))
-	// block until ping response received
-	_, recvErr := client.RecvMessage(0) 
-	checkErr(recvErr);
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	checkErr(err)
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		defer close(subscription_updates)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: %s", message)
+			subscription_updates <- string(message)
+		}
+	}()
+
+	go func() {
+		// cleanup websocket connection nicely
+		for {
+			select {
+			case <-done:
+				return
+			case <-interrupt:
+				log.Println("interrupt")
 	
-	return client
+				// Cleanly close the connection by sending a close message and then
+				// waiting (with timeout) for the server to close the connection.
+				err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				if err != nil {
+					log.Println("write close:", err)
+					return
+				}
+				select {
+				case <-done:
+				case <-time.After(time.Second):
+				}
+				return
+			}
+		}
+	}()
+
+	return c
 }
 
 func main() {
@@ -149,7 +187,8 @@ func main() {
 	MY_ID := 1800
 	MY_ID_STR := fmt.Sprintf("%04d", MY_ID)
 
-	client := initZeroMQ(MY_ID_STR)
+	subscription_updates := make(chan string)
+	client := initClient(subscription_updates)
 	defer client.Close()
 	count := 0
 
@@ -158,13 +197,14 @@ func main() {
 	dot_sub_query := map[string]interface{}{"id": dot_sub_id, "facts": []string{"$source $ dots $x $y color $r $g $b $t"}}
 	dot_sub_query_msg, _ := json.Marshal(dot_sub_query)
 	dot_sub_msg := fmt.Sprintf("SUBSCRIBE%s%s", MY_ID_STR, dot_sub_query_msg)
-	client.SendMessage(dot_sub_msg)
+	writeErr := client.WriteMessage(websocket.TextMessage, []byte(dot_sub_msg))
+	checkErr(writeErr)
 
-	for {
+	log.Println("waiting for dots")
+	for msg := range subscription_updates {
 		start := time.Now()
-
-		log.Println("waiting for dots")
-		points := getDots(client, MY_ID_STR, dot_sub_id, start) // getPoints()
+		
+		points := getDots(msg, MY_ID_STR, dot_sub_id, start) // getPoints()
 		log.Println("got dots")
 
 		timeGotDots := time.Since(start)
@@ -200,6 +240,7 @@ func main() {
 		log.Printf("processing: %s \n", timeProcessing)
 		log.Printf("total     : %s \n", elapsed)
 
+		log.Println("waiting for dots")
 		// time.Sleep(10 * time.Millisecond)
 	}
 }
@@ -721,36 +762,10 @@ func makeTimestampMillis() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func getDots(client *zmq.Socket, MY_ID_STR string, dot_sub_id string, start time.Time) []Dot {
-	var reply string
-	nLoops := 0
+func getDots(reply string, MY_ID_STR string, dot_sub_id string, start time.Time) []Dot {
 	dot_prefix := fmt.Sprintf("%s%s", MY_ID_STR, dot_sub_id)
-	for reply == "" || reply[len(reply)-4:] == "[{}]" {
-		log.Println("pre loop")
-		for {
-			nLoops += 1
-			log.Println("pre loop inner")
-			rawReply, err := client.RecvMessage(0)
-			tmp_reply := rawReply[0]
-			if err != nil {
-				log.Println("get dots error:")
-				log.Println(err)
-				break
-			} else {
-				log.Println("tmp reply:")
-				// log.Println(tmp_reply)
-				reply = tmp_reply
-				break
-				// fmt.Println("GOT REPLY:")
-				// fmt.Println(reply)
-			}
-			break
-		}
-		time.Sleep(1 * time.Millisecond)
-		log.Println("end of loop")
-	}
 	timeGotDotsPre := time.Since(start)
-	log.Printf("get dots pre  : %s , %s\n", timeGotDotsPre, nLoops)
+	log.Printf("get dots pre  : %s\n", timeGotDotsPre)
 	// log.Println("Received ", reply)
 	timeVal, err := strconv.ParseInt(reply[len(dot_prefix):len(dot_prefix)+13], 10, 64)
 	if err != nil {
@@ -790,7 +805,7 @@ func getDots(client *zmq.Socket, MY_ID_STR string, dot_sub_id string, start time
 	return res
 }
 
-func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers []Paper, corners []Corner) {
+func claimPapersAndCorners(client *websocket.Conn, MY_ID_STR string, papers []Paper, corners []Corner) {
 	log.Println("CLAIM PAPERS -----")
 	log.Println(papers)
 	// papersAlmostStr, _ := json.Marshal(papers)
@@ -892,15 +907,9 @@ func claimPapersAndCorners(client *zmq.Socket, MY_ID_STR string, papers []Paper,
 	batch_claim_str, _ := json.Marshal(batch_claims)
 	msg := fmt.Sprintf("....BATCH%s%s", MY_ID_STR, batch_claim_str)
 	log.Println("Sending ", msg)
-	s, err := client.SendMessage(msg)
-	// s, err := client.SendMessage(msg, zmq.DONTWAIT)
-	if err != nil {
-		log.Println("ERROR!")
-		log.Println(err)
-		// panic(err)
-	}
+	writeErr := client.WriteMessage(websocket.TextMessage, []byte(msg))
+	checkErr(writeErr)
 	log.Println("post send message!")
-	log.Println(s)
 }
 
 func printJsonDots(dots []Dot) {
@@ -912,7 +921,7 @@ func printJsonDots(dots []Dot) {
 	log.Println("---")
 }
 
-func claimCorners(client *zmq.Socket, corners []Corner) {
+func claimCorners(client *websocket.Conn, corners []Corner) {
 	cornersAlmostStr, err := json.Marshal(corners)
 	log.Println("Err?")
 	log.Println(err)
@@ -920,15 +929,15 @@ func claimCorners(client *zmq.Socket, corners []Corner) {
 	log.Println(cornersStr)
 	msg := fmt.Sprintf("CLAIM[global/corners]%s", cornersStr)
 	log.Println("Sending ", msg)
-	client.SendMessage(msg)
-	// client.SendMessage(msg, zmq.DONTWAIT)
+	writeErr := client.WriteMessage(websocket.TextMessage, []byte(msg))
+	checkErr(writeErr)
 }
 
-func claimCounter(client *zmq.Socket, count int) {
+func claimCounter(client *websocket.Conn, count int) {
 	msg := fmt.Sprintf("CLAIM[global/dtpcount]%v", count)
 	log.Println("Sending ", msg)
-	client.SendMessage(msg)
-	// client.SendMessage(msg, zmq.DONTWAIT)
+	writeErr := client.WriteMessage(websocket.TextMessage, []byte(msg))
+	checkErr(writeErr)
 }
 
 func get8400(fileName string) []string {
