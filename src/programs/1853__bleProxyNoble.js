@@ -187,5 +187,8 @@ function removeDeviceSubscriptions(removedDeviceId) {
   deviceSubscriptions = newDeviceSubscriptions;
 }
 
+// log more information about warnings
+process.on('warning', e => console.warn(e.stack));
+
 room.cleanupOtherSource(MY_ID_STR);
 run();
