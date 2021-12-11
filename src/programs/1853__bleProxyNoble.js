@@ -27,7 +27,9 @@ noble.on('stateChange', state => {
 noble.on('discover', peripheral => {
   // console.log(`inside discover ${peripheral.address} ${peripheral.advertisement && peripheral.advertisement.localName}`)
   if (shouldConnectToDevice(peripheral) && !connectedCandidates.includes(peripheral.id)) {
+    // here
     peripheral.connect(error => {
+      console.log("inside peripheral.connect")
       if (error) {
         console.log(error);
         return;
@@ -49,6 +51,7 @@ noble.on('discover', peripheral => {
 });
 
 function connect(peripheral) {
+  console.log("inside function connect(peripheral)")
   peripheral.once('servicesDiscover', function (services) {
     services.forEach(service => {
         // console.log(`discovered service ${service}`);
