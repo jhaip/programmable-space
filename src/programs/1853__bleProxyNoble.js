@@ -37,6 +37,9 @@ noble.on('discover', peripheral => {
       // connecting to a device stops scanning, so restart scanning (https://github.com/noble/noble/issues/358)
       noble.startScanning([], true);
     });
+    peripheral.removeAllListeners('servicesDiscover');
+    peripheral.removeAllListeners('connect');
+    peripheral.removeAllListeners('disconnect');
     peripheral.once('connect', () => connect(peripheral));
     peripheral.once('disconnect', () => {
       console.log(`PERIPHERAL DISCONNECTED ${peripheral.id}`)
@@ -49,7 +52,6 @@ noble.on('discover', peripheral => {
 });
 
 function connect(peripheral) {
-  peripheral.removeAllListeners('servicesDiscover');
   peripheral.once('servicesDiscover', function (services) {
     services.forEach(service => {
         // console.log(`discovered service ${service}`);
