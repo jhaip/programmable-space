@@ -1,4 +1,4 @@
-from helper import init, subscription, batch, MY_ID_STR, get_my_id_str, rpc_url, override_my_id
+from helper import init, subscription, batch, prehook, MY_ID_STR, get_my_id_str, rpc_url, override_my_id
 import cv2
 import os
 import time
@@ -9,8 +9,6 @@ import socketserver
 import threading
 import socket
 from io import BytesIO
-
-from programs.helper import prehook
 
 lock = threading.RLock()
 
