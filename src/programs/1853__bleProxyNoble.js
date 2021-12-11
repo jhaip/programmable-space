@@ -40,9 +40,6 @@ noble.on('discover', peripheral => {
     peripheral.once('connect', () => connect(peripheral));
     peripheral.once('disconnect', () => {
       console.log(`PERIPHERAL DISCONNECTED ${peripheral.id}`)
-      peripheral.removeAllListeners('servicesDiscover');
-      peripheral.removeAllListeners('connect');
-      peripheral.removeAllListeners('disconnect');
       delete connectedDevices[peripheral.id];
       connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
       room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
