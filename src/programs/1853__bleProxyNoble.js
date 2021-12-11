@@ -37,12 +37,12 @@ noble.on('discover', peripheral => {
       // connecting to a device stops scanning, so restart scanning (https://github.com/noble/noble/issues/358)
       noble.startScanning([], true);
     });
-    peripheral.removeAllListeners('servicesDiscover');
-    peripheral.removeAllListeners('connect');
-    peripheral.removeAllListeners('disconnect');
     peripheral.once('connect', () => connect(peripheral));
     peripheral.once('disconnect', () => {
       console.log(`PERIPHERAL DISCONNECTED ${peripheral.id}`)
+      peripheral.removeAllListeners('servicesDiscover');
+      peripheral.removeAllListeners('connect');
+      peripheral.removeAllListeners('disconnect');
       delete connectedDevices[peripheral.id];
       connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
       room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
