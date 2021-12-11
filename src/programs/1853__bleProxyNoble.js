@@ -49,6 +49,7 @@ noble.on('discover', peripheral => {
 });
 
 function connect(peripheral) {
+  peripheral.removeAllListeners('servicesDiscover');
   peripheral.once('servicesDiscover', function (services) {
     services.forEach(service => {
         // console.log(`discovered service ${service}`);
@@ -73,9 +74,6 @@ function connect(peripheral) {
       });
   });
   console.log("started discovering services");
-  peripheral.removeAllListeners('servicesDiscover');
-  peripheral.removeAllListeners('connect');
-  peripheral.removeAllListeners('disconnect');
   peripheral.discoverServices();
 }
 
