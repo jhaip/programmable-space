@@ -73,6 +73,9 @@ function connect(peripheral) {
       });
   });
   console.log("started discovering services");
+  peripheral.removeAllListeners('servicesDiscover');
+  peripheral.removeAllListeners('connect');
+  peripheral.removeAllListeners('disconnect');
   peripheral.discoverServices();
 }
 
