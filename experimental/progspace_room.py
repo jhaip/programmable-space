@@ -88,7 +88,7 @@ class Room:
             self.recv_msg_cache = lines[-1]
 
     def listen_and_update_subscriptions(self):
-        self.debug("listening~~~~~")
+        # self.debug("listening~~~~~")
         if self.uart_server.in_waiting:
             read_msg = self.uart_server.read(self.uart_server.in_waiting)
             self.recv_msg_cache += read_msg.decode("utf-8")
