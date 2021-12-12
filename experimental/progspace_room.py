@@ -89,15 +89,11 @@ class Room:
 
     def listen_and_update_subscriptions(self):
         self.debug("listening~~~~~")
-        read_msg = self.uart_server.read(nbytes=20)
-        loop_count = 0  # limit loops because there always seems to be bytes waiting...
-        while read_msg is not None and len(read_msg) > 0 and loop_count < 3:
-            self.debug("Bytes in waiting: {}".format(self.uart_server.in_waiting))
+        if self.uart_server.in_waiting:
+            read_msg = self.uart_server.read(self.uart_server.in_waiting)
             self.recv_msg_cache += read_msg.decode("utf-8")
             self.check_read_msg_cache_and_callbacks()
             self.debug("sub update: {}".format(self.recv_msg_cache))
-            read_msg = self.uart_server.read(nbytes=20)
-            loop_count += 1
 
     def connected(self):
         if not self.ble.connected:
