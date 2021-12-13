@@ -25,6 +25,8 @@ noble.on('stateChange', state => {
 });
 
 noble.on('discover', peripheral => {
+  console.log(`discovered peripheral ${peripheral.id}`);
+  console.log(`connected candidates: ${JSON.stringify(connectedCandidates)}`);
   // console.log(`inside discover ${peripheral.address} ${peripheral.advertisement && peripheral.advertisement.localName}`)
   if (shouldConnectToDevice(peripheral) && !connectedCandidates.includes(peripheral.id)) {
     // here
