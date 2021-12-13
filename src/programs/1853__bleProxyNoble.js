@@ -28,8 +28,8 @@ noble.on('stateChange', state => {
 noble.on('discover', peripheral => {
   // console.log(`inside discover ${peripheral.address} ${peripheral.advertisement && peripheral.advertisement.localName}`)
   if (shouldConnectToDevice(peripheral)) {
-    console.log(`discovered peripheral ${peripheral.id}`);
-    console.log(`connected candidates: ${JSON.stringify(discoveredCandidates)}`);
+    // console.log(`discovered peripheral ${peripheral.id}`);
+    // console.log(`connected candidates: ${JSON.stringify(discoveredCandidates)}`);
     if (!discoveredCandidates.includes(peripheral.id)) {
       discoveredCandidates.push(peripheral.id);
       // here
