@@ -2,6 +2,7 @@
 const { room, myId, MY_ID_STR, run, fullyParseFact } = require('../helpers/helper')(__filename);
 const noble = require('@abandonware/noble');
 
+var discoveredCandidates = [];
 var connectedCandidates = [];
 var connectedDevices = {};
 // serialized query strings -> array of (device ID, device Subscription ID)
@@ -25,30 +26,34 @@ noble.on('stateChange', state => {
 });
 
 noble.on('discover', peripheral => {
-  console.log(`discovered peripheral ${peripheral.id}`);
-  console.log(`connected candidates: ${JSON.stringify(connectedCandidates)}`);
   // console.log(`inside discover ${peripheral.address} ${peripheral.advertisement && peripheral.advertisement.localName}`)
-  if (shouldConnectToDevice(peripheral) && !connectedCandidates.includes(peripheral.id)) {
-    // here
-    peripheral.connect(error => {
-      console.log("inside peripheral.connect")
-      if (error) {
-        console.log(error);
-        return;
-      }
-      console.log('connected to peripheral: ' + peripheral.id);
-      connectedCandidates.push(peripheral.id);
-      // connecting to a device stops scanning, so restart scanning (https://github.com/noble/noble/issues/358)
-      noble.startScanning([], true);
-    });
-    peripheral.once('connect', () => connect(peripheral));
-    peripheral.once('disconnect', () => {
-      console.log(`PERIPHERAL DISCONNECTED ${peripheral.id}`)
-      delete connectedDevices[peripheral.id];
-      connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
-      room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
-      removeDeviceSubscriptions(peripheral.id);
-    });
+  if (shouldConnectToDevice(peripheral)) {
+    console.log(`discovered peripheral ${peripheral.id}`);
+    console.log(`connected candidates: ${JSON.stringify(discoveredCandidates)}`);
+    if (!discoveredCandidates.includes(peripheral.id)) {
+      discoveredCandidates.push(peripheral.id);
+      // here
+      peripheral.connect(error => {
+        console.log("inside peripheral.connect")
+        if (error) {
+          console.log(error);
+          return;
+        }
+        console.log('connected to peripheral: ' + peripheral.id);
+        connectedCandidates.push(peripheral.id);
+        // connecting to a device stops scanning, so restart scanning (https://github.com/noble/noble/issues/358)
+        noble.startScanning([], true);
+      });
+      peripheral.once('connect', () => connect(peripheral));
+      peripheral.once('disconnect', () => {
+        console.log(`PERIPHERAL DISCONNECTED ${peripheral.id}`)
+        delete connectedDevices[peripheral.id];
+        connectedCandidates = connectedCandidates.filter(id => id !== peripheral.id);
+        discoveredCandidates = discoveredCandidates.filter(id => id !== peripheral.id);
+        room.retractRaw(...[["id", MY_ID_STR], ["id", peripheral.id], ["postfix", ""]]);
+        removeDeviceSubscriptions(peripheral.id);
+      });
+    }
   }
 });
 
