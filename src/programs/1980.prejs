@@ -9,6 +9,22 @@ claim wish spotify:track:4YxA2ymhdsh2ROqfkUxmxJ would be played on Spotify
 claim wish spotify:track:2hIwKcLHchJXjgFe2lxA2P would be played on Spotify
 } else if (name === "albumwiddit") {
 claim wish spotify:track:2L9mXwt6vJ3FxVxf7jsGkd would be played on Spotify
+} else if (name === "olympians") {
+claim wish spotify:artist:0ZPqGxW2iwZz7vGJWzuTUi would be played on Spotify
+} else if (name === "glaspy") {
+claim wish spotify:album:2Bq3X3NF39gvmAihzX1DdK would be played on Spotify
+} else if (name === "badbadnotgood") {
+claim wish spotify:artist:65dGLGjkw3UbddUg2GKQoZ would be played on Spotify
+} else if (name === "beachbunny") {
+claim wish spotify:artist:2vnB6tuQMaQpORiRdvXF9H would be played on Spotify
+} else if (name === "catheaven") {
+claim wish spotify:album:0Z9NeEvqeecaLCFUmI4uDw would be played on Spotify
+} else if (name === "khruangbin") {
+claim wish spotify:artist:2mVVjNmdjXZZDvhgQWiakk would be played on Spotify
+} else if (name === "khruangbin") {
+claim wish spotify:playlist:6AZ2QTgPu7eCIDZlClIqPa would be played on Spotify
+} else if (name === "emei") {
+claim wish spotify:track:1rbpKQH9Ln0ySrOV3wtWV7 would be played on Spotify
 }
 
 end

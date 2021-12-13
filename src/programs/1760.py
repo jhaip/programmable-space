@@ -5,7 +5,7 @@ import adafruit_thermistor
 import neopixel
 from progspace_room import Room
 
-room = Room(use_debug=True)
+room = Room(use_debug=False)
 thermistor = adafruit_thermistor.Thermistor(board.TEMPERATURE, 10000, 10000, 25, 3950)
 light = analogio.AnalogIn(board.LIGHT)
 pixels = neopixel.NeoPixel(board.NEOPIXEL, 10, brightness=0.2, auto_write=False)
@@ -32,10 +32,29 @@ def when_callback(results):
 room.when(['$ $ time is $t'], when_callback)
 
 while True:
+    x = 0
     while room.connected():
-        print(room.subscription_ids.keys())
+        # print(room.subscription_ids.keys())
         lv = scale(light.value)
-        print(lv, thermistor.temperature)
-        room.cleanup()
-        room.claim('light is {}'.format(scale(light.value)))
+        # print(lv, thermistor.temperature)
+        x += 1
+        if x > 5000:
+            print("claiming")
+            room.cleanup()
+            room.claim('light is {}'.format(scale(light.value)))
+            x = 0
         # room.claim('temp is {}'.format(thermistor.temperature))
+
+
+
+
+
+
+
+
+
+
+
+
+
+

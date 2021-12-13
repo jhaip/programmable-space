@@ -1,8 +1,14 @@
-when count is $count:
+log = []
+when time is $t,
+     activity is $x:
+  if (log.length == 0 || log[log.length-1].activity != x) {
+    log.push({"time": t, "activity": x})
+  }
   let ill = room.newIllumination()
-  ill.push()
   ill.fontcolor("white")
   ill.fontsize(100)
-  ill.text(400, 400, `Count is ${count}`)
-  ill.pop()
-  room.draw(ill, "web2")
+  log.forEach((l, i) => {
+    let tText = (new Date(l.time)).toLocaleTimeString()
+    ill.text(100, 100 + i*100, `[${tText}] ${l.activity}`)
+  })
+  room.draw(ill)

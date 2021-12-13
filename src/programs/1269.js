@@ -12,7 +12,7 @@ let u = `https://api.mapbox.com` +
  `${lat},${long},${zoom},0/` +
  `300x200` +
  `?access_token=${access_token}`
-ill.image(30, 30, 360*2, 240*2, u)
+ill.image(30, 30, 360*4, 240*4, u)
 room.draw(ill)
 
 

@@ -1,12 +1,32 @@
 import time
 import board
 import analogio
-from progspace_room import Room
+# from progspace_room import Room
+from adafruit_circuitplayground import cp
 
-room = Room(use_debug=True)
+# room = Room(use_debug=True)
 
 while True:
-    while room.connected():
-        room.cleanup()
-        room.claim('temp is {}'.format(5))
-        time.sleep(1)
+    # while room.connected():
+    while True:
+        cp.play_file("oh.wav")
+        time.sleep(3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

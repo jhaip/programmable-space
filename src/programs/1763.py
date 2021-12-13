@@ -11,3 +11,7 @@ while True:
     while room.connected():
         room.cleanup()
         room.claim('temp is {}'.format(thermistor.temperature))
+
+
+
+

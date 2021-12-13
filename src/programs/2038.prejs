@@ -5,7 +5,7 @@ function render(x, y, lowF) {
     let ill = room.newIllumination()
     ill.fontcolor(255, 255, 255)
     ill.text(x*W/7+20, y*H/5+20, `${lowF}'`);
-    room.draw(ill, "web2")
+    room.draw(ill)
 }
 
 function getWeekNum(d) {

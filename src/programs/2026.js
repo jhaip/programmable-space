@@ -1,17 +1,23 @@
 const { room, myId, run } = require('../helpers/helper')(__filename);
 
-room.on(`count is $count`,
+log = []
+room.on(`time is $t`,
+        `activity is $x`,
         results => {
   room.subscriptionPrefix(1);
-  if (!!results && results.length > 0) {
-    results.forEach(({ count }) => {
+  if (!!results) {
+    results.forEach(({ t, x }) => {
+  if (log.length == 0 || log[log.length-1].activity != x) {
+    log.push({"time": t, "activity": x})
+  }
   let ill = room.newIllumination()
-  ill.push()
   ill.fontcolor("white")
   ill.fontsize(100)
-  ill.text(400, 400, `Count is ${count}`)
-  ill.pop()
-  room.draw(ill, "web2")
+  log.forEach((l, i) => {
+    let tText = (new Date(l.time)).toLocaleTimeString()
+    ill.text(100, 100 + i*100, `[${tText}] ${l.activity}`)
+  })
+  room.draw(ill)
 
 
     });

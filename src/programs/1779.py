@@ -1,12 +1,32 @@
 import time
 import board
-import analogio
-from progspace_room import Room
+import busio
+import usb_hid
+from adafruit_bus_device.i2c_device import I2CDevice
+import adafruit_dotstar
+from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.consumer_control_code import ConsumerControlCode
+from digitalio import DigitalInOut, Direction, Pull
 
-room = Room(use_debug=True)
+cs = DigitalInOut(board.GP17)
+cs.direction = Direction.OUTPUT
+cs.value = 0
+num_pixels = 16
+pixels = adafruit_dotstar.DotStar(board.GP18, board.GP19, num_pixels, brightness=0.1, auto_write=True)
+i2c = busio.I2C(board.GP5, board.GP4)
 
 while True:
-    while room.connected():
-        room.cleanup()
-        room.claim('temp is {}'.format(5))
-        time.sleep(1)
+    for i in range(16):
+        pixels[i] = (200, 0, 200)
+
+
+
+
+
+
+
+
+
+
+
+

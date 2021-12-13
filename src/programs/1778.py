@@ -1,12 +1,26 @@
 import time
 import board
 import analogio
-from progspace_room import Room
+import random
+# from progspace_room import Room
+from adafruit_circuitplayground import cp
 
-room = Room(use_debug=True)
+# room = Room(use_debug=True)
 
 while True:
-    while room.connected():
-        room.cleanup()
-        room.claim('temp is {}'.format(5))
-        time.sleep(1)
+    while True: # while room.connected():
+        time.sleep(2+random.random()*5)
+        cp.play_tone(240 + random.randint(0, 60), random.random()*0.4)
+        cp.play_tone(240 + random.randint(0, 60), random.random()*0.4)
+        cp.play_tone(240 + random.randint(0, 60), random.random()*0.4)
+
+
+
+
+
+
+
+
+
+
+

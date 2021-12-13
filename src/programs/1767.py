@@ -1,12 +1,16 @@
 import time
 import board
-import analogio
-from progspace_room import Room
+from digitalio import DigitalInOut, Direction, Pull
+from analogio import AnalogOut
 
-room = Room(use_debug=True)
+direction_pin = DigitalInOut(board.D0)
+direction_pin.direction = Direction.OUTPUT
+analog_out = AnalogOut(board.A0)
 
 while True:
-    while room.connected():
-        room.cleanup()
-        room.claim('temp is {}'.format(5))
-        time.sleep(1)
+    time.sleep(1)
+    print("hey")
+    direction_pin.value = False
+    analog_out.value = 43690
+    time.sleep(0.01)
+    analog_out.value = 0
