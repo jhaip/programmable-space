@@ -29,6 +29,7 @@ pkill -f '650__keyboard'
 pkill -f 'processing/graphics'
 export DISPLAY=:0
 export PROG_SPACE_SERVER_URL='192.168.1.34'
+python3 src/programs/232.py &
 sudo python3 src/programs/650__keyboard.py &
 /usr/local/bin/processing-java --output=/tmp/processing/ --sketch=src/processing/graphics --force --run 1999 &
 `,
