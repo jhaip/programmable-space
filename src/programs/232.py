@@ -15,7 +15,7 @@ def sub_callback(results):
     global download_cache
     for result in results:
         url = result["url"]
-        filename = base64.b64encode(url)
+        filename = base64.b64encode(str.encode(url))
         filepath = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'files/sound_'+filename)
         if url not in download_cache:
             logging.info("{} downloading: {}".format(datetime.now().isoformat(), url))
