@@ -64,25 +64,32 @@ button.addEventListener('click', async event => {
 });
 
 $url.onchange = () => updateCanvas();
-$url.onkeydown = () => updateCanvas();
+$url.onkeyup = () => updateCanvas();
 $title.onchange = () => updateCanvas();
-$title.onkeydown = () => updateCanvas();
+$title.onkeyup = () => updateCanvas();
 
 function updateCanvas() {
     const url = $url.value.trim();
     const title = $title.value.trim();
-    let qrDataUrl = (new QRious({value: url, size: 200})).toDataURL();
-    $canvas.width = 200;
-    $canvas.height = 250;
+    const qrCodeSize = 300;
+    const paperWidth = 600;
+    const topMargin = 30;
+    let qrDataUrl = (new QRious({value: url, size: qrCodeSize})).toDataURL();
+    $canvas.width = paperWidth;
+    $canvas.height = qrCodeSize+180;
     let context = $canvas.getContext('2d');
     var img = new Image;
     img.onload = function(){
-    context.drawImage(img,0,0); // Or at whatever offset you like
+    context.drawImage(img, (paperWidth - qrCodeSize) * 0.5, topMargin); // Or at whatever offset you like
     };
     img.src = qrDataUrl;
-    context.font = '12px serif';
-    context.fillText(title, 0, 220);
-    context.fillText(url, 0, 240);
+    context.font = '32px serif';
+    context.textBaseline = "top";
+    context.textAlign = "center";
+    context.fillText(title, paperWidth * 0.5, qrCodeSize + 50 + topMargin);
+    context.font = '20px serif';
+    // context.textAlign = "left";
+    context.fillText(url, paperWidth * 0.5, qrCodeSize + 100 + topMargin);
 }
 
     </script>
