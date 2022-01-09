@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <title>Document</title>
+    <style>
+        div { padding-bottom: 10px; }
+    </style>
+  </head>
+  <body>
+    <div>
+        <div>
+        <label for="url">URL:</label>
+        <input type="text" name="url" id="url" placeholder="https://example.com" />
+        </div>
+        <div>
+        <label for="title">Title:</label>
+        <input type="text" name="title" id="title" placeholder="Title" />
+        </div>
+        <button id="submit">Print</button>
+    </div>
+    <br>
+    <canvas id="qrcode"></canvas>
+    <script>
+var $url = document.getElementById("url");
+var $title = document.getElementById("title");
+var $canvas = document.getElementById("qrcode");
+
+async function submit() {
+  let imageBlob = await new Promise(resolve => $canvas.toBlob(resolve, 'image/png'));
+
+  let formData = new FormData();
+  formData.append("myfile", imageBlob, "to-read-qr-code.png");
+
+  let response = await fetch('http://192.168.1.34:5000/file', {
+    method: 'POST',
+    body: formData
+  });
+  // let result = await response.json();
+  return response;
+}
+
+const button = document.getElementById('submit');
+button.addEventListener('click', async event => {
+    await submit();
+    const data = {
+        "claim": `wish "to-read-qr-code.png" would be thermal printed on epson`,
+        "retract": "$ $ blah"
+    };
+    const options = {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+        redirect: 'follow'
+    };
+    const response = await fetch('http://192.168.1.34:5000/cleanup-claim', options);
+    const json = await response.text();
+    console.log(json);
+});
+
+$url.onchange = () => updateCanvas();
+$url.onkeydown = () => updateCanvas();
+$title.onchange = () => updateCanvas();
+$title.onkeydown = () => updateCanvas();
+
+function updateCanvas() {
+    const url = $url.value.trim();
+    const title = $title.value.trim();
+    let qrDataUrl = (new QRious({value: url, size: 200})).toDataURL();
+    $canvas.width = 200;
+    $canvas.height = 250;
+    let context = $canvas.getContext('2d');
+    var img = new Image;
+    img.onload = function(){
+    context.drawImage(img,0,0); // Or at whatever offset you like
+    };
+    img.src = qrDataUrl;
+    context.font = '12px serif';
+    context.fillText(title, 0, 220);
+    context.fillText(url, 0, 240);
+}
+
+    </script>
+  </body>
+</html>
