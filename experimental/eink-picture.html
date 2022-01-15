@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.dom.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="submit">submit</button>
+    <script>
+var video;
+const WIDTH = 1200/4; // 1200;
+const HEIGHT = 825/4; // 825;
+
+async function submit() {
+  const canvasElem = document.getElementById("defaultCanvas0");
+  let imageBlob = await new Promise(resolve => canvasElem.toBlob(resolve, 'image/png'));
+
+  let formData = new FormData();
+  formData.append("myfile", imageBlob, "inkplate10-drawing.png");
+
+  let response = await fetch('http://192.168.1.34:5000/file', {
+    method: 'POST',
+    body: formData
+  });
+  // let result = await response.json();
+  return response;
+}
+
+function setup() {
+  createCanvas(WIDTH, HEIGHT);
+  video = createCapture(VIDEO);
+  video.size(WIDTH, HEIGHT); // any bigger and the base64 payload is too large
+  video.hide();
+  const button = document.getElementById('submit');
+  button.addEventListener('click', async event => {
+    await submit();
+    const data = {
+      "claim": `wish "http://192.168.1.34:5000/inkplate10-drawing.png" would be shown on eink frame`,
+      "retract": "$ $ wish $ would be shown on eink frame"
+    };
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+      redirect: 'follow'
+    };
+    const response = await fetch('http://192.168.1.34:5000/cleanup-claim', options);
+    const json = await response.text();
+    console.log(json);
+  });
+}
+function draw() {
+  image(video, 0, 0, WIDTH, HEIGHT)
+}
+    </script>
+  </body>
+</html>
