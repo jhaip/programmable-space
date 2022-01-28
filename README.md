@@ -360,7 +360,7 @@ In this demo, programs are represented by printed ArUco markers taped to pieces 
 
 #### Hardware Setup
 
-- Print out ArUco tags (from the 6x6 dictionary) and tape them to papers to represent programs: https://chev.me/arucogen/ I keep a pile of blank cards on the table ready to be made into programs.
+- Print out ArUco tags (from the 6x6 dictionary) and tape them to papers to represent programs using [aruco-grid-print.html](src/files/web-tablet/aruco-grid-print.html) or https://chev.me/arucogen/ . I keep a pile of blank cards on the table ready to be made into programs.
 - Set up the webcam to point down at a table (or at a wall) where the paper programs will be.
 
 ![Basic Desk Setup](docs/basic_desk_setup.jpg)
