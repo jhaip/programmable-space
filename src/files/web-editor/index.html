@@ -166,8 +166,10 @@ async function fetchData(selectNameIfPresent) {
     const nameToNum = name => +name.split(".")[0].split("__")[0] || 0;
     db = myJson.programs.sort((a,b) => nameToNum(a.name) < nameToNum(b.name) ? -1 : 1);
     if (selectNameIfPresent) {
-      let found = db.find((x) => x.name === selectNameIfPresent);
+      console.log(`looking for name: ${selectNameIfPresent}`)
+      let found = db.find((x) => x.name == selectNameIfPresent);
       if (found) {
+        console.log(found);
         selected = found.id;
       }
     }
