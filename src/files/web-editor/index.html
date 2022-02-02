@@ -78,7 +78,7 @@ function render() {
   let $sidebar = document.getElementById('sidebar');
   $sidebar.innerHTML = db.map((v, i) => `<a class="prog-link ${(i === selected) ? "prog-link--selected" : ""}" onclick="selectProgram(${i})">${v.name}</a>`).join("");
   let $selectedProgramName = document.getElementById('selectedProgramName');
-  $selectedProgramName.innerHTML = db[selected].name;
+  $selectedProgramName.innerHTML = isSelectedValid() ? db[selected].name : '';
   let $editor = document.getElementById('editor');
   $editor.value = isSelectedValid() ? db[selected].code.replace(
       new RegExp(String.fromCharCode(9787), 'g'),
