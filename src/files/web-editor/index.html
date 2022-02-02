@@ -167,7 +167,7 @@ async function fetchData(selectNameIfPresent) {
     db = myJson.programs.sort((a,b) => nameToNum(a.name) < nameToNum(b.name) ? -1 : 1);
     if (selectNameIfPresent) {
       console.log(`looking for name: ${selectNameIfPresent}`)
-      let found = db.find((x) => x.name == selectNameIfPresent);
+      let found = db.findIndex((x) => x.name == selectNameIfPresent);
       if (found) {
         console.log(found);
         selected = found.id;
