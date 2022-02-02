@@ -45,7 +45,7 @@ room.onGetSource('wisherId',
   `wish a paper named $shortFilename would be created with source code $sourceCode @ $time`,
   results => {
     results.forEach(({ wisherId, shortFilename, sourceCode, time }) => {
-      console.log(`creating new program with name ${name}`);
+      console.log(`creating new program with name ${shortFilename}`);
 
       const programId = shortFilename.split(".")[0].split("__")[0];
 

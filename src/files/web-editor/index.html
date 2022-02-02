@@ -139,7 +139,7 @@ function newProgram(evt) {
     return;
   }
   let suggestedId = null;
-  while (suggestedId === null || !db.find((x) => parseInt(x.id) === suggestedId)) {
+  while (suggestedId === null || db.find((x) => parseInt(x.id) === suggestedId)) {
     suggestedId = Math.floor(Math.random() * 8400/4)
   }
   var name = prompt("Enter your program name. Must use the format 1234__name.extension", `${suggestedId}__programName.prejs`);
