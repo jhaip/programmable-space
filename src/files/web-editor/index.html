@@ -138,22 +138,39 @@ function newProgram(evt) {
     alert("selection invalid, cannot save");
     return;
   }
-  fetch(`/new`, {
-    method: 'post',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      'currentTargetName': db[selected].name,
-      'currentSourceCode': myCodeMirror.getValue(),
-    })
-  }).then(response => console.log(response));
+  let suggestedId = null;
+  while (suggestedId === null || !db.find((x) => parseInt(x.id) === suggestedId)) {
+    suggestedId = Math.floor(Math.random() * 8400/4)
+  }
+  var name = prompt("Enter your program name. Must use the format 1234__name.extension", `${suggestedId}__programName.prejs`);
+  if (name && name.length >= 7 && name.includes(".")) {
+    fetch(`/new`, {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        'name': name,
+        'sourceCode': myCodeMirror.getValue(),
+      })
+    }).then(response => {
+      console.log(response);
+      // wait, then load the new programs assuming our new program will be there.
+      setTimeout(() => fetchData(name), 2000);
+    });
+  }
 }
 
-async function fetchData() {
+async function fetchData(selectNameIfPresent) {
   try {
     const response = await fetch('/status')
     const myJson = await response.json();
     const nameToNum = name => +name.split(".")[0].split("__")[0] || 0;
     db = myJson.programs.sort((a,b) => nameToNum(a.name) < nameToNum(b.name) ? -1 : 1);
+    if (selectNameIfPresent) {
+      let found = db.find((x) => x.name === selectNameIfPresent);
+      if (found) {
+        selected = found.id;
+      }
+    }
     render();
   } catch (error) {
     console.error(error);

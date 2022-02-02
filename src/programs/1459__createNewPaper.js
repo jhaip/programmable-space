@@ -40,3 +40,27 @@ room.onGetSource('wisherId',
     })
   }
 );
+
+room.onGetSource('wisherId',
+  `wish a paper named $shortFilename would be created with source code $sourceCode @ $time`,
+  results => {
+    results.forEach(({ wisherId, shortFilename, sourceCode, time }) => {
+      console.log(`creating new program with name ${name}`);
+
+      const programId = shortFilename.split(".")[0].split("__")[0];
+
+      // create a new file with the source code
+      cleanSourceCode = sourceCode.replace(new RegExp(String.fromCharCode(9787), 'g'), String.fromCharCode(34))
+      fs.writeFile(`src/programs/${shortFilename}`, cleanSourceCode, (err) => {
+        if (err) {
+          return console.log(err);
+        }
+        room.retractFromSource(wisherId, `wish a paper named $ would be created with source code $ @ ${time}`)
+        room.assert(["text", shortFilename], `has source code`, ["text", sourceCode])
+        room.assert(["text", shortFilename], `has paper ID ${programId}`)
+        room.assert(`wish paper ${programId} at`, ["text", shortFilename], `would be printed`)
+        room.flush();
+      });
+    })
+  }
+);

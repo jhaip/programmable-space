@@ -47,7 +47,7 @@ app.post('/save', (req, res) => {
   res.status(200).send('OK');
 })
 
-app.post('/new', (req, res) => {
+app.post('/new-copy', (req, res) => {
   const {currentTargetId, currentTargetName, currentSourceCode} = req.body;
   const language = currentTargetName.split(".")[1];
   const cleanSourceCode = currentSourceCode
@@ -57,6 +57,20 @@ app.post('/new', (req, res) => {
   room.assert(
     `wish a paper would be created in`, ["text", language],
     `with source code`, ["text", cleanSourceCode],
+    `@ ${millis}`);
+  room.flush();
+  res.status(200).send('OK');
+})
+
+app.post('/new', (req, res) => {
+  const {name, sourceCode} = req.body;
+  const cleanSourceCode = sourceCode
+    .replace(/"/g, String.fromCharCode(9787));
+  const millis = (new Date()).getTime()
+  room.cleanup();
+  room.assert(
+    `wish a paper named`, ["text", name],
+    `would be created with source code`, ["text", cleanSourceCode],
     `@ ${millis}`);
   room.flush();
   res.status(200).send('OK');
