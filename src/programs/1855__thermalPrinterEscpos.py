@@ -34,7 +34,8 @@ def sub_callback(results):
     for result in results:
         logging.info("PRINTING {} {}".format(datetime.now().isoformat(), result["filePath"]))
         try:
-            url = "http://192.168.1.34:5000/{}".format(result["filePath"])
+            if "http" in result["filePath"] is False:
+                url = "http://192.168.1.34:5000/{}".format(result["filePath"])
             PIL_image = Image.open(requests.get(url, stream=True).raw)
             p.image(PIL_image)
             p.cut()
