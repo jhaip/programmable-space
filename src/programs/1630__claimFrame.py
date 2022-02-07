@@ -1,13 +1,7 @@
 from helper import init, subscription, batch, MY_ID_STR, get_my_id_str, rpc_url, override_my_id
 from imutils.video import WebcamVideoStream, VideoStream
-import numpy as np
 import cv2
-import imutils
-import os
 import time
-import logging
-import base64
-import cv2.aruco as aruco
 import sys
 import http.server
 import socketserver
