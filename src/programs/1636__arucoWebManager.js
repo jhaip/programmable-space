@@ -77,11 +77,19 @@ room.on(`camera $camId sees aruco $id at $x1 $y1 $x2 $y2 $x3 $y3 $x4 $y4 @ $t`,
     results => {
         seenArucoTags = results || [];
         seenArucoTags.forEach((v, i) => {
-          seenArucoCountdown[v.id] = {
-            ...v,
-            "different": !seenArucoCountdown[v.id] || tagMovedEnoughToBeDifferent(seenArucoCountdown[v.id], v),
-            "countdown": N_FRAMES_UNTIL_DEATH + 1
-          };
+          if (!seenArucoCountdown[v.id] || tagMovedEnoughToBeDifferent(seenArucoCountdown[v.id], v)) {
+            seenArucoCountdown[v.id] = {
+              ...v,
+              "different": true,
+              "countdown": N_FRAMES_UNTIL_DEATH + 1
+            };
+          } else {
+            seenArucoCountdown[v.id] = {
+              ...seenArucoCountdown[v.id], // don't update locations so we can catch if the cards have moved from their cached location
+              "different": false,
+              "countdown": N_FRAMES_UNTIL_DEATH + 1
+            };
+          }
         });
         let somethingChanged = false;
         let claims = [];
