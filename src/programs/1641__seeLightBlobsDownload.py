@@ -26,6 +26,7 @@ CONTOUR_PERSPECTIVE_IMAGE_WIDTH = 100
 CONTOUR_PERSPECTIVE_IMAGE_HEIGHT = 200
 PORT = 20802
 blob_images = []
+debug_image = None
 url = None
 
 lock = threading.RLock()
@@ -74,13 +75,21 @@ def order_points(pts):
 
 
 def create_server():
-    global lock, PORT, blob_images
+    global lock, PORT, blob_images, debug_image
     class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             parsed_path = urllib.parse.urlsplit(self.path)
             match = re.search('.*-(\d+)\.jpg', parsed_path.path)
             if not match:
-                self.send_response(404)
+                if "debug" in parsed_path and debug_image:
+                    with lock:
+                        self.send_response(200)
+                        self.send_header('Content-type','image/jpeg')
+                        self.end_headers()
+                        is_success, buffer = cv2.imencode(".jpg", debug_image)
+                        self.wfile.write(BytesIO(buffer).read())
+                else:
+                    self.send_response(404)
             else:
                 index = int(match.group(1))
                 with lock:
@@ -106,7 +115,7 @@ def sub_callback(results):
             url = "http://192.168.1.34:5000/{}".format(result["filePath"])
 
 def run_cv():
-    global url, blob_images
+    global url, blob_images, debug_image
     claims = []
     claims.append({"type": "retract", "fact": [["id", get_my_id_str()], ["postfix", ""]]})
     if url is not None:
@@ -118,6 +127,8 @@ def run_cv():
             image = image[:, :, ::-1].copy() 
             image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             ret, threshold_image = cv2.threshold(image_grey, THRESHOLD, 255, cv2.THRESH_BINARY)
+            with lock:
+                debug_image = threshold_image
             im2, raw_contours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             contours = []
             print("n raw contours: {}".format(len(raw_contours)))
