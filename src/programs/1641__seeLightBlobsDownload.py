@@ -79,9 +79,11 @@ def create_server():
     class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             parsed_path = urllib.parse.urlsplit(self.path)
-            match = re.search('.*-(\d+)\.jpg', str(parsed_path.path))
+            path = str(parsed_path.path)
+            print(path)
+            match = re.search('.*-(\d+)\.jpg', path)
             if not match:
-                if debug_image and re.search('.*debug\.jpg', str(parsed_path.path)):
+                if debug_image and re.search('.*debug\.jpg', path):
                     with lock:
                         self.send_response(200)
                         self.send_header('Content-type','image/jpeg')
