@@ -100,51 +100,52 @@ def run_cv():
     global url, blob_images
     claims = []
     claims.append({"type": "retract", "fact": [["id", get_my_id_str()], ["postfix", ""]]})
-    try:
-        pil_image = Image.open(requests.get(url, stream=True).raw)
-        # run CV
-        image = np.array(pil_image) 
-        # Convert RGB to BGR 
-        image = image[:, :, ::-1].copy() 
-        image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        ret, threshold_image = cv2.threshold(image_grey, THRESHOLD, 255, cv2.THRESH_BINARY)
-        im2, raw_contours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours = []
-        print("n raw contours: {}".format(len(raw_contours)))
-        for (i, c) in enumerate(raw_contours):
-            if hierarchy[0,i,3] == -1 and cv2.contourArea(c) > MIN_CONTOUR_AREA:
-                contours.append(c)
-        contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
-        blob_images = []
-        chosen_contours = []
-        for (i, c) in enumerate(contours[:MAX_N_IMAGES]):
-            chosen_contours.append(c)
-            box = cv2.minAreaRect(c)
-            box = cv2.boxPoints(box)
-            box = order_points(box)  # Order the points to (tl, tr, bl, br) to match the perspective transform dst
-            contour_perspective = np.array(box, dtype="float32")
-            dst = np.array([
-                    [0, 0],
-                    [CONTOUR_PERSPECTIVE_IMAGE_WIDTH - 1, 0],
-                    [CONTOUR_PERSPECTIVE_IMAGE_WIDTH - 1, CONTOUR_PERSPECTIVE_IMAGE_HEIGHT - 1],
-                    [0, CONTOUR_PERSPECTIVE_IMAGE_HEIGHT - 1]], dtype = "float32")
-            contour_perspective_matrix = cv2.getPerspectiveTransform(contour_perspective, dst)
-            contour_perspective_image = cv2.warpPerspective(image, contour_perspective_matrix, (CONTOUR_PERSPECTIVE_IMAGE_WIDTH, CONTOUR_PERSPECTIVE_IMAGE_HEIGHT))
-            with lock:
-                blob_images.append(contour_perspective_image)
-        # claim
-        for i in range(len(blob_images)):
-            claims.append({"type": "claim", "fact": [
-                ["id", get_my_id_str()],
-                ["id", "0"],
-                ["text", "camera"],
-                ["text", "1630"],
-                ["text", "subframe"],
-                ["text", "at"],
-                ["text", "http://{}:{}/src/files/cv-frame-{}.jpg".format(get_host_ip(), PORT, i)],
-            ]})
-    except Exception as e:
-        logging.error(traceback.format_exc())
+    if url is not None:
+        try:
+            pil_image = Image.open(requests.get(url, stream=True).raw)
+            # run CV
+            image = np.array(pil_image) 
+            # Convert RGB to BGR 
+            image = image[:, :, ::-1].copy() 
+            image_grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            ret, threshold_image = cv2.threshold(image_grey, THRESHOLD, 255, cv2.THRESH_BINARY)
+            im2, raw_contours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours = []
+            print("n raw contours: {}".format(len(raw_contours)))
+            for (i, c) in enumerate(raw_contours):
+                if hierarchy[0,i,3] == -1 and cv2.contourArea(c) > MIN_CONTOUR_AREA:
+                    contours.append(c)
+            contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
+            blob_images = []
+            chosen_contours = []
+            for (i, c) in enumerate(contours[:MAX_N_IMAGES]):
+                chosen_contours.append(c)
+                box = cv2.minAreaRect(c)
+                box = cv2.boxPoints(box)
+                box = order_points(box)  # Order the points to (tl, tr, bl, br) to match the perspective transform dst
+                contour_perspective = np.array(box, dtype="float32")
+                dst = np.array([
+                        [0, 0],
+                        [CONTOUR_PERSPECTIVE_IMAGE_WIDTH - 1, 0],
+                        [CONTOUR_PERSPECTIVE_IMAGE_WIDTH - 1, CONTOUR_PERSPECTIVE_IMAGE_HEIGHT - 1],
+                        [0, CONTOUR_PERSPECTIVE_IMAGE_HEIGHT - 1]], dtype = "float32")
+                contour_perspective_matrix = cv2.getPerspectiveTransform(contour_perspective, dst)
+                contour_perspective_image = cv2.warpPerspective(image, contour_perspective_matrix, (CONTOUR_PERSPECTIVE_IMAGE_WIDTH, CONTOUR_PERSPECTIVE_IMAGE_HEIGHT))
+                with lock:
+                    blob_images.append(contour_perspective_image)
+            # claim
+            for i in range(len(blob_images)):
+                claims.append({"type": "claim", "fact": [
+                    ["id", get_my_id_str()],
+                    ["id", "0"],
+                    ["text", "camera"],
+                    ["text", "1630"],
+                    ["text", "subframe"],
+                    ["text", "at"],
+                    ["text", "http://{}:{}/src/files/cv-frame-{}.jpg".format(get_host_ip(), PORT, i)],
+                ]})
+        except Exception as e:
+            logging.error(traceback.format_exc())
     batch(claims)
 
 threading.Thread(target=create_server).start()
