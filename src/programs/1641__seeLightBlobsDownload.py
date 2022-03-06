@@ -135,7 +135,7 @@ def sub_callback(results):
                     ["text", "1630"],
                     ["text", "subframe"],
                     ["text", "at"],
-                    ["text", "http://{}:{}/src/files/cv-frame-{i}.jpg".format(get_host_ip(), PORT, i)],
+                    ["text", "http://{}:{}/src/files/cv-frame-{}.jpg".format(get_host_ip(), PORT, i)],
                 ]})
         except Exception as e:
             logging.error(traceback.format_exc())
