@@ -27,7 +27,7 @@ public final class Room {
   }
 
   public static String getServerUrl() {
-    String serverURL= "192.168.1.34"; // "localhost";
+    String serverURL= "localhost";
     String serverURLoverride = System.getenv("PROG_SPACE_SERVER_URL");
     if (serverURLoverride != null) {
       serverURL = serverURLoverride;

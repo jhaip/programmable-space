@@ -277,6 +277,8 @@ void settings() {
   fullScreen(P3D);
   //size(1280, 600, P3D);
 
+  println("connecting to broker");
+  println(Room.getServerUrl());
   wsc = new WebsocketClient(this, Room.getServerUrl());
   room = new Room(wsc, myId);
   
