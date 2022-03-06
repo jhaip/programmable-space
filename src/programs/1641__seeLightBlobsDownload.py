@@ -105,6 +105,7 @@ def sub_callback(results):
             ret, threshold_image = cv2.threshold(image_grey, THRESHOLD, 255, cv2.THRESH_BINARY)
             im2, raw_contours, hierarchy = cv2.findContours(threshold_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             contours = []
+            print("n raw contours: {}".format(len(raw_contours)))
             for (i, c) in enumerate(raw_contours):
                 if hierarchy[0,i,3] == -1 and cv2.contourArea(c) > MIN_CONTOUR_AREA:
                     contours.append(c)
