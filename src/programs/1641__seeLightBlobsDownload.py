@@ -80,7 +80,8 @@ def create_server():
                 self.send_header('Content-type','image/jpeg')
                 self.end_headers()
                 if len(blob_images) > 0:
-                    self.wfile.write(blob_images[0].read())
+                    is_success, buffer = cv2.imencode(".jpg", blob_images[0].read())
+                    self.wfile.write(BytesIO(buffer))
     handler_object = MyHttpRequestHandler
     my_server = socketserver.TCPServer(("", PORT), handler_object)
     my_server.serve_forever()
