@@ -16,6 +16,7 @@ import socketserver
 import threading
 import socket
 import urllib
+import re
 from io import BytesIO
 
 THRESHOLD = 200
@@ -77,14 +78,18 @@ def create_server():
     class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
             parsed_path = urllib.parse.urlsplit(self.path)
-            print(parsed_path)
-            with lock:
-                self.send_response(200)
-                self.send_header('Content-type','image/jpeg')
-                self.end_headers()
-                if len(blob_images) > 0:
-                    is_success, buffer = cv2.imencode(".jpg", blob_images[0])
-                    self.wfile.write(BytesIO(buffer).read())
+            match = re.search('.*-(\d+)\.jpg', parsed_path.path)
+            if not match:
+                self.send_response(404)
+            else:
+                index = int(match.group(1))
+                with lock:
+                    self.send_response(200)
+                    self.send_header('Content-type','image/jpeg')
+                    self.end_headers()
+                    if len(blob_images) > 0:
+                        is_success, buffer = cv2.imencode(".jpg", blob_images[index])
+                        self.wfile.write(BytesIO(buffer).read())
     handler_object = MyHttpRequestHandler
     my_server = socketserver.TCPServer(("", PORT), handler_object)
     my_server.serve_forever()
