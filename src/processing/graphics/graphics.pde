@@ -439,7 +439,7 @@ void draw() {
 
 PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
   pg.beginDraw();
-  pg.push();
+  pg.pushMatrix();
   pg.background(0, 0, 0, 0);
   pg.fill(255);
   pg.stroke(255);
@@ -526,9 +526,9 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
       int opt_font_size = g.getInt("options");
       pg.textSize(opt_font_size);
     } else if (opt_type.equals("push")) {
-      pg.push();
+      pg.pushMatrix();
     } else if (opt_type.equals("pop")) {
-      pg.pop();
+      pg.popMatrix();
     } else if (opt_type.equals("translate")) {
       JSONObject opt = g.getJSONObject("options");
       pg.translate(opt.getFloat("x"), opt.getFloat("y"));
@@ -559,10 +559,10 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
         if (images_cache.get(imageStr) != null) {
           pg.image(images_cache.get(imageStr), opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
         } else {
-          pg.push();
+          pg.pushMatrix();
           pg.fill(255, 0, 255);
           pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
-          pg.pop();
+          pg.popMatrix();
         }
       }
     } else if (opt_type.equals("video")) {
@@ -573,23 +573,23 @@ PGraphics drawSource(PGraphics pg, JSONArray graphicsCache) {
           try {
             pg.image(movies_cache.get(videoFilename).movie, opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
           } catch (Exception e) {
-            pg.push();
+            pg.pushMatrix();
             pg.fill(255, 255, 0);
             pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
-            pg.pop();      
+            pg.popMatrix();      
           }
         } else {
-          pg.push();
+          pg.pushMatrix();
           pg.fill(255, 0, 0);
           pg.rect(opt.getFloat("x"), opt.getFloat("y"), opt.getFloat("w"), opt.getFloat("h"));
-          pg.pop();
+          pg.popMatrix();
         }
       }
     } else {
       println(g);
     }
   }
-  pg.pop();
+  pg.popMatrix();
   pg.endDraw();
   return pg;
 }
