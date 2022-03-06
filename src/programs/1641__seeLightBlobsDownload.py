@@ -85,7 +85,7 @@ def create_server():
     my_server.serve_forever()
 
 
-@subscription(["$ $ camera 1630 frame at $frameUrl"])
+@subscription(["$ $ camera 1630 frame at $filePath"])
 def sub_callback(results):
     global blob_images
     claims = []
