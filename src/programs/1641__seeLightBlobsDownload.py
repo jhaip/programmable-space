@@ -15,6 +15,7 @@ import http.server
 import socketserver
 import threading
 import socket
+import urlparse
 from io import BytesIO
 
 THRESHOLD = 200
@@ -75,6 +76,8 @@ def create_server():
     global lock, PORT, blob_images
     class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         def do_GET(self):
+            parsed_path = urlparse.urlparse(self.path)
+            print(parsed_path)
             with lock:
                 self.send_response(200)
                 self.send_header('Content-type','image/jpeg')
