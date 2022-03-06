@@ -83,7 +83,7 @@ def create_server():
             print(path)
             match = re.search('.*-(\d+)\.jpg', path)
             if not match:
-                if debug_image and re.search('.*debug\.jpg', path):
+                if debug_image is not None and re.search('.*debug\.jpg', path):
                     with lock:
                         self.send_response(200)
                         self.send_header('Content-type','image/jpeg')
