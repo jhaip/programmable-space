@@ -81,7 +81,7 @@ def create_server():
             parsed_path = urllib.parse.urlsplit(self.path)
             match = re.search('.*-(\d+)\.jpg', str(parsed_path.path))
             if not match:
-                if "debug" in str(parsed_path.path) and debug_image:
+                if debug_image and re.search('.*debug\.jpg', str(parsed_path.path)):
                     with lock:
                         self.send_response(200)
                         self.send_header('Content-type','image/jpeg')
