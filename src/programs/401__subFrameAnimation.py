@@ -12,7 +12,7 @@ def sub_callback_frames(results):
     if results and len(results) > 0:
         FRAMES = list(map(lambda x: x["frame"], results))
     else:
-        FRAMES = 0
+        FRAMES = []
 
 def check_for_new_frames():
     more_messages_to_receive = True

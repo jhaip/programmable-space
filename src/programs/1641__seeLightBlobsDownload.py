@@ -161,10 +161,12 @@ def run_cv():
                     ["id", get_my_id_str()],
                     ["id", "0"],
                     ["text", "camera"],
-                    ["text", "1630"],
+                    ["text", "sees"],
                     ["text", "subframe"],
-                    ["text", "at"],
+                    ["text", str(i)],
                     ["text", "http://{}:{}/src/files/cv-frame-{}.jpg".format(get_host_ip(), PORT, i)],
+                    ["text", "@"],
+                    ["integer", str(int(time.time()*1000))],
                 ]})
         except Exception as e:
             logging.error(traceback.format_exc())
