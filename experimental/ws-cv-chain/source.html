@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    </style>
+  </head>  
+  <body>
+    
+<center> 
+<body>
+<div id="container">
+<video width="200" height="200" autoplay="true" id="video">
+</video>
+</div>
+<button onclick="capture()">Capture</button>  <br> </br>
+<canvas id="canvas" style="overflow:auto"></canvas>
+<br></br>
+<p> Image Converted to String: </p>
+<p id="printresult"></p>
+</center>
+
+    <script>
+ var video = document.querySelector("#video");
+ if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+          video.srcObject = stream;
+        })
+        .catch(function (err0r) {
+          console.log("Something went wrong!");
+        });
+ }
+const messages = document.createElement("ul");
+document.body.appendChild(messages);
+const websocket = new WebSocket("ws://localhost:8765/");
+
+ var resultb64="";
+ function capture() {        
+    var canvas = document.getElementById('canvas');     
+    var video = document.getElementById('video');
+    canvas.width = 480;
+    canvas.height = 320;
+    canvas.getContext('2d').drawImage(video, 0, 0, 480,320);  
+    resultb64=canvas.toDataURL();
+    websocket.send(resultb64);
+    // document.getElementById("printresult").innerHTML = canvas.toDataURL();
+ }
+  document.getElementById("printresult").innerHTML = resultb64;
+  setInterval(capture, 1000/10);
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    </style>
+  </head>  
+  <body>
+    
+<img id="imgElem"></img>
+
+    <script>
+
+window.addEventListener("DOMContentLoaded", () => {
+  const messages = document.createElement("ul");
+  const imgElem = document.getElementById("imgElem")
+  document.body.appendChild(messages);
+
+  const websocket = new WebSocket("ws://localhost:8766/");
+  websocket.onmessage = ({ data }) => {
+    // const message = document.createElement("li");
+    // const content = document.createTextNode(data);
+    // message.appendChild(content);
+    // messages.appendChild(message);
+    imgElem.setAttribute('src', "data:image/jpg;base64," + data);
+  };
+});
+console.log("na    h")
+
+    </script>
+  </body>
+</html>
