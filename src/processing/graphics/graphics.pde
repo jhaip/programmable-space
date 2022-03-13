@@ -382,8 +382,9 @@ void draw() {
   for (Map.Entry<String, JSONArray> entry : sourceGraphics.entrySet()) {
     String source = entry.getKey();
     // uncalibratedScene.pushMatrix();
+    PGraphics pg;
     try {
-      PGraphics pg = drawSource(sourcePGraphics.get(source), entry.getValue());
+      pg = drawSource(sourcePGraphics.get(source), entry.getValue());
     } catch (Exception e) {
       println("error when calling drawSource");
       println(e);
