@@ -7,7 +7,6 @@ import logging
 helper.rpc_url = "192.168.1.34"
 
 init(__file__, skipListening=True)
-batch([{"type": "retract", "fact": [["id", get_my_id_str()], ["postfix", ""]]}])
 
 special_keys = ['backspace', 'enter', 'tab', 'space', 'left', 'right', 'up', 'down',
     'shift', 'caps lock', 'alt', 'menu', 'unknown', 'delete', 'page up', 'page down']
