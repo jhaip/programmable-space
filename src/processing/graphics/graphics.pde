@@ -385,7 +385,7 @@ void draw() {
     try {
       PGraphics pg = drawSource(sourcePGraphics.get(source), entry.getValue());
     } catch (Exception e) {
-      println("error when calling drawSource")
+      println("error when calling drawSource");
       println(e);
     }
     /*
