@@ -387,6 +387,7 @@ void draw() {
     } catch (Exception e) {
       println("error when calling drawSource");
       println(e);
+      continue;
     }
     /*
     uncalibratedScene.beginShape();
