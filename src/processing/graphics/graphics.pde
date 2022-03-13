@@ -387,13 +387,13 @@ void draw() {
     uncalibratedScene.beginShape();
     uncalibratedScene.texture(pg);
     // TODO: offset horizontals to match the real aspect ratio of the paper
-    if (sourcePosition.containsKey(source)) {
+    try {
       int[] sp = sourcePosition.get(source);
       uncalibratedScene.vertex(sp[0], sp[1], 0, 0);
       uncalibratedScene.vertex(sp[2], sp[3], 1, 0);
       uncalibratedScene.vertex(sp[4], sp[5], 1, 1);
       uncalibratedScene.vertex(sp[6], sp[7], 0, 1);
-    } else {
+    } catch (Exception e) {
       uncalibratedScene.vertex(0, 0, 0, 0);
       uncalibratedScene.vertex(width, 0, 1, 0);
       uncalibratedScene.vertex(width, height, 1, 1);
@@ -402,13 +402,13 @@ void draw() {
     uncalibratedScene.endShape();
     */
     qgrid = new QuadGrid(pg, 10, 10); // second and third parameters are the v and h resolutions
-    if (sourcePosition.containsKey(source)) {
+    try {
       int[] sp = sourcePosition.get(source);
       qgrid.setCorners(sp[0], sp[1],
                        sp[2], sp[3],
                        sp[4], sp[5],
                        sp[6], sp[7]);
-    } else {
+    } catch (Exception e) {
       qgrid.setCorners(0, 0,
                        width, 0,
                        width, height,
