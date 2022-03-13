@@ -76,27 +76,26 @@ def handle_key_event(e):
     ctrl_held = keyboard.is_pressed('ctrl')
     shift_held = keyboard.is_pressed('shift')
     if e.event_type == 'down':
-        if e.name == 'unknown':
-            return
-        if ctrl_held:
-            if shift_held and e.name.isalpha():
-                claims.append(add_key(None, 'C-{}'.format(e.name.upper())))
+        if e.name != 'unknown':
+            if ctrl_held:
+                if shift_held and e.name.isalpha():
+                    claims.append(add_key(None, 'C-{}'.format(e.name.upper())))
+                elif shift_held and e.name in shift_map:
+                    claims.append(add_key(None, 'C-{}'.format(shift_map[e.name])))
+                elif e.name == '−':
+                    claims.append(add_key(None, 'C--'.format(e.name)))
+                else:
+                    claims.append(add_key(None, 'C-{}'.format(e.name)))
+            elif e.name in special_keys:
+                claims.append(add_key(None, e.name))
+            elif shift_held and e.name.isalpha():
+                claims.append(add_key(e.name.upper(), None))
             elif shift_held and e.name in shift_map:
-                claims.append(add_key(None, 'C-{}'.format(shift_map[e.name])))
+                claims.append(add_key(shift_map[e.name], None))
             elif e.name == '−':
-                claims.append(add_key(None, 'C--'.format(e.name)))
+                claims.append(add_key('-', None))
             else:
-                claims.append(add_key(None, 'C-{}'.format(e.name)))
-        elif e.name in special_keys:
-            claims.append(add_key(None, e.name))
-        elif shift_held and e.name.isalpha():
-            claims.append(add_key(e.name.upper(), None))
-        elif shift_held and e.name in shift_map:
-            claims.append(add_key(shift_map[e.name], None))
-        elif e.name == '−':
-            claims.append(add_key('-', None))
-        else:
-            claims.append(add_key(e.name, None))
+                claims.append(add_key(e.name, None))
     keys_to_claim_when_pressed = ["up", "right", "down", "left", "space"]
     for key_name in keys_to_claim_when_pressed:
         if keyboard.is_pressed(key_name):
